@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PuzzleStatus {
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  displayName  String
+  avatarUrl    String?
+  bio          String?
+  timezone     String   @default("Asia/Kathmandu")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions           Session[]
+  resetTokens        PasswordResetToken[]
+  attempts           GameAttempt[]
+  dailyScores        DailyScore[]
+  streak             Streak?
+  achievements       UserAchievement[]
+  createdPuzzles     DailyPuzzle[]        @relation("PuzzleCreatedBy")
+  sentFriendRequests FriendRequest[]      @relation("FriendRequestSender")
+  recvFriendRequests FriendRequest[]      @relation("FriendRequestReceiver")
+  friendshipsAsA     Friendship[]         @relation("FriendshipUserA")
+  friendshipsAsB     Friendship[]         @relation("FriendshipUserB")
+
+  @@index([username])
+}
+
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique
+  userAgent  String?
+  ip         String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model FriendRequest {
+  id          String              @id @default(cuid())
+  senderId    String
+  receiverId  String
+  status      FriendRequestStatus @default(PENDING)
+  createdAt   DateTime            @default(now())
+  respondedAt DateTime?
+
+  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+}
+
+model Friendship {
+  id        String   @id @default(cuid())
+  userAId   String
+  userBId   String
+  createdAt DateTime @default(now())
+
+  userA User @relation("FriendshipUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("FriendshipUserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userBId])
+}
+
+model Game {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String
+  icon        String
+  difficulty  String   @default("medium")
+  isEnabled   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  puzzles DailyPuzzle[]
+}
+
+model DailyPuzzle {
+  id           String       @id @default(cuid())
+  gameId       String
+  date         DateTime     @db.Date
+  puzzleNumber Int
+  status       PuzzleStatus @default(SCHEDULED)
+  publishAt    DateTime?
+  content      Json
+  createdById  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  game      Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdBy User?         @relation("PuzzleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  attempts  GameAttempt[]
+
+  @@unique([gameId, date])
+  @@index([date, status])
+}
+
+model GameAttempt {
+  id             String        @id @default(cuid())
+  userId         String
+  dailyPuzzleId  String
+  status         AttemptStatus @default(IN_PROGRESS)
+  attemptLog     Json?
+  mistakeCount   Int           @default(0)
+  durationMs     Int?
+  won            Boolean       @default(false)
+  score          Int           @default(0)
+  scoreBreakdown Json?
+  startedAt      DateTime      @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime      @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyPuzzle DailyPuzzle @relation(fields: [dailyPuzzleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dailyPuzzleId])
+  @@index([dailyPuzzleId])
+}
+
+model DailyScore {
+  id             String   @id @default(cuid())
+  userId         String
+  date           DateTime @db.Date
+  totalScore     Int      @default(0)
+  gamesCompleted Int      @default(0)
+  isPerfectDay   Boolean  @default(false)
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([date, totalScore])
+}
+
+model Streak {
+  userId            String    @id
+  currentStreak     Int       @default(0)
+  longestStreak     Int       @default(0)
+  lastCompletedDate DateTime? @db.Date
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String
+  icon        String
+  createdAt   DateTime @default(now())
+
+  unlocks UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+  context       Json?
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}

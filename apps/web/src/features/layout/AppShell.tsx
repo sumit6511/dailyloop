@@ -1,0 +1,87 @@
+import { useState, type ReactNode } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
+import { api } from "../../lib/api-client";
+import { Button } from "../../components/Button";
+import logoFull from "../../assets/logo-full.png";
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const invalidateAuth = useInvalidateAuth();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await api.post("/auth/logout");
+    await invalidateAuth();
+    navigate("/login", { replace: true });
+  };
+
+  const navLinkClass =
+    "text-sm font-medium text-white/65 transition-colors hover:text-white";
+
+  const navLinks = (
+    <>
+      <Link to="/friends" onClick={() => setMenuOpen(false)} className={navLinkClass}>
+        Friends
+      </Link>
+      {user ? (
+        <Link to={`/u/${user.username}`} onClick={() => setMenuOpen(false)} className={navLinkClass}>
+          Profile
+        </Link>
+      ) : null}
+      {user?.role === "ADMIN" ? (
+        <Link to="/admin" onClick={() => setMenuOpen(false)} className={navLinkClass}>
+          Admin
+        </Link>
+      ) : null}
+    </>
+  );
+
+  return (
+    <div className="min-h-dvh">
+      <div className="sticky top-0 z-20 px-3 pt-3 sm:px-6 sm:pt-4">
+        <header className="glass-strong mx-auto max-w-5xl px-4 py-3 sm:px-6">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center">
+              <span className="flex items-center rounded-xl bg-white/95 px-3 py-1.5 shadow-sm">
+                <img src={logoFull} alt="DailyLoop" className="h-6 w-auto sm:h-7" />
+              </span>
+            </Link>
+
+            <nav className="hidden items-center gap-5 sm:flex">
+              {navLinks}
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                Log out
+              </Button>
+            </nav>
+
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-expanded={menuOpen}
+              aria-label="Toggle menu"
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-lg text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white sm:hidden"
+            >
+              {menuOpen ? "✕" : "☰"}
+            </button>
+          </div>
+
+          {menuOpen ? (
+            <div className="mt-3 flex flex-col gap-3 border-t border-white/[0.1] pt-3 sm:hidden">
+              {navLinks}
+              <button
+                type="button"
+                onClick={() => void handleLogout()}
+                className="text-left text-sm font-medium text-white/65 hover:text-white"
+              >
+                Log out
+              </button>
+            </div>
+          ) : null}
+        </header>
+      </div>
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
+    </div>
+  );
+}
