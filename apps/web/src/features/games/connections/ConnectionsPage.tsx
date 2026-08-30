@@ -31,13 +31,18 @@ const DIFFICULTY_STYLES: Record<number, string> = {
 
 const MAX_MISTAKES = 4;
 
+const REVEAL_MS = 650;
+const SHAKE_MS = 450;
+
 export function ConnectionsPage() {
   const { data: entry, isLoading } = useGameToday("connections");
   const submitMove = useSubmitMove("connections");
   const [selected, setSelected] = useState<string[]>([]);
   const [shake, setShake] = useState(false);
+  const [pendingSolve, setPendingSolve] = useState<{ words: string[]; categoryIndex: number } | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const busy = !!pendingSolve || shake;
 
   useAutoStartAttempt("connections", entry?.status);
 
@@ -70,11 +75,16 @@ export function ConnectionsPage() {
     );
   }
 
-  const solvedWords = new Set(view.solved.flatMap((group) => group.words));
+  // While a correct group is mid-reveal, hold it back from `solved` so its tiles stay in the
+  // grid (flashing green) instead of instantly jumping into the category bar.
+  const solvedToShow = pendingSolve ? view.solved.filter((g) => g.categoryIndex !== pendingSolve.categoryIndex) : view.solved;
+  const solvedWords = new Set(solvedToShow.flatMap((group) => group.words));
   const remainingWords = view.words.filter((word) => !solvedWords.has(word));
+  // Likewise, don't jump to the result screen mid-reveal even if the server says we're done.
+  const showResult = view.complete && !pendingSolve;
 
   const toggleWord = (word: string) => {
-    if (view.complete) return;
+    if (view.complete || busy) return;
     setSelected((prev) => {
       if (prev.includes(word)) return prev.filter((w) => w !== word);
       if (prev.length >= 4) return prev;
@@ -83,26 +93,34 @@ export function ConnectionsPage() {
   };
 
   const submitGuess = async () => {
-    if (selected.length !== 4) return;
+    if (selected.length !== 4 || busy) return;
     setError(null);
     try {
       const solvedBefore = view.solved.length;
-      const response = await submitMove.mutateAsync({ words: selected });
-      const solvedAfter = (response.content as ConnectionsView).solved.length;
-      setSelected([]);
-      if (!response.complete && solvedAfter === solvedBefore) {
-        setShake(true);
-        setTimeout(() => setShake(false), 400);
-      }
+      const guessedWords = selected;
+      const response = await submitMove.mutateAsync({ words: guessedWords });
+      const newSolved = (response.content as ConnectionsView).solved;
       if (response.newlyUnlockedAchievements?.length) {
         setNewAchievements(response.newlyUnlockedAchievements);
+      }
+      if (newSolved.length > solvedBefore) {
+        const newGroup = newSolved[newSolved.length - 1]!;
+        setSelected([]);
+        setPendingSolve({ words: guessedWords, categoryIndex: newGroup.categoryIndex });
+        setTimeout(() => setPendingSolve(null), REVEAL_MS);
+      } else {
+        setShake(true);
+        setTimeout(() => {
+          setShake(false);
+          setSelected([]);
+        }, SHAKE_MS);
       }
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
     }
   };
 
-  if (view.complete) {
+  if (showResult) {
     const mistakesMade = MAX_MISTAKES - view.mistakesRemaining;
     return (
       <GameShell icon="🟩" title="Connections">
@@ -114,10 +132,11 @@ export function ConnectionsPage() {
           newAchievementKeys={newAchievements}
         >
           <div className="mb-6 flex flex-col gap-2">
-            {(view.categories ?? view.solved).map((category) => (
+            {(view.categories ?? view.solved).map((category, i) => (
               <div
                 key={category.title}
-                className={`rounded-xl px-4 py-2.5 text-center ${DIFFICULTY_STYLES[category.difficulty]}`}
+                style={{ animationDelay: `${i * 90}ms` }}
+                className={`animate-pop-in rounded-xl px-4 py-2.5 text-center ${DIFFICULTY_STYLES[category.difficulty]}`}
               >
                 <div className="text-xs font-bold uppercase tracking-wide">{category.title}</div>
                 <div className="text-sm font-medium">{category.words.join(", ")}</div>
@@ -144,39 +163,48 @@ export function ConnectionsPage() {
       }
     >
       <div className="flex flex-col gap-2">
-        {view.solved.map((group) => (
-          <div key={group.categoryIndex} className={`rounded-xl px-4 py-2.5 text-center ${DIFFICULTY_STYLES[group.difficulty]}`}>
+        {solvedToShow.map((group, i) => (
+          <div
+            key={group.categoryIndex}
+            style={{ animationDelay: `${i * 90}ms` }}
+            className={`animate-pop-in rounded-xl px-4 py-2.5 text-center ${DIFFICULTY_STYLES[group.difficulty]}`}
+          >
             <div className="text-xs font-bold uppercase tracking-wide">{group.title}</div>
             <div className="text-sm font-medium">{group.words.join(", ")}</div>
           </div>
         ))}
 
         <div className={`grid grid-cols-4 gap-2 ${shake ? "animate-shake" : ""}`}>
-          {remainingWords.map((word) => (
-            <GameTile
-              key={word}
-              state={selected.includes(word) ? "selected" : "default"}
-              size="sm"
-              onClick={() => toggleWord(word)}
-              className="aspect-square h-auto w-full p-1 text-center text-[11px] leading-tight sm:text-sm"
-            >
-              {word}
-            </GameTile>
-          ))}
+          {remainingWords.map((word) => {
+            const isPending = pendingSolve?.words.includes(word);
+            const isWrong = shake && selected.includes(word);
+            const state = isPending ? "correct" : isWrong ? "wrong" : selected.includes(word) ? "selected" : "default";
+            return (
+              <GameTile
+                key={word}
+                state={state}
+                size="sm"
+                onClick={() => toggleWord(word)}
+                className="aspect-square h-auto w-full p-1 text-center text-[11px] leading-tight sm:text-sm"
+              >
+                {word}
+              </GameTile>
+            );
+          })}
         </div>
       </div>
 
       {error ? (
-        <p role="alert" className="mt-3 text-center text-sm font-medium text-rose-400">
+        <p role="alert" className="animate-pop-in mt-3 text-center text-sm font-medium text-rose-400">
           {error}
         </p>
       ) : null}
 
       <div className="mt-6 flex justify-center gap-3">
-        <Button variant="secondary" onClick={() => setSelected([])} disabled={selected.length === 0}>
+        <Button variant="secondary" onClick={() => setSelected([])} disabled={selected.length === 0 || busy}>
           Deselect all
         </Button>
-        <Button onClick={() => void submitGuess()} isLoading={submitMove.isPending} disabled={selected.length !== 4}>
+        <Button onClick={() => void submitGuess()} isLoading={submitMove.isPending} disabled={selected.length !== 4 || busy}>
           Submit
         </Button>
       </div>

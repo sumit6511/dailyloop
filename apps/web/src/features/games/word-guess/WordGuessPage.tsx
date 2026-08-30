@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGameToday, useAutoStartAttempt, useSubmitMove } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
@@ -44,6 +44,9 @@ const GRID_FEEDBACK_CLASSES: Record<LetterStatus, string> = {
 
 const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
 
+const FLIP_MS = 500;
+const STAGGER_MS = 220;
+
 export function WordGuessPage() {
   const { data: entry, isLoading } = useGameToday("word-guess");
   const submitMove = useSubmitMove("word-guess");
@@ -51,11 +54,54 @@ export function WordGuessPage() {
   const [shakeRow, setShakeRow] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
+  const [animatingRow, setAnimatingRow] = useState<number | null>(null);
+  const [revealedCols, setRevealedCols] = useState(0);
+  const [settledCount, setSettledCount] = useState(0);
+  const [celebrateRow, setCelebrateRow] = useState<number | null>(null);
+  const prevGuessCountRef = useRef<number | null>(null);
 
   useAutoStartAttempt("word-guess", entry?.status);
 
   const view = (entry?.content ?? null) as WordGuessView | null;
   const complete = view?.complete ?? false;
+
+  useEffect(() => {
+    const count = view?.guesses.length;
+    if (count === undefined) return;
+    if (prevGuessCountRef.current === null) {
+      prevGuessCountRef.current = count;
+      setSettledCount(count);
+      return;
+    }
+    if (count <= prevGuessCountRef.current) {
+      prevGuessCountRef.current = count;
+      return;
+    }
+    const newRowIndex = count - 1;
+    const wonThisRow = view!.guesses[newRowIndex]!.feedback.every((f) => f.status === "correct");
+    prevGuessCountRef.current = count;
+    setAnimatingRow(newRowIndex);
+    setRevealedCols(0);
+    const timers = Array.from({ length: WORD_LENGTH }, (_, col) =>
+      setTimeout(() => setRevealedCols((c) => Math.max(c, col + 1)), col * STAGGER_MS + FLIP_MS / 2),
+    );
+    const finishTimer = setTimeout(
+      () => {
+        setAnimatingRow(null);
+        setSettledCount(count);
+        if (wonThisRow) {
+          setCelebrateRow(newRowIndex);
+          setTimeout(() => setCelebrateRow(null), 700);
+        }
+      },
+      (WORD_LENGTH - 1) * STAGGER_MS + FLIP_MS,
+    );
+    return () => {
+      timers.forEach(clearTimeout);
+      clearTimeout(finishTimer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view?.guesses.length]);
 
   const submitGuess = useCallback(async () => {
     if (!view || current.length !== WORD_LENGTH || complete || submitMove.isPending) return;
@@ -117,7 +163,7 @@ export function WordGuessPage() {
   }
 
   const letterStatus = new Map<string, LetterStatus>();
-  for (const guess of view.guesses) {
+  for (const guess of view.guesses.slice(0, settledCount)) {
     for (const fb of guess.feedback) {
       const existing = letterStatus.get(fb.letter);
       if (!existing || STATUS_RANK[fb.status] > STATUS_RANK[existing]) letterStatus.set(fb.letter, fb.status);
@@ -130,7 +176,10 @@ export function WordGuessPage() {
     return null;
   });
 
-  if (complete) {
+  // Don't cut straight to the result screen while the final row is still flipping or bouncing.
+  const showResult = complete && animatingRow === null && celebrateRow === null;
+
+  if (showResult) {
     return (
       <GameShell icon="🟨" title="Word Guess">
         <ResultScreen
@@ -170,11 +219,23 @@ export function WordGuessPage() {
             {Array.from({ length: WORD_LENGTH }, (_, colIndex) => {
               const letter = row?.word[colIndex] ?? "";
               const feedback = row?.feedback?.[colIndex];
+              const isAnimating = rowIndex === animatingRow;
+              const isRevealed = !isAnimating || colIndex < revealedCols;
+              const isCelebrating = rowIndex === celebrateRow;
               return (
                 <div
                   key={colIndex}
+                  style={
+                    isAnimating
+                      ? { animationDelay: `${colIndex * STAGGER_MS}ms` }
+                      : isCelebrating
+                        ? { animationDelay: `${colIndex * 70}ms` }
+                        : undefined
+                  }
                   className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 text-xl font-bold uppercase sm:h-14 sm:w-14 ${
-                    feedback
+                    isAnimating ? "animate-flip" : isCelebrating ? "animate-tile-bounce" : ""
+                  } ${
+                    feedback && isRevealed
                       ? GRID_FEEDBACK_CLASSES[feedback.status]
                       : letter
                         ? "border-white/40 text-white"

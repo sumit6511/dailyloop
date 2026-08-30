@@ -22,12 +22,17 @@ interface GuessItView {
   answer?: string;
 }
 
+const CELEBRATE_MS = 600;
+const SHAKE_MS = 400;
+
 export function GuessItPage() {
   const { data: entry, isLoading } = useGameToday("guess-it");
   const submitMove = useSubmitMove("guess-it");
   const [guess, setGuess] = useState("");
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
+  const [celebrating, setCelebrating] = useState(false);
 
   useAutoStartAttempt("guess-it", entry?.status);
 
@@ -61,7 +66,7 @@ export function GuessItPage() {
   }
 
   const submitGuess = async () => {
-    if (!guess.trim() || view.complete || submitMove.isPending) return;
+    if (!guess.trim() || view.complete || submitMove.isPending || shake) return;
     setError(null);
     try {
       const response = await submitMove.mutateAsync({ guess: guess.trim() });
@@ -69,12 +74,22 @@ export function GuessItPage() {
       if (response.newlyUnlockedAchievements?.length) {
         setNewAchievements(response.newlyUnlockedAchievements);
       }
+      const newView = response.content as GuessItView;
+      if (newView.won) {
+        setCelebrating(true);
+        setTimeout(() => setCelebrating(false), CELEBRATE_MS);
+      } else if (!newView.complete) {
+        setShake(true);
+        setTimeout(() => setShake(false), SHAKE_MS);
+      }
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
     }
   };
 
-  if (view.complete) {
+  const showResult = view.complete && !celebrating;
+
+  if (showResult) {
     return (
       <GameShell icon="🎯" title="Guess It">
         <ResultScreen
@@ -98,7 +113,15 @@ export function GuessItPage() {
     <GameShell icon="🎯" title="Guess It" subtitle={view.category}>
       <div className="flex flex-col gap-3">
         {view.clues.map((clue, i) => (
-          <div key={i} className="glass-subtle px-4 py-3">
+          <div
+            key={i}
+            style={{ animationDelay: `${i * 80}ms` }}
+            className={`animate-pop-in px-4 py-3 transition-colors ${
+              celebrating && i === view.clues.length - 1
+                ? "border border-emerald-400/40 bg-emerald-500/15"
+                : "glass-subtle"
+            }`}
+          >
             <div className="text-xs font-bold uppercase tracking-wide text-brand-300">Clue {i + 1}</div>
             <p className="mt-1 text-sm text-white/80">{clue}</p>
           </div>
@@ -108,7 +131,14 @@ export function GuessItPage() {
       {view.guesses.length > 0 ? (
         <div className="mt-4 flex flex-wrap gap-2">
           {view.guesses.map((g, i) => (
-            <span key={i} className="rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1 text-xs font-medium text-rose-300 line-through">
+            <span
+              key={i}
+              className={`animate-pop-in rounded-full border px-3 py-1 text-xs font-medium ${
+                g.correct
+                  ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
+                  : "border-rose-400/30 bg-rose-500/10 text-rose-300 line-through"
+              }`}
+            >
               {g.guess}
             </span>
           ))}
@@ -116,7 +146,7 @@ export function GuessItPage() {
       ) : null}
 
       {error ? (
-        <p role="alert" className="mt-3 text-center text-sm font-medium text-rose-400">
+        <p role="alert" className="animate-pop-in mt-3 text-center text-sm font-medium text-rose-400">
           {error}
         </p>
       ) : null}
@@ -126,7 +156,7 @@ export function GuessItPage() {
           e.preventDefault();
           void submitGuess();
         }}
-        className="mt-6 flex items-end gap-2"
+        className={`mt-6 flex items-end gap-2 ${shake ? "animate-shake" : ""}`}
       >
         <div className="flex-1">
           <TextField
@@ -134,9 +164,10 @@ export function GuessItPage() {
             placeholder="Type your answer..."
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
+            disabled={shake || celebrating}
           />
         </div>
-        <Button type="submit" isLoading={submitMove.isPending} disabled={!guess.trim()}>
+        <Button type="submit" isLoading={submitMove.isPending} disabled={!guess.trim() || shake || celebrating}>
           Guess
         </Button>
       </form>

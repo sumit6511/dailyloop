@@ -25,6 +25,8 @@ interface NumberPuzzleView {
 
 const OPS = ["+", "-", "*", "/"] as const;
 const OP_SYMBOLS: Record<string, string> = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+const MERGE_MS = 380;
+const CELEBRATE_MS = 700;
 
 export function NumberPuzzlePage() {
   const { data: entry, isLoading } = useGameToday("number-puzzle");
@@ -33,6 +35,9 @@ export function NumberPuzzlePage() {
   const [op, setOp] = useState<(typeof OPS)[number] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
+  const [combiningIndices, setCombiningIndices] = useState<number[] | null>(null);
+  const [frozenPool, setFrozenPool] = useState<number[] | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
 
   useAutoStartAttempt("number-puzzle", entry?.status);
 
@@ -71,7 +76,7 @@ export function NumberPuzzlePage() {
   };
 
   const selectNumber = async (index: number) => {
-    if (view.complete) return;
+    if (view.complete || combiningIndices) return;
     if (firstIndex === null) {
       setFirstIndex(index);
       return;
@@ -86,6 +91,10 @@ export function NumberPuzzlePage() {
     const b = view.pool[index]!;
     const poolSizeBefore = view.pool.length;
     setError(null);
+    setCombiningIndices([firstIndex, index]);
+    setFrozenPool(view.pool);
+    resetSelection();
+    const startedAt = Date.now();
     try {
       const response = await submitMove.mutateAsync({ type: "combine", a, b, op });
       const newView = response.content as NumberPuzzleView;
@@ -98,7 +107,11 @@ export function NumberPuzzlePage() {
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
     }
-    resetSelection();
+    const remaining = Math.max(0, MERGE_MS - (Date.now() - startedAt));
+    setTimeout(() => {
+      setCombiningIndices(null);
+      setFrozenPool(null);
+    }, remaining);
   };
 
   const submitFinal = async () => {
@@ -108,12 +121,18 @@ export function NumberPuzzlePage() {
       if (response.newlyUnlockedAchievements?.length) {
         setNewAchievements(response.newlyUnlockedAchievements);
       }
+      if ((response.content as NumberPuzzleView).won) {
+        setCelebrating(true);
+        setTimeout(() => setCelebrating(false), CELEBRATE_MS);
+      }
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
     }
   };
 
-  if (view.complete) {
+  const showResult = view.complete && !celebrating;
+
+  if (showResult) {
     return (
       <GameShell icon="🔢" title="Number Puzzle">
         <ResultScreen
@@ -137,15 +156,26 @@ export function NumberPuzzlePage() {
     <GameShell icon="🔢" title="Number Puzzle" subtitle={`Reach ${view.target} using the numbers below.`}>
       <div className="mb-6 text-center">
         <div className="text-xs font-medium uppercase tracking-wide text-white/50">Target</div>
-        <div className="text-4xl font-bold text-brand-300">{view.target}</div>
+        <div className="relative inline-flex items-center justify-center">
+          {celebrating ? (
+            <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-emerald-500/50 blur-xl" aria-hidden="true" />
+          ) : null}
+          <div className={`text-4xl font-bold transition-colors ${celebrating ? "text-emerald-300" : "text-brand-300"}`}>
+            {view.target}
+          </div>
+        </div>
       </div>
 
       <div className="mb-4 flex flex-wrap justify-center gap-2">
-        {view.pool.map((num, i) => (
-          <GameTile key={i} state={firstIndex === i ? "selected" : "default"} size="lg" onClick={() => void selectNumber(i)}>
-            {num}
-          </GameTile>
-        ))}
+        {(frozenPool ?? view.pool).map((num, i) => {
+          const isCombining = combiningIndices?.includes(i);
+          const state = isCombining ? "correct" : firstIndex === i ? "selected" : "default";
+          return (
+            <GameTile key={i} state={state} size="lg" onClick={() => void selectNumber(i)} disabled={!!combiningIndices}>
+              {num}
+            </GameTile>
+          );
+        })}
       </div>
 
       <div className="mb-6 flex justify-center gap-2">
@@ -165,7 +195,7 @@ export function NumberPuzzlePage() {
       {view.steps.length > 0 ? (
         <div className="mb-6 flex flex-col gap-1 text-center text-sm text-white/50">
           {view.steps.map((step, i) => (
-            <div key={i}>
+            <div key={i} className="animate-pop-in">
               {step.a} {OP_SYMBOLS[step.op]} {step.b} = <span className="font-semibold text-white/80">{step.result}</span>
             </div>
           ))}

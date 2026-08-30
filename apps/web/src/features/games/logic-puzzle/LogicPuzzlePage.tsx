@@ -13,12 +13,23 @@ interface LogicPuzzleView {
   won?: boolean;
 }
 
+const BOX_ROWS = 2;
+const BOX_COLS = 3;
+const GRID_SIZE = 6;
+const CELEBRATE_MS = 900;
+
+function boxOf(row: number, col: number): number {
+  return Math.floor(row / BOX_ROWS) * (GRID_SIZE / BOX_COLS) + Math.floor(col / BOX_COLS);
+}
+
 export function LogicPuzzlePage() {
   const { data: entry, isLoading } = useGameToday("logic-puzzle");
   const submitMove = useSubmitMove("logic-puzzle");
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [justFilled, setJustFilled] = useState<{ row: number; col: number } | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
 
@@ -56,17 +67,28 @@ export function LogicPuzzlePage() {
   const fillCell = async (value: number) => {
     if (!selected || view.complete || isGiven(selected.row, selected.col)) return;
     setError(null);
+    const cell = selected;
+    if (value !== 0) {
+      setJustFilled(cell);
+      setTimeout(() => setJustFilled((prev) => (prev === cell ? null : prev)), 300);
+    }
     try {
-      const response = await submitMove.mutateAsync({ row: selected.row, col: selected.col, value });
+      const response = await submitMove.mutateAsync({ row: cell.row, col: cell.col, value });
       if (response.newlyUnlockedAchievements?.length) {
         setNewAchievements(response.newlyUnlockedAchievements);
+      }
+      if ((response.content as LogicPuzzleView).won) {
+        setCelebrating(true);
+        setTimeout(() => setCelebrating(false), CELEBRATE_MS);
       }
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
     }
   };
 
-  if (view.complete) {
+  const showResult = view.complete && !celebrating;
+
+  if (showResult) {
     return (
       <GameShell icon="🧠" title="Logic Puzzle">
         <ResultScreen
@@ -87,6 +109,11 @@ export function LogicPuzzlePage() {
           row.map((value, c) => {
             const given = isGiven(r, c);
             const isSelected = selected?.row === r && selected?.col === c;
+            const isPeer =
+              !isSelected &&
+              !!selected &&
+              (r === selected.row || c === selected.col || boxOf(r, c) === boxOf(selected.row, selected.col));
+            const isJustFilled = justFilled?.row === r && justFilled?.col === c;
             const rightBorder = c === 2 ? "border-r-2 border-r-white/[0.16]" : "";
             const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/[0.16]" : "";
             return (
@@ -95,12 +122,17 @@ export function LogicPuzzlePage() {
                 type="button"
                 disabled={given}
                 onClick={() => setSelected({ row: r, col: c })}
+                style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
                 className={`flex h-11 w-11 items-center justify-center text-lg font-bold transition-colors sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
+                  isJustFilled ? "animate-pop-in" : ""
+                } ${celebrating ? "animate-tile-bounce" : ""} ${
                   given
                     ? "bg-white/[0.03] text-white/50"
                     : isSelected
                       ? "bg-brand-600 text-white"
-                      : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
+                      : isPeer
+                        ? "bg-brand-500/[0.12] text-white"
+                        : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
                 }`}
               >
                 {value !== 0 ? value : ""}
