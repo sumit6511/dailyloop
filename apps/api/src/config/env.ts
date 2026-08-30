@@ -17,4 +17,14 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
-export const corsOrigins = env.CORS_ORIGIN.split(",").map((origin) => origin.trim());
+
+// Hosting platforms that wire one service's URL into another's env vars (e.g. Render's
+// `fromService: { property: host }`) typically hand over a bare hostname, not a full origin —
+// default it to https so CORS_ORIGIN/WEB_APP_URL work whether given as `example.com` or
+// `https://example.com`.
+function withScheme(url: string): string {
+  return /^https?:\/\//.test(url) ? url : `https://${url}`;
+}
+
+export const corsOrigins = env.CORS_ORIGIN.split(",").map((origin) => withScheme(origin.trim()));
+export const webAppUrl = withScheme(env.WEB_APP_URL);

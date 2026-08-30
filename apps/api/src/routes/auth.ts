@@ -12,13 +12,18 @@ import { prisma } from "../lib/prisma.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 import { createSession, destroySessionByToken } from "../lib/session.js";
 import { Errors } from "../lib/errors.js";
-import { env } from "../config/env.js";
+import { env, webAppUrl } from "../config/env.js";
 import { toMeDTO } from "../lib/dto.js";
 
+const isProduction = env.NODE_ENV === "production";
 const sessionCookieOptions = {
   httpOnly: true,
-  sameSite: "lax" as const,
-  secure: env.NODE_ENV === "production",
+  // The web app and API are deployed as separate hosts (different subdomains), which browsers
+  // treat as cross-site — a `Lax` cookie would never be sent back on API fetches from the web
+  // app. `None` (requires `Secure`, i.e. HTTPS) is the correct policy for this split-service
+  // topology. Locally both run on `localhost` (same-site regardless of port), so `Lax` still works.
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
+  secure: isProduction,
   path: "/",
 };
 
@@ -113,7 +118,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         await prisma.passwordResetToken.create({
           data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
         });
-        const resetLink = `${env.WEB_APP_URL}/reset-password?token=${token}`;
+        const resetLink = `${webAppUrl}/reset-password?token=${token}`;
         // No email provider is wired up yet — logging is the dev-mode "transport".
         // Swap this for a real EmailSender implementation before shipping to prod.
         request.log.info({ email: user.email, resetLink }, "Password reset requested");

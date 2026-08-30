@@ -4,6 +4,31 @@ DailyLoop has no `localhost` URLs hard-coded anywhere — every environment-spec
 from env vars (see [.env.example](../.env.example)), so none of the steps below need source
 changes.
 
+## Quick deploy (Render Blueprint)
+
+The repo includes [`render.yaml`](../render.yaml), a Render Blueprint that provisions all three
+pieces — the API, the static web app, and a free Postgres database — in one pass, with
+`APP_SECRET` auto-generated and the API/web URLs wired to each other automatically.
+
+1. Push this repo to GitHub (already done if you're reading this from the deployed copy).
+2. On [Render](https://dashboard.render.com), click **New +** → **Blueprint**, and connect this
+   repo. Render reads `render.yaml` and shows the three resources it's about to create.
+3. Click **Apply**. First deploy takes a few minutes (it also runs `prisma migrate deploy`
+   automatically as part of the API's start command).
+4. Once both services show "Live", open the API service's **Shell** tab and run:
+   ```bash
+   npm run db:seed
+   ```
+   This creates the 5 games, the achievement catalog, and 30 days of daily puzzles — without it
+   the site loads but shows no games. It also creates a dev admin account and demo users; trim
+   `DEV_ADMIN`/`DEMO_USERS` in `prisma/seed.ts` first if you don't want those in a shared deploy.
+5. Open the web service's URL (shown on its Render dashboard page) and register an account.
+
+Render's free tier spins down a web service after 15 minutes idle — the next request wakes it in
+20–30s. Fine for casually playing with friends; upgrade to a paid instance type if that cold start
+bothers you. Free Postgres databases on Render also expire after 30 days — re-run `db:seed` (or
+just don't let it sit unused that long) if you want this to stay up long-term.
+
 ## Architecture
 
 - **`apps/web`** — a static Vite build. Deploy it to any static host (Vercel, Netlify, Cloudflare
