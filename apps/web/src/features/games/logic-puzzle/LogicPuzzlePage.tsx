@@ -15,6 +15,7 @@ interface LogicPuzzleView {
   grid: number[][];
   complete: boolean;
   won?: boolean;
+  mistakes?: number;
 }
 
 interface CheckResult {
@@ -152,7 +153,7 @@ export function LogicPuzzlePage() {
           gameName="Logic Puzzle"
           won={!!view.won}
           score={entry.score ?? 0}
-          stats={[]}
+          stats={[{ label: "Mistakes", value: String(view.mistakes ?? 0) }]}
           newAchievementKeys={newAchievements}
         />
       </GameShell>

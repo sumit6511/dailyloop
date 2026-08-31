@@ -101,7 +101,7 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
       puzzle: content.puzzle,
       grid: result.grid,
       complete,
-      ...(complete ? { solution: content.solution } : {}),
+      ...(complete ? { solution: content.solution, mistakes: result.mistakes, won: result.won } : {}),
     };
   },
 
