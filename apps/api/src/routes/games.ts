@@ -5,7 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
 import { getTodayLineup, getTodayEntryForSlug } from "../services/games-today.js";
-import { startAttempt, submitMove } from "../services/attempts.js";
+import { startAttempt, submitMove, checkAttempt } from "../services/attempts.js";
 
 const submitBodySchema = z.object({ move: z.unknown() });
 
@@ -62,6 +62,21 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
         throw Errors.badRequest("No puzzle is available for this game today");
       }
       return reply.send({ data: { status: result.status, content: result.content } });
+    },
+  );
+
+  app.post<{ Params: { slug: string } }>(
+    "/:slug/attempts/check",
+    { preHandler: app.requireAuth },
+    async (request, reply) => {
+      const result = await checkAttempt(request.currentUser!.id, request.params.slug);
+      if (result.kind === "no_module_or_game") throw Errors.notFound("Game not found");
+      if (result.kind === "not_supported") throw Errors.badRequest("This game doesn't support checking progress");
+      if (result.kind === "not_available") {
+        throw Errors.badRequest("No puzzle is available for this game today");
+      }
+      if (result.kind === "not_started") throw Errors.badRequest("Start the game before checking your progress");
+      return reply.send({ data: result.result });
     },
   );
 

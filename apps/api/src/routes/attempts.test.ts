@@ -20,6 +20,21 @@ const CONNECTIONS_CONTENT = {
 
 const WORD_GUESS_CONTENT = { answer: "CRANE" };
 
+const LOGIC_PUZZLE_SOLUTION = [
+  [1, 2, 3, 4, 5, 6],
+  [4, 5, 6, 1, 2, 3],
+  [2, 3, 1, 5, 6, 4],
+  [5, 6, 4, 2, 3, 1],
+  [3, 1, 2, 6, 4, 5],
+  [6, 4, 5, 3, 1, 2],
+];
+const LOGIC_PUZZLE_CONTENT = {
+  solution: LOGIC_PUZZLE_SOLUTION,
+  puzzle: LOGIC_PUZZLE_SOLUTION.map((row, r) =>
+    row.map((v, c) => ((r === 0 && c === 0) || (r === 5 && c === 5) ? 0 : v)),
+  ),
+};
+
 describe("attempt lifecycle", () => {
   let app: FastifyInstance;
 
@@ -111,6 +126,49 @@ describe("attempt lifecycle", () => {
       cookies,
       payload: { move: { words: CONNECTIONS_CONTENT.categories[0]!.words } },
     });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("checks Logic Puzzle progress, flagging wrong cells without revealing the solution", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
+
+    await app.inject({
+      method: "POST",
+      url: "/api/games/logic-puzzle/attempts/submit",
+      cookies,
+      payload: { move: { row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0] } }, // correct
+    });
+    await app.inject({
+      method: "POST",
+      url: "/api/games/logic-puzzle/attempts/submit",
+      cookies,
+      payload: { move: { row: 5, col: 5, value: ((LOGIC_PUZZLE_SOLUTION[5]![5]! % 6) + 1) } }, // wrong
+    });
+
+    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/check", cookies });
+    expect(res.statusCode).toBe(200);
+    const body = res.json().data;
+    expect(JSON.stringify(body)).not.toContain(String(LOGIC_PUZZLE_SOLUTION[5]![5]));
+    expect(body.cells.find((c: { row: number; col: number }) => c.row === 0 && c.col === 0)?.correct).toBe(true);
+    expect(body.cells.find((c: { row: number; col: number }) => c.row === 5 && c.col === 5)?.correct).toBe(false);
+  });
+
+  it("rejects checking progress for a game that doesn't support it", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
+
+    const res = await app.inject({ method: "POST", url: "/api/games/connections/attempts/check", cookies });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("rejects checking progress before starting the attempt", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
+
+    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/check", cookies });
     expect(res.statusCode).toBe(400);
   });
 

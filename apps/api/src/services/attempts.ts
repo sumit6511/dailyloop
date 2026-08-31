@@ -33,6 +33,32 @@ export async function startAttempt(userId: string, gameSlug: string): Promise<St
   return { kind: "ok", content, status: attempt.status };
 }
 
+export type CheckAttemptResult =
+  | { kind: "no_module_or_game" }
+  | { kind: "not_available" }
+  | { kind: "not_started" }
+  | { kind: "not_supported" }
+  | { kind: "ok"; result: unknown };
+
+/** Read-only — asks a game "is what's filled in so far correct?" without recording a move. */
+export async function checkAttempt(userId: string, gameSlug: string): Promise<CheckAttemptResult> {
+  const module = getGameModule(gameSlug);
+  const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
+  if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
+  if (!module.checkProgress) return { kind: "not_supported" };
+
+  const puzzle = await findTodaysPuzzle(game.id);
+  if (!puzzle) return { kind: "not_available" };
+
+  const attempt = await prisma.gameAttempt.findUnique({
+    where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
+  });
+  if (!attempt) return { kind: "not_started" };
+
+  const moves = movesOf(attempt.attemptLog);
+  return { kind: "ok", result: module.checkProgress(puzzle.content, moves) };
+}
+
 export type SubmitMoveResult =
   | { kind: "no_module_or_game" }
   | { kind: "not_available" }

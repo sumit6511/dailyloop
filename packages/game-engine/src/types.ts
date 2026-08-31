@@ -63,6 +63,13 @@ export interface DailyGameModule<TContent = unknown, TMove = unknown, TResult = 
    * user hasn't started yet, which should reveal the least.
    */
   sanitizeForClient(content: TContent, attempt: AttemptState<TMove> | null): unknown;
+  /**
+   * Optional: lets a client ask "is what I've filled in so far correct?" without revealing the
+   * solution — e.g. Logic Puzzle flags which filled cells are wrong. Games that don't support
+   * this (most of them; a wrong guess is already immediate feedback for e.g. Connections/Word
+   * Guess) simply omit it, and the route responds with a 400.
+   */
+  checkProgress?(content: TContent, moves: TMove[]): unknown;
 }
 
 // The registry/API layer manages many different games generically and can't know each

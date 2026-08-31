@@ -62,3 +62,10 @@ export function useSubmitMove(slug: string) {
     },
   });
 }
+
+/** Not every game supports this — the API responds 400 for ones that don't (see checkProgress). */
+export function useCheckProgress<T>(slug: string) {
+  return useMutation({
+    mutationFn: () => api.post<T>(`/games/${slug}/attempts/check`),
+  });
+}

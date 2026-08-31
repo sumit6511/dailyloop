@@ -24,6 +24,12 @@ export interface LogicPuzzleResult {
   won: boolean;
 }
 
+export interface LogicPuzzleCheckCell {
+  row: number;
+  col: number;
+  correct: boolean;
+}
+
 const MAX_REMOVALS = 16;
 
 function replay(content: LogicPuzzleContent, moves: LogicPuzzleMove[]): ValidationResult<LogicPuzzleResult> {
@@ -97,5 +103,18 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
       complete,
       ...(complete ? { solution: content.solution } : {}),
     };
+  },
+
+  checkProgress(content, moves) {
+    const { result } = replay(content, moves);
+    const cells: LogicPuzzleCheckCell[] = [];
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        const value = result.grid[r]![c]!;
+        if (value === 0 || content.puzzle[r]![c] !== 0) continue; // empty or a given clue
+        cells.push({ row: r, col: c, correct: value === content.solution[r]![c] });
+      }
+    }
+    return { cells };
   },
 };

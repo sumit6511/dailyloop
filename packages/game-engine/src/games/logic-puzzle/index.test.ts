@@ -63,6 +63,37 @@ describe("logic-puzzle: validateAttempt", () => {
   });
 });
 
+describe("logic-puzzle: checkProgress", () => {
+  const solution = [
+    [1, 2, 3, 4, 5, 6],
+    [4, 5, 6, 1, 2, 3],
+    [2, 3, 1, 5, 6, 4],
+    [5, 6, 4, 2, 3, 1],
+    [3, 1, 2, 6, 4, 5],
+    [6, 4, 5, 3, 1, 2],
+  ];
+  const puzzle = solution.map((row, r) => row.map((v, c) => ((r === 0 && c === 0) || (r === 5 && c === 5) ? 0 : v)));
+  const content: LogicPuzzleContent = { solution, puzzle };
+
+  it("flags only filled, non-given cells, correctly split between right and wrong", () => {
+    const moves: LogicPuzzleMove[] = [
+      { row: 0, col: 0, value: solution[0]![0]! }, // correct
+      { row: 5, col: 5, value: ((solution[5]![5]! % 6) + 1) as number }, // guaranteed wrong
+    ];
+    const check = logicPuzzleGame.checkProgress!(content, moves) as {
+      cells: { row: number; col: number; correct: boolean }[];
+    };
+    expect(check.cells).toHaveLength(2);
+    expect(check.cells.find((c) => c.row === 0 && c.col === 0)?.correct).toBe(true);
+    expect(check.cells.find((c) => c.row === 5 && c.col === 5)?.correct).toBe(false);
+  });
+
+  it("omits blank cells and given clues", () => {
+    const check = logicPuzzleGame.checkProgress!(content, []) as { cells: unknown[] };
+    expect(check.cells).toHaveLength(0);
+  });
+});
+
 describe("logic-puzzle: calculateScore", () => {
   const solution = [
     [1, 2, 3, 4, 5, 6],

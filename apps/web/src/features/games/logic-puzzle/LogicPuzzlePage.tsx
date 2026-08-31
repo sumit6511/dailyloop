@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { useGameToday, useAutoStartAttempt, useSubmitMove } from "../../../lib/games-api";
+import { useGameToday, useAutoStartAttempt, useSubmitMove, useCheckProgress } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Spinner } from "../../../components/Spinner";
 import { GameTile } from "../../../components/GameTile";
+import { Button } from "../../../components/Button";
 import { ApiClientError } from "../../../lib/api-client";
+import { useToast } from "../../../lib/toast-context";
 
 interface LogicPuzzleView {
   puzzle: number[][];
   grid: number[][];
   complete: boolean;
   won?: boolean;
+}
+
+interface CheckResult {
+  cells: { row: number; col: number; correct: boolean }[];
 }
 
 const BOX_ROWS = 2;
@@ -25,11 +31,14 @@ function boxOf(row: number, col: number): number {
 export function LogicPuzzlePage() {
   const { data: entry, isLoading } = useGameToday("logic-puzzle");
   const submitMove = useSubmitMove("logic-puzzle");
+  const checkProgress = useCheckProgress<CheckResult>("logic-puzzle");
+  const { showToast } = useToast();
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [justFilled, setJustFilled] = useState<{ row: number; col: number } | null>(null);
   const [celebrating, setCelebrating] = useState(false);
+  const [wrongCells, setWrongCells] = useState<{ row: number; col: number }[]>([]);
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
 
@@ -67,6 +76,7 @@ export function LogicPuzzlePage() {
   const fillCell = async (value: number) => {
     if (!selected || view.complete || isGiven(selected.row, selected.col)) return;
     setError(null);
+    setWrongCells([]); // the grid is about to change — any earlier check result is now stale
     const cell = selected;
     if (value !== 0) {
       setJustFilled(cell);
@@ -83,6 +93,22 @@ export function LogicPuzzlePage() {
       }
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
+    }
+  };
+
+  const checkAnswers = async () => {
+    setError(null);
+    try {
+      const result = await checkProgress.mutateAsync();
+      const wrong = result.cells.filter((c) => !c.correct);
+      setWrongCells(wrong);
+      if (wrong.length === 0) {
+        showToast("Everything filled in so far looks right!", "success");
+      } else {
+        showToast(`${wrong.length} cell${wrong.length === 1 ? "" : "s"} need${wrong.length === 1 ? "s" : ""} a second look`, "error");
+      }
+    } catch (err) {
+      showToast(err instanceof ApiClientError ? err.message : "Couldn't check your progress", "error");
     }
   };
 
@@ -114,6 +140,7 @@ export function LogicPuzzlePage() {
               !!selected &&
               (r === selected.row || c === selected.col || boxOf(r, c) === boxOf(selected.row, selected.col));
             const isJustFilled = justFilled?.row === r && justFilled?.col === c;
+            const isWrong = wrongCells.some((w) => w.row === r && w.col === c);
             const rightBorder = c === 2 ? "border-r-2 border-r-white/[0.16]" : "";
             const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/[0.16]" : "";
             return (
@@ -128,11 +155,13 @@ export function LogicPuzzlePage() {
                 } ${celebrating ? "animate-tile-bounce" : ""} ${
                   given
                     ? "bg-white/[0.03] text-white/50"
-                    : isSelected
-                      ? "bg-brand-600 text-white"
-                      : isPeer
-                        ? "bg-brand-500/[0.12] text-white"
-                        : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
+                    : isWrong
+                      ? "bg-rose-500/20 text-rose-300 ring-2 ring-inset ring-rose-500/60"
+                      : isSelected
+                        ? "bg-brand-600 text-white"
+                        : isPeer
+                          ? "bg-brand-500/[0.12] text-white"
+                          : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
                 }`}
               >
                 {value !== 0 ? value : ""}
@@ -157,6 +186,12 @@ export function LogicPuzzlePage() {
         <GameTile size="sm" onClick={() => void fillCell(0)} disabled={!selected}>
           ⌫
         </GameTile>
+      </div>
+
+      <div className="mt-4 flex justify-center">
+        <Button variant="secondary" size="sm" isLoading={checkProgress.isPending} onClick={() => void checkAnswers()}>
+          Check my answers
+        </Button>
       </div>
     </GameShell>
   );
