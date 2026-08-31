@@ -6,6 +6,7 @@ import { Button } from "../../../components/Button";
 import { Spinner } from "../../../components/Spinner";
 import { GameTile } from "../../../components/GameTile";
 import { GameIcon } from "../../../components/GameIcon";
+import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
 
 interface SolvedGroup {
@@ -230,13 +231,13 @@ export function ConnectionsPage() {
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Button variant="secondary" onClick={() => setShuffledOrder(shuffle(displayWords))} disabled={busy}>
-          Shuffle
+          <Icon name="shuffle" className="text-lg" /> Shuffle
         </Button>
         <Button variant="secondary" onClick={() => setSelected([])} disabled={selected.length === 0 || busy}>
-          Deselect all
+          <Icon name="close" className="text-lg" /> Deselect all
         </Button>
         <Button onClick={() => void submitGuess()} isLoading={submitMove.isPending} disabled={selected.length !== 4 || busy}>
-          Submit
+          <Icon name="check" className="text-lg" /> Submit
         </Button>
       </div>
     </GameShell>

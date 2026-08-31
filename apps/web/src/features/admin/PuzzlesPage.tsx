@@ -13,6 +13,7 @@ import { Button } from "../../components/Button";
 import { Spinner } from "../../components/Spinner";
 import { Badge } from "../../components/Badge";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { Icon } from "../../components/Icon";
 import { ApiClientError } from "../../lib/api-client";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "neutral"> = {
@@ -84,10 +85,10 @@ function PuzzleEditor({ puzzle, onClose }: { puzzle: AdminPuzzleDTO; onClose: ()
       {error ? <p className="text-xs font-medium text-rose-400">{error}</p> : null}
       <div className="flex gap-2">
         <Button size="sm" isLoading={updatePuzzle.isPending} onClick={() => void save()}>
-          Save content
+          <Icon name="save" className="text-base" /> Save content
         </Button>
         <Button size="sm" variant="secondary" onClick={onClose}>
-          Cancel
+          <Icon name="close" className="text-base" /> Cancel
         </Button>
       </div>
     </div>
@@ -191,7 +192,7 @@ export function PuzzlesPage() {
               className={INPUT_CLASSES}
             />
             <Button isLoading={generatePuzzle.isPending} onClick={() => void handleGenerate()}>
-              Generate
+              <Icon name="auto_awesome" className="text-lg" /> Generate
             </Button>
           </div>
           {generateError ? <p className="mt-2 text-xs font-medium text-rose-400">{generateError}</p> : null}
@@ -231,7 +232,7 @@ export function PuzzlesPage() {
             />
             {createError ? <p className="text-xs font-medium text-rose-400">{createError}</p> : null}
             <Button isLoading={createPuzzle.isPending} onClick={() => void handleCreate()} className="self-start">
-              Create Puzzle
+              <Icon name="add" className="text-lg" /> Create Puzzle
             </Button>
           </div>
         </Card>
@@ -284,7 +285,7 @@ export function PuzzlesPage() {
                         variant="secondary"
                         onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "PUBLISHED" } })}
                       >
-                        Publish
+                        <Icon name="publish" className="text-base" /> Publish
                       </Button>
                     ) : (
                       <Button
@@ -292,7 +293,7 @@ export function PuzzlesPage() {
                         variant="secondary"
                         onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "ARCHIVED" } })}
                       >
-                        Unpublish
+                        <Icon name="unpublished" className="text-base" /> Unpublish
                       </Button>
                     )}
                     <Button
@@ -300,10 +301,11 @@ export function PuzzlesPage() {
                       variant="secondary"
                       onClick={() => setEditingId(editingId === puzzle.id ? null : puzzle.id)}
                     >
+                      <Icon name={editingId === puzzle.id ? "close" : "edit"} className="text-base" />
                       {editingId === puzzle.id ? "Close" : "Edit"}
                     </Button>
                     <Button size="sm" variant="danger" onClick={() => setPendingDelete(puzzle)}>
-                      Delete
+                      <Icon name="delete" className="text-base" /> Delete
                     </Button>
                   </div>
                 </div>

@@ -241,10 +241,10 @@ export function NumberPuzzlePage() {
 
       <div className="flex justify-center gap-3">
         <Button variant="secondary" onClick={resetSelection} disabled={firstIndex === null && op === null}>
-          Clear selection
+          <Icon name="close" className="text-lg" /> Clear selection
         </Button>
         <Button onClick={() => void submitFinal()} isLoading={submitMove.isPending}>
-          Submit answer
+          <Icon name="check" className="text-lg" /> Submit answer
         </Button>
       </div>
     </GameShell>

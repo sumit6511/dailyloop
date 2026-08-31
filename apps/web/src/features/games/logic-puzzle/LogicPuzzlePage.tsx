@@ -252,7 +252,7 @@ export function LogicPuzzlePage() {
 
       <div className="mt-4 flex justify-center">
         <Button variant="secondary" size="sm" isLoading={checkProgress.isPending} onClick={() => void checkAnswers()}>
-          Check my answers
+          <Icon name="fact_check" className="text-lg" /> Check my answers
         </Button>
       </div>
     </GameShell>

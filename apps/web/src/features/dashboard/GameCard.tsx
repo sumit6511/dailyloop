@@ -46,11 +46,12 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
       <div className="mt-auto pt-1">
         {!game.available ? (
           <Button variant="secondary" size="sm" disabled className="w-full">
-            Not available today
+            <Icon name="block" className="text-base" /> Not available today
           </Button>
         ) : (
           <Link to={`/play/${game.slug}`}>
             <Button variant={isCompleted ? "secondary" : "primary"} size="sm" className="w-full">
+              <Icon name={isCompleted ? "visibility" : isInProgress ? "play_arrow" : "sports_esports"} className="text-base" />
               {isCompleted ? "View result" : isInProgress ? "Continue" : "Play"}
             </Button>
           </Link>

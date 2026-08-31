@@ -7,6 +7,7 @@ import { api, ApiClientError } from "../../lib/api-client";
 import { useInvalidateAuth } from "../../lib/use-auth";
 import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
+import { Icon } from "../../components/Icon";
 import { AuthLayout } from "./AuthLayout";
 
 export function RegisterPage() {
@@ -35,14 +36,29 @@ export function RegisterPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <TextField
           label="Display name"
+          icon="badge"
           autoComplete="name"
           error={errors.displayName?.message}
           {...register("displayName")}
         />
-        <TextField label="Username" autoComplete="username" error={errors.username?.message} {...register("username")} />
-        <TextField label="Email" type="email" autoComplete="email" error={errors.email?.message} {...register("email")} />
+        <TextField
+          label="Username"
+          icon="alternate_email"
+          autoComplete="username"
+          error={errors.username?.message}
+          {...register("username")}
+        />
+        <TextField
+          label="Email"
+          icon="mail"
+          type="email"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register("email")}
+        />
         <TextField
           label="Password"
+          icon="lock"
           type="password"
           autoComplete="new-password"
           error={errors.password?.message}
@@ -54,7 +70,7 @@ export function RegisterPage() {
           </p>
         ) : null}
         <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-          Create account
+          <Icon name="person_add" className="text-lg" /> Create account
         </Button>
       </form>
       <p className="mt-6 text-center text-sm text-white/50">

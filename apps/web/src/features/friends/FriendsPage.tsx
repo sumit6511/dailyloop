@@ -42,6 +42,7 @@ export function FriendsPage() {
       <Card>
         <TextField
           label="Find friends"
+          icon="search"
           placeholder="Search by username or name..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -97,10 +98,10 @@ export function FriendsPage() {
                         })
                       }
                     >
-                      Accept
+                      <Icon name="how_to_reg" className="text-base" /> Accept
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => rejectRequest.mutate(r.id, { onError })}>
-                      Reject
+                      <Icon name="close" className="text-base" /> Reject
                     </Button>
                   </div>
                 </div>
@@ -117,7 +118,7 @@ export function FriendsPage() {
                     <span className="truncate text-sm font-medium text-white/85 hover:text-white">{r.user.displayName}</span>
                   </Link>
                   <Button size="sm" variant="secondary" onClick={() => cancelRequest.mutate(r.id, { onError })}>
-                    Cancel
+                    <Icon name="close" className="text-base" /> Cancel
                   </Button>
                 </div>
               ))}
@@ -145,7 +146,7 @@ export function FriendsPage() {
                   variant="secondary"
                   onClick={() => setPendingRemoval({ id: friend.id, displayName: friend.displayName })}
                 >
-                  Remove
+                  <Icon name="person_remove" className="text-base" /> Remove
                 </Button>
               </div>
             ))}

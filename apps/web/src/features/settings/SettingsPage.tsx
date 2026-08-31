@@ -10,6 +10,7 @@ import { ApiClientError } from "../../lib/api-client";
 import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
+import { Icon } from "../../components/Icon";
 
 const changePasswordFormSchema = changePasswordSchema
   .extend({ confirmPassword: z.string().min(1) })
@@ -47,10 +48,16 @@ function ProfileSection() {
     <Card>
       <h2 className="mb-4 font-display text-lg font-bold text-white">Profile</h2>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-        <TextField label="Display name" error={errors.displayName?.message} {...register("displayName")} />
-        <TextField label="Bio" placeholder="Tell people a little about yourself" error={errors.bio?.message} {...register("bio")} />
+        <TextField label="Display name" icon="badge" error={errors.displayName?.message} {...register("displayName")} />
+        <TextField
+          label="Bio"
+          icon="notes"
+          placeholder="Tell people a little about yourself"
+          error={errors.bio?.message}
+          {...register("bio")}
+        />
         <Button type="submit" isLoading={isSubmitting} className="self-start">
-          Save changes
+          <Icon name="save" className="text-lg" /> Save changes
         </Button>
       </form>
     </Card>
@@ -85,6 +92,7 @@ function PasswordSection() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <TextField
           label="Current password"
+          icon="lock"
           type="password"
           autoComplete="current-password"
           error={errors.currentPassword?.message}
@@ -92,6 +100,7 @@ function PasswordSection() {
         />
         <TextField
           label="New password"
+          icon="lock_reset"
           type="password"
           autoComplete="new-password"
           error={errors.newPassword?.message}
@@ -99,13 +108,14 @@ function PasswordSection() {
         />
         <TextField
           label="Confirm new password"
+          icon="lock_reset"
           type="password"
           autoComplete="new-password"
           error={errors.confirmPassword?.message}
           {...register("confirmPassword")}
         />
         <Button type="submit" isLoading={isSubmitting} className="self-start">
-          Change password
+          <Icon name="lock_reset" className="text-lg" /> Change password
         </Button>
       </form>
     </Card>

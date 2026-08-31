@@ -34,20 +34,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navLinks = (
     <>
       <Link to="/friends" onClick={() => setMenuOpen(false)} className={navLinkClass}>
-        Friends
+        <Icon name="group" className="text-lg" /> Friends
         {requestBadge}
       </Link>
       {user ? (
         <Link to={`/u/${user.username}`} onClick={() => setMenuOpen(false)} className={navLinkClass}>
-          Profile
+          <Icon name="person" className="text-lg" /> Profile
         </Link>
       ) : null}
       <Link to="/settings" onClick={() => setMenuOpen(false)} className={navLinkClass}>
-        Settings
+        <Icon name="settings" className="text-lg" /> Settings
       </Link>
       {user?.role === "ADMIN" ? (
         <Link to="/admin" onClick={() => setMenuOpen(false)} className={navLinkClass}>
-          Admin
+          <Icon name="admin_panel_settings" className="text-lg" /> Admin
         </Link>
       ) : null}
     </>
@@ -67,7 +67,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <nav className="hidden items-center gap-5 sm:flex">
               {navLinks}
               <Button variant="ghost" size="sm" onClick={handleLogout}>
-                Log out
+                <Icon name="logout" className="text-base" /> Log out
               </Button>
             </nav>
 
@@ -88,9 +88,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="text-left text-sm font-medium text-white/65 hover:text-white"
+                className="flex items-center gap-1.5 text-left text-sm font-medium text-white/65 hover:text-white"
               >
-                Log out
+                <Icon name="logout" className="text-lg" /> Log out
               </button>
             </div>
           ) : null}

@@ -7,6 +7,7 @@ import { api, ApiClientError } from "../../lib/api-client";
 import { useInvalidateAuth } from "../../lib/use-auth";
 import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
+import { Icon } from "../../components/Icon";
 import { AuthLayout } from "./AuthLayout";
 
 export function LoginPage() {
@@ -37,12 +38,14 @@ export function LoginPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <TextField
           label="Email or username"
+          icon="person"
           autoComplete="username"
           error={errors.emailOrUsername?.message}
           {...register("emailOrUsername")}
         />
         <TextField
           label="Password"
+          icon="lock"
           type="password"
           autoComplete="current-password"
           error={errors.password?.message}
@@ -59,7 +62,7 @@ export function LoginPage() {
           </Link>
         </div>
         <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-          Log in
+          <Icon name="login" className="text-lg" /> Log in
         </Button>
       </form>
       <p className="mt-6 text-center text-sm text-white/50">

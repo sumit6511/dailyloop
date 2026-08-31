@@ -73,7 +73,7 @@ export function ProfilePage() {
           <div className="mt-4 flex justify-center">
             <Link to="/settings">
               <Button variant="secondary" size="sm">
-                Edit Profile
+                <Icon name="edit" className="text-base" /> Edit Profile
               </Button>
             </Link>
           </div>

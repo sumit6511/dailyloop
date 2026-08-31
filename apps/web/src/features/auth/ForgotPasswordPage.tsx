@@ -6,6 +6,7 @@ import { passwordResetRequestSchema, type PasswordResetRequestInput } from "@dai
 import { api } from "../../lib/api-client";
 import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
+import { Icon } from "../../components/Icon";
 import { AuthLayout } from "./AuthLayout";
 
 export function ForgotPasswordPage() {
@@ -31,13 +32,14 @@ export function ForgotPasswordPage() {
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
           <TextField
             label="Email"
+            icon="mail"
             type="email"
             autoComplete="email"
             error={errors.email?.message}
             {...register("email")}
           />
           <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-            Send reset link
+            <Icon name="send" className="text-lg" /> Send reset link
           </Button>
         </form>
       )}

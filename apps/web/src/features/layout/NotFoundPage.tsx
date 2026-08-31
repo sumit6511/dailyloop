@@ -11,7 +11,9 @@ export function NotFoundPage() {
         This piece doesn't fit the puzzle — the page you're looking for doesn't exist.
       </p>
       <Link to="/">
-        <Button>Back to Daily Games</Button>
+        <Button>
+          <Icon name="home" className="text-lg" /> Back to Daily Games
+        </Button>
       </Link>
     </div>
   );

@@ -71,7 +71,7 @@ export function RelationshipButton({ username, userId, relationship, displayName
         disabled={!outgoingRequest}
         onClick={() => outgoingRequest && cancelRequest.mutate(outgoingRequest.id, { onError })}
       >
-        Request sent
+        <Icon name="schedule_send" className="text-base" /> Request sent
       </Button>
     );
   }
@@ -91,7 +91,7 @@ export function RelationshipButton({ username, userId, relationship, displayName
           })
         }
       >
-        Accept request
+        <Icon name="how_to_reg" className="text-base" /> Accept request
       </Button>
     );
   }
@@ -107,7 +107,7 @@ export function RelationshipButton({ username, userId, relationship, displayName
         })
       }
     >
-      Add friend
+      <Icon name="person_add" className="text-base" /> Add friend
     </Button>
   );
 }

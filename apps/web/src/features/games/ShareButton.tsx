@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api-client";
 import { formatShareText, type ShareData } from "../../lib/share";
 import { Button } from "../../components/Button";
+import { Icon } from "../../components/Icon";
 
 export function ShareButton() {
   const [copied, setCopied] = useState(false);
@@ -32,7 +33,7 @@ export function ShareButton() {
 
   return (
     <Button variant="secondary" isLoading={isFetching} onClick={() => void handleShare()}>
-      {copied ? "Copied to clipboard!" : "Share Result"}
+      <Icon name={copied ? "check" : "share"} className="text-lg" /> {copied ? "Copied to clipboard!" : "Share Result"}
     </Button>
   );
 }

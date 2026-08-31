@@ -6,6 +6,7 @@ import { passwordResetConfirmSchema, type PasswordResetConfirmInput } from "@dai
 import { api, ApiClientError } from "../../lib/api-client";
 import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
+import { Icon } from "../../components/Icon";
 import { AuthLayout } from "./AuthLayout";
 
 export function ResetPasswordPage() {
@@ -53,6 +54,7 @@ export function ResetPasswordPage() {
           <input type="hidden" {...register("token")} />
           <TextField
             label="New password"
+            icon="lock"
             type="password"
             autoComplete="new-password"
             error={errors.newPassword?.message}
@@ -64,7 +66,7 @@ export function ResetPasswordPage() {
             </p>
           ) : null}
           <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-            Update password
+            <Icon name="lock_reset" className="text-lg" /> Update password
           </Button>
         </form>
       )}

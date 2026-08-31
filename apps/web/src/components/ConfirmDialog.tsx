@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -53,10 +54,10 @@ export function ConfirmDialog({
       {body ? <p className="mt-2 text-sm text-white/60">{body}</p> : null}
       <div className="mt-6 flex justify-end gap-3">
         <Button variant="ghost" onClick={onCancel} type="button">
-          {cancelLabel}
+          <Icon name="close" className="text-lg" /> {cancelLabel}
         </Button>
         <Button variant={danger ? "danger" : "primary"} onClick={onConfirm} isLoading={isLoading} type="button">
-          {confirmLabel}
+          <Icon name={danger ? "delete" : "check"} className="text-lg" /> {confirmLabel}
         </Button>
       </div>
     </dialog>

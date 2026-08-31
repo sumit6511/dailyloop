@@ -78,7 +78,7 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
       <div className="mt-2 flex flex-col justify-center gap-2 sm:flex-row">
         <ShareButton />
         <Button variant="secondary" onClick={() => navigate("/")}>
-          Back to Daily Games
+          <Icon name="home" className="text-lg" /> Back to Daily Games
         </Button>
       </div>
     </Card>

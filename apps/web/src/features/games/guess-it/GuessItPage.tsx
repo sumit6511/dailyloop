@@ -6,6 +6,7 @@ import { Button } from "../../../components/Button";
 import { TextField } from "../../../components/TextField";
 import { Spinner } from "../../../components/Spinner";
 import { GameIcon } from "../../../components/GameIcon";
+import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
 
 interface GuessItGuess {
@@ -178,6 +179,7 @@ export function GuessItPage() {
         <div className="flex-1">
           <TextField
             label="Your guess"
+            icon="lightbulb"
             placeholder="Type your answer..."
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
@@ -185,7 +187,7 @@ export function GuessItPage() {
           />
         </div>
         <Button type="submit" isLoading={submitMove.isPending} disabled={!guess.trim() || shake || celebrating}>
-          Guess
+          <Icon name="send" className="text-lg" /> Guess
         </Button>
       </form>
     </GameShell>
