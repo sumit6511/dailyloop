@@ -5,7 +5,7 @@ import { useFriendRequests } from "../../lib/friends-api";
 import { api } from "../../lib/api-client";
 import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
-import logoFull from "../../assets/logo-full.png";
+import { LogoFull } from "../../components/Logo";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -59,9 +59,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="glass-strong mx-auto max-w-5xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center">
-              <span className="glass-light !rounded-xl flex items-center px-3 py-1.5">
-                <img src={logoFull} alt="DailyLoop" className="h-6 w-auto sm:h-7" />
-              </span>
+              <LogoFull markClassName="h-7 w-7" />
             </Link>
 
             <nav className="hidden items-center gap-5 sm:flex">

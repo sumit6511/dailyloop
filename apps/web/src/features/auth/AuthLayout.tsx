@@ -1,15 +1,13 @@
 import type { ReactNode } from "react";
 import { Card } from "../../components/Card";
-import logoIcon from "../../assets/logo-icon.png";
+import { LogoMark } from "../../components/Logo";
 
 export function AuthLayout({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <div className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="glass-light mx-auto mb-3 inline-flex items-center justify-center p-2.5">
-            <img src={logoIcon} alt="DailyLoop" className="h-12 w-12" />
-          </div>
+          <LogoMark className="mx-auto mb-3 h-14 w-14" />
           <h1 className="font-display text-2xl font-bold text-white">{title}</h1>
           <p className="mt-1 text-sm text-white/60">{subtitle}</p>
         </div>
