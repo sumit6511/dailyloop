@@ -28,6 +28,10 @@ function boxOf(row: number, col: number): number {
   return Math.floor(row / BOX_ROWS) * (GRID_SIZE / BOX_COLS) + Math.floor(col / BOX_COLS);
 }
 
+function cellKey(row: number, col: number): string {
+  return `${row}-${col}`;
+}
+
 export function LogicPuzzlePage() {
   const { data: entry, isLoading } = useGameToday("logic-puzzle");
   const submitMove = useSubmitMove("logic-puzzle");
@@ -39,6 +43,9 @@ export function LogicPuzzlePage() {
   const [justFilled, setJustFilled] = useState<{ row: number; col: number } | null>(null);
   const [celebrating, setCelebrating] = useState(false);
   const [wrongCells, setWrongCells] = useState<{ row: number; col: number }[]>([]);
+  const [notesMode, setNotesMode] = useState(false);
+  // Pencil marks are purely a local scratchpad — never sent to the server, never scored.
+  const [notes, setNotes] = useState<Record<string, Set<number>>>({});
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
 
@@ -73,11 +80,33 @@ export function LogicPuzzlePage() {
 
   const isGiven = (row: number, col: number) => view.puzzle[row]![col] !== 0;
 
+  const clearNotes = (row: number, col: number) => {
+    setNotes((prev) => {
+      const key = cellKey(row, col);
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const toggleNote = (n: number) => {
+    if (!selected || isGiven(selected.row, selected.col)) return;
+    const key = cellKey(selected.row, selected.col);
+    setNotes((prev) => {
+      const current = new Set(prev[key]);
+      if (current.has(n)) current.delete(n);
+      else current.add(n);
+      return { ...prev, [key]: current };
+    });
+  };
+
   const fillCell = async (value: number) => {
     if (!selected || view.complete || isGiven(selected.row, selected.col)) return;
     setError(null);
     setWrongCells([]); // the grid is about to change — any earlier check result is now stale
     const cell = selected;
+    clearNotes(cell.row, cell.col); // the cell is about to hold a real value (or be erased)
     if (value !== 0) {
       setJustFilled(cell);
       setTimeout(() => setJustFilled((prev) => (prev === cell ? null : prev)), 300);
@@ -141,6 +170,7 @@ export function LogicPuzzlePage() {
               (r === selected.row || c === selected.col || boxOf(r, c) === boxOf(selected.row, selected.col));
             const isJustFilled = justFilled?.row === r && justFilled?.col === c;
             const isWrong = wrongCells.some((w) => w.row === r && w.col === c);
+            const cellNotes = value === 0 ? notes[cellKey(r, c)] : undefined;
             const rightBorder = c === 2 ? "border-r-2 border-r-white/[0.16]" : "";
             const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/[0.16]" : "";
             return (
@@ -150,7 +180,7 @@ export function LogicPuzzlePage() {
                 disabled={given}
                 onClick={() => setSelected({ row: r, col: c })}
                 style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
-                className={`flex h-11 w-11 items-center justify-center text-lg font-bold transition-colors sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
+                className={`relative flex h-11 w-11 items-center justify-center text-lg font-bold transition-colors sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
                   isJustFilled ? "animate-pop-in" : ""
                 } ${celebrating ? "animate-tile-bounce" : ""} ${
                   given
@@ -164,7 +194,15 @@ export function LogicPuzzlePage() {
                           : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
                 }`}
               >
-                {value !== 0 ? value : ""}
+                {value !== 0 ? (
+                  value
+                ) : cellNotes?.size ? (
+                  <span className="grid grid-cols-3 grid-rows-2 place-items-center gap-0 p-0.5 text-[8px] font-semibold leading-none text-white/45 sm:text-[9px]">
+                    {[1, 2, 3, 4, 5, 6].map((n) => (
+                      <span key={n}>{cellNotes.has(n) ? n : ""}</span>
+                    ))}
+                  </span>
+                ) : null}
               </button>
             );
           }),
@@ -177,13 +215,34 @@ export function LogicPuzzlePage() {
         </p>
       ) : null}
 
-      <div className="mt-6 flex justify-center gap-2">
+      <div className="mt-6 flex justify-center">
+        <Button variant={notesMode ? "primary" : "secondary"} size="sm" onClick={() => setNotesMode((m) => !m)}>
+          <span aria-hidden="true">✏️</span> Notes {notesMode ? "On" : "Off"}
+        </Button>
+      </div>
+
+      <div className="mt-3 flex justify-center gap-2">
         {[1, 2, 3, 4, 5, 6].map((n) => (
-          <GameTile key={n} size="sm" onClick={() => void fillCell(n)} disabled={!selected}>
+          <GameTile
+            key={n}
+            size="sm"
+            onClick={() => (notesMode ? toggleNote(n) : void fillCell(n))}
+            disabled={!selected}
+          >
             {n}
           </GameTile>
         ))}
-        <GameTile size="sm" onClick={() => void fillCell(0)} disabled={!selected}>
+        <GameTile
+          size="sm"
+          onClick={() => {
+            if (notesMode) {
+              if (selected) clearNotes(selected.row, selected.col);
+            } else {
+              void fillCell(0);
+            }
+          }}
+          disabled={!selected}
+        >
           ⌫
         </GameTile>
       </div>

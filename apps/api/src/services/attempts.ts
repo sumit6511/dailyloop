@@ -59,6 +59,47 @@ export async function checkAttempt(userId: string, gameSlug: string): Promise<Ch
   return { kind: "ok", result: module.checkProgress(puzzle.content, moves) };
 }
 
+export type UndoMoveResult =
+  | { kind: "no_module_or_game" }
+  | { kind: "not_available" }
+  | { kind: "not_started" }
+  | { kind: "already_completed" }
+  | { kind: "nothing_to_undo" }
+  | { kind: "ok"; content: unknown };
+
+/**
+ * Drops the last move from the attempt log and re-derives state — generic (any game could use
+ * it), but the route only enables it for games where undoing doesn't let a player erase a
+ * genuine mistake's scoring impact (e.g. Number Puzzle, where undo reverses a strategic combine
+ * rather than un-losing a Connections guess or un-spending a Word Guess try).
+ */
+export async function undoLastMove(userId: string, gameSlug: string): Promise<UndoMoveResult> {
+  const module = getGameModule(gameSlug);
+  const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
+  if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
+
+  const puzzle = await findTodaysPuzzle(game.id);
+  if (!puzzle) return { kind: "not_available" };
+
+  const attempt = await prisma.gameAttempt.findUnique({
+    where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
+  });
+  if (!attempt) return { kind: "not_started" };
+  if (attempt.status === "COMPLETED") return { kind: "already_completed" };
+
+  const moves = movesOf(attempt.attemptLog);
+  if (moves.length === 0) return { kind: "nothing_to_undo" };
+
+  const newMoves = moves.slice(0, -1);
+  const validation = module.validateAttempt(puzzle.content, newMoves);
+  await prisma.gameAttempt.update({
+    where: { id: attempt.id },
+    data: { attemptLog: newMoves as Prisma.InputJsonValue, mistakeCount: validation.mistakes },
+  });
+
+  return { kind: "ok", content: module.sanitizeForClient(puzzle.content, { status: "IN_PROGRESS", moves: newMoves }) };
+}
+
 export type SubmitMoveResult =
   | { kind: "no_module_or_game" }
   | { kind: "not_available" }

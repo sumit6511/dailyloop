@@ -24,6 +24,7 @@ interface GuessItView {
 
 const CELEBRATE_MS = 600;
 const SHAKE_MS = 400;
+const MAX_CLUES = 4;
 
 export function GuessItPage() {
   const { data: entry, isLoading } = useGameToday("guess-it");
@@ -110,7 +111,22 @@ export function GuessItPage() {
   }
 
   return (
-    <GameShell icon="🎯" title="Guess It" subtitle={view.category}>
+    <GameShell
+      icon="🎯"
+      title="Guess It"
+      subtitle={view.category}
+      headerRight={
+        <span className="flex items-center gap-1 text-sm font-medium text-white/50">
+          Clue {view.cluesRevealed} of {MAX_CLUES}
+          {Array.from({ length: MAX_CLUES }, (_, i) => (
+            <span
+              key={i}
+              className={`h-2.5 w-2.5 rounded-full ${i < view.cluesRevealed ? "bg-brand-400" : "bg-white/[0.12]"}`}
+            />
+          ))}
+        </span>
+      }
+    >
       <div className="flex flex-col gap-3">
         {view.clues.map((clue, i) => (
           <div

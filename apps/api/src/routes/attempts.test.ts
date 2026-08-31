@@ -20,6 +20,8 @@ const CONNECTIONS_CONTENT = {
 
 const WORD_GUESS_CONTENT = { answer: "CRANE" };
 
+const NUMBER_PUZZLE_CONTENT = { numbers: [11, 12, 11, 4], target: 23 };
+
 const LOGIC_PUZZLE_SOLUTION = [
   [1, 2, 3, 4, 5, 6],
   [4, 5, 6, 1, 2, 3],
@@ -169,6 +171,42 @@ describe("attempt lifecycle", () => {
     await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
 
     const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/check", cookies });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("undoes the last Number Puzzle move, restoring the pool to before that combine", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("number-puzzle", "Number Puzzle", "🔢", NUMBER_PUZZLE_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/start", cookies });
+
+    const combined = await app.inject({
+      method: "POST",
+      url: "/api/games/number-puzzle/attempts/submit",
+      cookies,
+      payload: { move: { type: "combine", a: 11, b: 12, op: "+" } },
+    });
+    expect(combined.json().data.content.pool).toEqual([11, 4, 23]);
+
+    const undone = await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/undo", cookies });
+    expect(undone.statusCode).toBe(200);
+    expect(undone.json().data.content.pool.sort()).toEqual([4, 11, 11, 12].sort());
+  });
+
+  it("rejects undo for a game that doesn't support it, even mid-attempt", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
+
+    const res = await app.inject({ method: "POST", url: "/api/games/connections/attempts/undo", cookies });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("rejects undo when there's nothing to undo yet", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("number-puzzle", "Number Puzzle", "🔢", NUMBER_PUZZLE_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/start", cookies });
+
+    const res = await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/undo", cookies });
     expect(res.statusCode).toBe(400);
   });
 

@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useGameToday, useAutoStartAttempt, useSubmitMove } from "../../../lib/games-api";
+import { useGameToday, useAutoStartAttempt, useSubmitMove, useUndoMove } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
 import { Spinner } from "../../../components/Spinner";
 import { GameTile } from "../../../components/GameTile";
 import { ApiClientError } from "../../../lib/api-client";
+import { useToast } from "../../../lib/toast-context";
 
 interface NumberPuzzleStep {
   a: number;
@@ -31,6 +32,8 @@ const CELEBRATE_MS = 700;
 export function NumberPuzzlePage() {
   const { data: entry, isLoading } = useGameToday("number-puzzle");
   const submitMove = useSubmitMove("number-puzzle");
+  const undoMove = useUndoMove("number-puzzle");
+  const { showToast } = useToast();
   const [firstIndex, setFirstIndex] = useState<number | null>(null);
   const [op, setOp] = useState<(typeof OPS)[number] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +117,17 @@ export function NumberPuzzlePage() {
     }, remaining);
   };
 
+  const undoLastStep = async () => {
+    if (view.steps.length === 0 || combiningIndices || undoMove.isPending) return;
+    setError(null);
+    resetSelection();
+    try {
+      await undoMove.mutateAsync();
+    } catch (err) {
+      showToast(err instanceof ApiClientError ? err.message : "Couldn't undo that step", "error");
+    }
+  };
+
   const submitFinal = async () => {
     setError(null);
     try {
@@ -193,12 +207,23 @@ export function NumberPuzzlePage() {
       </div>
 
       {view.steps.length > 0 ? (
-        <div className="mb-6 flex flex-col gap-1 text-center text-sm text-white/50">
-          {view.steps.map((step, i) => (
-            <div key={i} className="animate-pop-in">
-              {step.a} {OP_SYMBOLS[step.op]} {step.b} = <span className="font-semibold text-white/80">{step.result}</span>
-            </div>
-          ))}
+        <div className="mb-6 flex flex-col items-center gap-2">
+          <div className="flex flex-col gap-1 text-center text-sm text-white/50">
+            {view.steps.map((step, i) => (
+              <div key={i} className="animate-pop-in">
+                {step.a} {OP_SYMBOLS[step.op]} {step.b} = <span className="font-semibold text-white/80">{step.result}</span>
+              </div>
+            ))}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            isLoading={undoMove.isPending}
+            disabled={!!combiningIndices}
+            onClick={() => void undoLastStep()}
+          >
+            ↩ Undo last step
+          </Button>
         </div>
       ) : null}
 

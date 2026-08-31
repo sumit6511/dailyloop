@@ -3,6 +3,8 @@ export interface ShareGameEntry {
   icon: string;
   name: string;
   score: number | null;
+  /** Word Guess only — a Wordle-style emoji grid (colors only, never letters). */
+  pattern?: string;
 }
 
 export interface ShareData {
@@ -12,7 +14,7 @@ export interface ShareData {
   currentStreak: number;
 }
 
-/** Spoiler-free — only names, icons, and scores. Never puzzle content or answers. */
+/** Spoiler-free — only names, icons, scores, and color-only patterns. Never puzzle content or answers. */
 export function formatShareText(data: ShareData): string {
   const dateLabel = new Date(`${data.date}T00:00:00Z`).toLocaleDateString("en-US", {
     month: "long",
@@ -26,7 +28,10 @@ export function formatShareText(data: ShareData): string {
     "DailyLoop",
     dateLabel,
     "",
-    ...data.games.map((g) => `${g.icon} ${g.name.padEnd(longestName)}  ${g.score ?? 0}`),
+    ...data.games.flatMap((g) => [
+      `${g.icon} ${g.name.padEnd(longestName)}  ${g.score ?? 0}`,
+      ...(g.pattern ? [g.pattern] : []),
+    ]),
     "",
     `⭐ Total: ${data.totalScore}`,
     `🔥 ${data.currentStreak} Day Streak`,

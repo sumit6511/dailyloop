@@ -5,9 +5,22 @@ import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
 import { getTodayLineup, getTodayEntryForSlug } from "../services/games-today.js";
-import { startAttempt, submitMove, checkAttempt } from "../services/attempts.js";
+import { startAttempt, submitMove, checkAttempt, undoLastMove } from "../services/attempts.js";
+
+// Undo is only safe where reversing a move doesn't erase a genuine mistake's scoring impact —
+// see the doc comment on `undoLastMove` for why this isn't offered to every game.
+const UNDO_ENABLED_SLUGS = new Set(["number-puzzle"]);
 
 const submitBodySchema = z.object({ move: z.unknown() });
+
+const EMOJI_BY_STATUS: Record<string, string> = { correct: "🟩", present: "🟨", absent: "⬜" };
+
+/** Wordle-style emoji grid — colors only, never the actual letters or answer. */
+function wordGuessEmojiGrid(content: unknown): string | undefined {
+  const view = content as { guesses?: { feedback: { status: string }[] }[] } | null;
+  if (!view?.guesses?.length) return undefined;
+  return view.guesses.map((g) => g.feedback.map((f) => EMOJI_BY_STATUS[f.status] ?? "⬜").join("")).join("\n");
+}
 
 export const gameRoutes: FastifyPluginAsync = async (app) => {
   app.get("/", async (_request, reply) => {
@@ -35,7 +48,13 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
     return reply.send({
       data: {
         date: getTodayKey(env.DEFAULT_TIMEZONE),
-        games: completed.map((g) => ({ slug: g.slug, icon: g.icon, name: g.name, score: g.score })),
+        games: completed.map((g) => ({
+          slug: g.slug,
+          icon: g.icon,
+          name: g.name,
+          score: g.score,
+          ...(g.slug === "word-guess" ? { pattern: wordGuessEmojiGrid(g.content) } : {}),
+        })),
         totalScore: completed.reduce((sum, g) => sum + (g.score ?? 0), 0),
         currentStreak: streak?.currentStreak ?? 0,
       },
@@ -77,6 +96,25 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
       }
       if (result.kind === "not_started") throw Errors.badRequest("Start the game before checking your progress");
       return reply.send({ data: result.result });
+    },
+  );
+
+  app.post<{ Params: { slug: string } }>(
+    "/:slug/attempts/undo",
+    { preHandler: app.requireAuth },
+    async (request, reply) => {
+      if (!UNDO_ENABLED_SLUGS.has(request.params.slug)) {
+        throw Errors.badRequest("This game doesn't support undo");
+      }
+      const result = await undoLastMove(request.currentUser!.id, request.params.slug);
+      if (result.kind === "no_module_or_game") throw Errors.notFound("Game not found");
+      if (result.kind === "not_available") {
+        throw Errors.badRequest("No puzzle is available for this game today");
+      }
+      if (result.kind === "not_started") throw Errors.badRequest("Start the game before undoing a move");
+      if (result.kind === "already_completed") throw Errors.badRequest("This puzzle is already complete");
+      if (result.kind === "nothing_to_undo") throw Errors.badRequest("There's nothing to undo yet");
+      return reply.send({ data: { content: result.content } });
     },
   );
 

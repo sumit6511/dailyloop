@@ -69,3 +69,19 @@ export function useCheckProgress<T>(slug: string) {
     mutationFn: () => api.post<T>(`/games/${slug}/attempts/check`),
   });
 }
+
+interface UndoResponse {
+  content: unknown;
+}
+
+/** Not every game supports this — the API responds 400 for ones that don't (see undoLastMove). */
+export function useUndoMove(slug: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<UndoResponse>(`/games/${slug}/attempts/undo`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["games", "today"] });
+      void queryClient.invalidateQueries({ queryKey: ["games", slug, "today"] });
+    },
+  });
+}

@@ -29,6 +29,25 @@ const DIFFICULTY_STYLES: Record<number, string> = {
   4: "border border-purple-400/30 bg-purple-500/20 text-purple-200",
 };
 
+// Color alone shouldn't be the only way to tell difficulty tiers apart — a text label carries
+// the same information for colorblind players (the category title/words are always shown too,
+// so this is purely about the difficulty *tier*, not identifying the category itself).
+const DIFFICULTY_LABELS: Record<number, string> = {
+  1: "Easiest",
+  2: "Easy",
+  3: "Tricky",
+  4: "Hardest",
+};
+
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
+  }
+  return copy;
+}
+
 const MAX_MISTAKES = 4;
 
 const REVEAL_MS = 650;
@@ -42,6 +61,7 @@ export function ConnectionsPage() {
   const [pendingSolve, setPendingSolve] = useState<{ words: string[]; categoryIndex: number } | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [shuffledOrder, setShuffledOrder] = useState<string[] | null>(null);
   const busy = !!pendingSolve || shake;
 
   useAutoStartAttempt("connections", entry?.status);
@@ -80,6 +100,9 @@ export function ConnectionsPage() {
   const solvedToShow = pendingSolve ? view.solved.filter((g) => g.categoryIndex !== pendingSolve.categoryIndex) : view.solved;
   const solvedWords = new Set(solvedToShow.flatMap((group) => group.words));
   const remainingWords = view.words.filter((word) => !solvedWords.has(word));
+  // A manual shuffle only ever reorders — it never changes which words are still in play, so
+  // re-filter the last shuffled snapshot against the authoritative remaining set every render.
+  const displayWords = shuffledOrder ? shuffledOrder.filter((word) => remainingWords.includes(word)) : remainingWords;
   // Likewise, don't jump to the result screen mid-reveal even if the server says we're done.
   const showResult = view.complete && !pendingSolve;
 
@@ -138,7 +161,9 @@ export function ConnectionsPage() {
                 style={{ animationDelay: `${i * 90}ms` }}
                 className={`animate-pop-in rounded-xl px-4 py-2.5 text-center ${DIFFICULTY_STYLES[category.difficulty]}`}
               >
-                <div className="text-xs font-bold uppercase tracking-wide">{category.title}</div>
+                <div className="text-xs font-bold uppercase tracking-wide">
+                  {category.title} <span className="opacity-70">· {DIFFICULTY_LABELS[category.difficulty]}</span>
+                </div>
                 <div className="text-sm font-medium">{category.words.join(", ")}</div>
               </div>
             ))}
@@ -169,13 +194,15 @@ export function ConnectionsPage() {
             style={{ animationDelay: `${i * 90}ms` }}
             className={`animate-pop-in rounded-xl px-4 py-2.5 text-center ${DIFFICULTY_STYLES[group.difficulty]}`}
           >
-            <div className="text-xs font-bold uppercase tracking-wide">{group.title}</div>
+            <div className="text-xs font-bold uppercase tracking-wide">
+              {group.title} <span className="opacity-70">· {DIFFICULTY_LABELS[group.difficulty]}</span>
+            </div>
             <div className="text-sm font-medium">{group.words.join(", ")}</div>
           </div>
         ))}
 
         <div className={`grid grid-cols-4 gap-2 ${shake ? "animate-shake" : ""}`}>
-          {remainingWords.map((word) => {
+          {displayWords.map((word) => {
             const isPending = pendingSolve?.words.includes(word);
             const isWrong = shake && selected.includes(word);
             const state = isPending ? "correct" : isWrong ? "wrong" : selected.includes(word) ? "selected" : "default";
@@ -200,7 +227,10 @@ export function ConnectionsPage() {
         </p>
       ) : null}
 
-      <div className="mt-6 flex justify-center gap-3">
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Button variant="secondary" onClick={() => setShuffledOrder(shuffle(displayWords))} disabled={busy}>
+          Shuffle
+        </Button>
         <Button variant="secondary" onClick={() => setSelected([])} disabled={selected.length === 0 || busy}>
           Deselect all
         </Button>
