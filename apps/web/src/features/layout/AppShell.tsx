@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="glass-strong mx-auto max-w-5xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center">
-              <span className="flex items-center rounded-xl bg-white/80 px-3 py-1.5 shadow-sm">
+              <span className="glass-light !rounded-xl flex items-center px-3 py-1.5">
                 <img src={logoFull} alt="DailyLoop" className="h-6 w-auto sm:h-7" />
               </span>
             </Link>
