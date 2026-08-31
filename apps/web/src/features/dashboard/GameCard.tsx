@@ -30,11 +30,11 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
         <Badge tone="neutral">{DIFFICULTY_LABEL[game.difficulty] ?? game.difficulty}</Badge>
         {isCompleted ? (
           <Badge tone="success">
-            <Icon name="check_circle" className="text-sm" filled /> Completed
+            <Icon name="check_circle" className="text-xs" filled /> Completed
           </Badge>
         ) : isInProgress ? (
           <Badge tone="warning">
-            <Icon name="hourglass_top" className="text-sm" /> In progress
+            <Icon name="hourglass_top" className="text-xs" /> In progress
           </Badge>
         ) : null}
       </div>
