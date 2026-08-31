@@ -5,6 +5,8 @@ import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
 import { Spinner } from "../../../components/Spinner";
 import { GameTile } from "../../../components/GameTile";
+import { GameIcon } from "../../../components/GameIcon";
+import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
 import { useToast } from "../../../lib/toast-context";
 
@@ -46,7 +48,7 @@ export function NumberPuzzlePage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon="🔢" title="Number Puzzle">
+      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -56,7 +58,7 @@ export function NumberPuzzlePage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon="🔢" title="Number Puzzle">
+      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
         <p className="text-center text-white/50">No Number Puzzle is available today. Check back soon!</p>
       </GameShell>
     );
@@ -65,7 +67,7 @@ export function NumberPuzzlePage() {
   const view = entry.content as NumberPuzzleView | null;
   if (!view) {
     return (
-      <GameShell icon="🔢" title="Number Puzzle">
+      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -148,7 +150,7 @@ export function NumberPuzzlePage() {
 
   if (showResult) {
     return (
-      <GameShell icon="🔢" title="Number Puzzle">
+      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
         <ResultScreen
           gameName="Number Puzzle"
           won={!!view.won}
@@ -167,7 +169,7 @@ export function NumberPuzzlePage() {
   }
 
   return (
-    <GameShell icon="🔢" title="Number Puzzle" subtitle={`Reach ${view.target} using the numbers below.`}>
+    <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle" subtitle={`Reach ${view.target} using the numbers below.`}>
       <div className="mb-6 text-center">
         <div className="text-xs font-medium uppercase tracking-wide text-white/50">Target</div>
         <div className="relative inline-flex items-center justify-center">
@@ -222,7 +224,7 @@ export function NumberPuzzlePage() {
             disabled={!!combiningIndices}
             onClick={() => void undoLastStep()}
           >
-            ↩ Undo last step
+            <Icon name="undo" className="text-base" /> Undo last step
           </Button>
         </div>
       ) : null}

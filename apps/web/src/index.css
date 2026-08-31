@@ -41,6 +41,17 @@ body {
   font-family: var(--font-display);
 }
 
+.material-symbols-rounded {
+  font-family: "Material Symbols Rounded";
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  vertical-align: middle;
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+}
+
 /* ---- Glass surface system ----
    Three intensities, each bundling background + border + blur + shadow into one class.
    backdrop-filter is only ever applied here, at the container level (nav/cards/panels/modals) —

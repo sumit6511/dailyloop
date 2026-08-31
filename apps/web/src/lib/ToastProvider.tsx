@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import { ToastContext, type ToastVariant } from "./toast-context";
+import { Icon } from "../components/Icon";
 
 interface ToastEntry {
   id: number;
@@ -16,9 +17,9 @@ const VARIANT_CLASSES: Record<ToastVariant, string> = {
 };
 
 const VARIANT_ICON: Record<ToastVariant, string> = {
-  success: "✓",
-  error: "✕",
-  info: "ℹ",
+  success: "check_circle",
+  error: "error",
+  info: "info",
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -54,7 +55,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             role="status"
             className={`animate-toast-in glass-strong pointer-events-auto flex max-w-sm items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-white ${VARIANT_CLASSES[toast.variant]}`}
           >
-            <span aria-hidden="true">{VARIANT_ICON[toast.variant]}</span>
+            <Icon name={VARIANT_ICON[toast.variant]} className="text-lg" filled />
             <span className="flex-1">{toast.message}</span>
             <button
               type="button"
@@ -62,7 +63,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               aria-label="Dismiss notification"
               className="text-white/50 transition-colors hover:text-white"
             >
-              ✕
+              <Icon name="close" className="text-base" />
             </button>
           </div>
         ))}

@@ -1,6 +1,7 @@
 import { useAdminGames, useUpdateAdminGame } from "../../lib/admin-api";
 import { Card } from "../../components/Card";
 import { Spinner } from "../../components/Spinner";
+import { GameIcon } from "../../components/GameIcon";
 
 export function GamesPage() {
   const { data: games, isLoading } = useAdminGames();
@@ -19,7 +20,7 @@ export function GamesPage() {
       {games.map((game) => (
         <Card key={game.id} intensity="subtle" className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{game.icon}</span>
+            <GameIcon slug={game.slug} size="sm" />
             <div>
               <div className="font-semibold text-white">{game.name}</div>
               <div className="text-xs text-white/50">

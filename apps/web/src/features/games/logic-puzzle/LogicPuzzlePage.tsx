@@ -5,6 +5,8 @@ import { ResultScreen } from "../ResultScreen";
 import { Spinner } from "../../../components/Spinner";
 import { GameTile } from "../../../components/GameTile";
 import { Button } from "../../../components/Button";
+import { GameIcon } from "../../../components/GameIcon";
+import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
 import { useToast } from "../../../lib/toast-context";
 
@@ -51,7 +53,7 @@ export function LogicPuzzlePage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon="🧠" title="Logic Puzzle">
+      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -61,7 +63,7 @@ export function LogicPuzzlePage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon="🧠" title="Logic Puzzle">
+      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
         <p className="text-center text-white/50">No Logic Puzzle is available today. Check back soon!</p>
       </GameShell>
     );
@@ -70,7 +72,7 @@ export function LogicPuzzlePage() {
   const view = entry.content as LogicPuzzleView | null;
   if (!view) {
     return (
-      <GameShell icon="🧠" title="Logic Puzzle">
+      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -145,7 +147,7 @@ export function LogicPuzzlePage() {
 
   if (showResult) {
     return (
-      <GameShell icon="🧠" title="Logic Puzzle">
+      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
         <ResultScreen
           gameName="Logic Puzzle"
           won={!!view.won}
@@ -158,7 +160,7 @@ export function LogicPuzzlePage() {
   }
 
   return (
-    <GameShell icon="🧠" title="Logic Puzzle" subtitle="Fill every row, column, and box with 1–6.">
+    <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle" subtitle="Fill every row, column, and box with 1–6.">
       <div className="mx-auto grid w-fit grid-cols-6 gap-0.5 rounded-xl border-2 border-white/[0.16] bg-white/[0.16] p-0.5">
         {view.grid.map((row, r) =>
           row.map((value, c) => {
@@ -217,7 +219,7 @@ export function LogicPuzzlePage() {
 
       <div className="mt-6 flex justify-center">
         <Button variant={notesMode ? "primary" : "secondary"} size="sm" onClick={() => setNotesMode((m) => !m)}>
-          <span aria-hidden="true">✏️</span> Notes {notesMode ? "On" : "Off"}
+          <Icon name="edit_note" className="text-lg" /> Notes {notesMode ? "On" : "Off"}
         </Button>
       </div>
 
@@ -242,8 +244,9 @@ export function LogicPuzzlePage() {
             }
           }}
           disabled={!selected}
+          aria-label="Erase cell"
         >
-          ⌫
+          <Icon name="backspace" className="text-base" />
         </GameTile>
       </div>
 

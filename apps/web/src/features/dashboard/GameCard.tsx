@@ -3,6 +3,8 @@ import type { TodayGameEntryDTO } from "@dailyloop/shared";
 import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
 import { Badge } from "../../components/Badge";
+import { Icon } from "../../components/Icon";
+import { GameIcon } from "../../components/GameIcon";
 
 const DIFFICULTY_LABEL: Record<string, string> = { easy: "Easy", medium: "Medium", hard: "Hard" };
 
@@ -17,9 +19,7 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
       }`}
     >
       <div className="flex items-center gap-2">
-        <span className="text-2xl" aria-hidden="true">
-          {game.icon}
-        </span>
+        <GameIcon slug={game.slug} size="md" />
         <div>
           <h3 className="font-display font-bold text-white">{game.name}</h3>
           <p className="text-xs text-white/50">{game.description}</p>
@@ -30,11 +30,11 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
         <Badge tone="neutral">{DIFFICULTY_LABEL[game.difficulty] ?? game.difficulty}</Badge>
         {isCompleted ? (
           <Badge tone="success">
-            <span aria-hidden="true">✅</span> Completed
+            <Icon name="check_circle" className="text-sm" filled /> Completed
           </Badge>
         ) : isInProgress ? (
           <Badge tone="warning">
-            <span aria-hidden="true">▶</span> In progress
+            <Icon name="hourglass_top" className="text-sm" /> In progress
           </Badge>
         ) : null}
       </div>

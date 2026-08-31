@@ -4,6 +4,8 @@ import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Spinner } from "../../../components/Spinner";
 import { GameTile, type GameTileState } from "../../../components/GameTile";
+import { GameIcon } from "../../../components/GameIcon";
+import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
 
 type LetterStatus = "correct" | "present" | "absent";
@@ -136,7 +138,7 @@ export function WordGuessPage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon="🟨" title="Word Guess">
+      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -146,7 +148,7 @@ export function WordGuessPage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon="🟨" title="Word Guess">
+      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
         <p className="text-center text-white/50">No Word Guess puzzle is available today. Check back soon!</p>
       </GameShell>
     );
@@ -154,7 +156,7 @@ export function WordGuessPage() {
 
   if (!view) {
     return (
-      <GameShell icon="🟨" title="Word Guess">
+      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -181,7 +183,7 @@ export function WordGuessPage() {
 
   if (showResult) {
     return (
-      <GameShell icon="🟨" title="Word Guess">
+      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
         <ResultScreen
           gameName="Word Guess"
           won={!!view.won}
@@ -200,7 +202,7 @@ export function WordGuessPage() {
   }
 
   return (
-    <GameShell icon="🟨" title="Word Guess" subtitle={`Guess the word in ${MAX_GUESSES} tries.`}>
+    <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess" subtitle={`Guess the word in ${MAX_GUESSES} tries.`}>
       <div className="mx-auto flex flex-col gap-1.5">
         {rows.map((row, rowIndex) => {
           const isCurrentRow = rowIndex === view.guesses.length && !complete;
@@ -284,9 +286,10 @@ export function WordGuessPage() {
               <button
                 type="button"
                 onClick={() => setCurrent((prev) => prev.slice(0, -1))}
+                aria-label="Backspace"
                 className="rounded-lg bg-white/[0.08] px-3 text-xs font-bold text-white/80 transition-colors hover:bg-white/[0.14]"
               >
-                ⌫
+                <Icon name="backspace" className="text-base" />
               </button>
             ) : null}
           </div>

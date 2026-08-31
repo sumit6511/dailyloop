@@ -4,6 +4,7 @@ import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
 import { useFriendRequests } from "../../lib/friends-api";
 import { api } from "../../lib/api-client";
 import { Button } from "../../components/Button";
+import { Icon } from "../../components/Icon";
 import logoFull from "../../assets/logo-full.png";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -77,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               aria-label="Toggle menu"
               className="flex h-9 w-9 items-center justify-center rounded-lg text-lg text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white sm:hidden"
             >
-              {menuOpen ? "✕" : "☰"}
+              <Icon name={menuOpen ? "close" : "menu"} className="text-xl" />
             </button>
           </div>
 

@@ -4,6 +4,7 @@ import { useTodayLineup } from "../../lib/games-api";
 import { api } from "../../lib/api-client";
 import { Spinner } from "../../components/Spinner";
 import { StreakBadge } from "../../components/StreakBadge";
+import { Icon } from "../../components/Icon";
 import { GameCard } from "./GameCard";
 import { LeaderboardCard } from "./LeaderboardCard";
 
@@ -40,15 +41,15 @@ export function DashboardPage() {
           aria-hidden="true"
         />
         <div className="relative">
-          <h1 className="font-display text-3xl font-bold sm:text-4xl">
-            {getGreeting()}, {user?.displayName} <span aria-hidden="true">👋</span>
+          <h1 className="flex items-center gap-2 font-display text-3xl font-bold sm:text-4xl">
+            {getGreeting()}, {user?.displayName} <Icon name="waving_hand" className="text-3xl text-amber-300" filled />
           </h1>
           <p className="mt-2 max-w-md text-white/70">Today's puzzles are waiting.</p>
           <div className="mt-6 flex flex-wrap items-center gap-6">
             <StreakBadge currentStreak={streak?.currentStreak ?? 0} lastCompletedDate={streak?.lastCompletedDate ?? null} />
             <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] px-4 py-2">
-              <span className="text-lg font-bold">
-                <span aria-hidden="true">⭐</span> {todayScore}
+              <span className="inline-flex items-center gap-1 text-lg font-bold">
+                <Icon name="star" className="text-lg text-yellow-300" filled /> {todayScore}
               </span>{" "}
               <span className="text-sm text-white/70">points today</span>
             </div>

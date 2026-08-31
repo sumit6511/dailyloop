@@ -4,8 +4,8 @@ import { createTestQueryClient, renderWithProviders } from "../../test/render";
 import { ResultScreen } from "./ResultScreen";
 
 const CATALOG = [
-  { key: "FIRST_WIN", name: "First Win", description: "Win your first daily game.", icon: "🏆" },
-  { key: "STREAK_3", name: "3 Day Streak", description: "Complete a game 3 days in a row.", icon: "🔥" },
+  { key: "FIRST_WIN", name: "First Win", description: "Win your first daily game.", icon: "emoji_events" },
+  { key: "STREAK_3", name: "3 Day Streak", description: "Complete a game 3 days in a row.", icon: "local_fire_department" },
 ];
 
 function seedCatalog() {

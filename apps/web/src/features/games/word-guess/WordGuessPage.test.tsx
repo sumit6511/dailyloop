@@ -45,7 +45,7 @@ describe("WordGuessPage on-screen keyboard", () => {
     await user.click(screen.getByRole("button", { name: "S" }));
     expect(screen.getByRole("group", { name: "Current guess: CRANE" })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "⌫" }));
+    await user.click(screen.getByRole("button", { name: "Backspace" }));
     expect(screen.getByRole("group", { name: "Current guess: CRAN" })).toBeInTheDocument();
   });
 

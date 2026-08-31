@@ -2,6 +2,7 @@ import { useAdminUsers } from "../../lib/admin-api";
 import { Card } from "../../components/Card";
 import { Spinner } from "../../components/Spinner";
 import { Badge } from "../../components/Badge";
+import { Icon } from "../../components/Icon";
 
 export function UsersPage() {
   const { data: users, isLoading } = useAdminUsers();
@@ -40,7 +41,9 @@ export function UsersPage() {
                   <Badge tone={user.role === "ADMIN" ? "brand" : "neutral"}>{user.role}</Badge>
                 </td>
                 <td className="py-2 text-white/60">
-                  <span aria-hidden="true">🔥</span> {user.currentStreak}
+                  <span className="inline-flex items-center gap-1">
+                    <Icon name="local_fire_department" className="text-sm text-flame-400" filled /> {user.currentStreak}
+                  </span>
                 </td>
                 <td className="py-2 text-white/60">{user.gamesPlayed}</td>
                 <td className="py-2 text-white/60">{user.totalPoints}</td>

@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Card } from "./Card";
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -27,8 +28,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return (
       <div className="flex min-h-dvh items-center justify-center px-4">
         <Card intensity="strong" className="max-w-sm text-center">
-          <div className="mb-2 text-4xl" aria-hidden="true">
-            ⚠️
+          <div className="mb-2 flex justify-center text-amber-400">
+            <Icon name="warning" className="text-4xl" filled />
           </div>
           <h1 className="font-display text-lg font-bold text-white">Something went wrong</h1>
           <p className="mt-2 text-sm text-white/60">

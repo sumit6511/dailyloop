@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "../../components/Button";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { Icon } from "../../components/Icon";
 import { useToast } from "../../lib/toast-context";
 import { ApiClientError } from "../../lib/api-client";
 import type { Relationship } from "./relationship";
@@ -36,7 +37,7 @@ export function RelationshipButton({ username, userId, relationship, displayName
     return (
       <>
         <Button variant="secondary" size="sm" onClick={() => setConfirmingRemove(true)}>
-          ✓ Friends
+          <Icon name="check" className="text-base" /> Friends
         </Button>
         <ConfirmDialog
           open={confirmingRemove}

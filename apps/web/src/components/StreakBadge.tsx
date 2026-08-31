@@ -1,4 +1,5 @@
 import { addDaysToKey, compareDateKeys, getTodayKey, type DateKey } from "@dailyloop/shared";
+import { Icon } from "./Icon";
 
 interface StreakBadgeProps {
   currentStreak: number;
@@ -19,8 +20,8 @@ export function StreakBadge({ currentStreak, lastCompletedDate, className = "" }
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       <div className="flex items-center gap-2">
-        <span className="text-lg font-bold text-white">
-          <span aria-hidden="true">🔥</span> {currentStreak}
+        <span className="inline-flex items-center gap-1 text-lg font-bold text-white">
+          <Icon name="local_fire_department" className="text-lg text-flame-400" filled /> {currentStreak}
         </span>
         <span className="text-sm text-white/70">day streak</span>
       </div>

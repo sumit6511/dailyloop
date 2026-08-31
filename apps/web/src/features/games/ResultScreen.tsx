@@ -4,6 +4,7 @@ import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
 import { useAchievementCatalog } from "../../lib/achievements-api";
 import { ShareButton } from "./ShareButton";
+import { Icon } from "../../components/Icon";
 
 interface ResultStat {
   label: string;
@@ -31,7 +32,11 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
         {won ? (
           <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-brand-500/40 blur-xl" aria-hidden="true" />
         ) : null}
-        <div className="text-5xl">{won ? "🎉" : "😅"}</div>
+        <Icon
+          name={won ? "celebration" : "sentiment_dissatisfied"}
+          className={`text-5xl ${won ? "text-amber-300" : "text-white/60"}`}
+          filled
+        />
       </div>
       <h2 className="font-display text-xl font-bold text-white">{won ? "Nice work!" : "So close!"}</h2>
       <p className="mt-1 text-sm text-white/50">{gameName} — today's puzzle is done</p>
@@ -47,8 +52,8 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
         </div>
       ) : null}
 
-      <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-200">
-        <span aria-hidden="true">⭐</span> Score: {score}
+      <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-brand-400/30 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-200">
+        <Icon name="star" className="text-base text-yellow-300" filled /> Score: {score}
       </div>
 
       {newAchievements.length > 0 ? (
@@ -58,9 +63,7 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
               key={achievement.key}
               className="flex items-center gap-3 rounded-xl border border-flame-400/30 bg-flame-400/10 px-4 py-2.5 text-left"
             >
-              <span className="text-2xl" aria-hidden="true">
-                {achievement.icon}
-              </span>
+              <Icon name={achievement.icon} className="text-2xl text-flame-400" filled />
               <div>
                 <div className="text-xs font-bold uppercase tracking-wide text-flame-400">Achievement unlocked!</div>
                 <div className="text-sm font-semibold text-white/90">{achievement.name}</div>

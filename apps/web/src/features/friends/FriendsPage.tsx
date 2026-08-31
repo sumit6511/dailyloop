@@ -7,6 +7,7 @@ import { Spinner } from "../../components/Spinner";
 import { Avatar } from "../../components/Avatar";
 import { EmptyState } from "../../components/EmptyState";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { Icon } from "../../components/Icon";
 import { RelationshipButton } from "../profile/RelationshipButton";
 import { useToast } from "../../lib/toast-context";
 import { ApiClientError } from "../../lib/api-client";
@@ -150,7 +151,7 @@ export function FriendsPage() {
             ))}
           </div>
         ) : (
-          <EmptyState icon="🧑‍🤝‍🧑" title="No friends yet" description="Search above to find people you know." />
+          <EmptyState icon={<Icon name="group_add" />} title="No friends yet" description="Search above to find people you know." />
         )}
       </Card>
 

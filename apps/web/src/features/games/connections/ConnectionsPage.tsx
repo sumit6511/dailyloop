@@ -5,6 +5,7 @@ import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
 import { Spinner } from "../../../components/Spinner";
 import { GameTile } from "../../../components/GameTile";
+import { GameIcon } from "../../../components/GameIcon";
 import { ApiClientError } from "../../../lib/api-client";
 
 interface SolvedGroup {
@@ -68,7 +69,7 @@ export function ConnectionsPage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon="🟩" title="Connections">
+      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -78,7 +79,7 @@ export function ConnectionsPage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon="🟩" title="Connections">
+      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
         <p className="text-center text-white/50">No Connections puzzle is available today. Check back soon!</p>
       </GameShell>
     );
@@ -87,7 +88,7 @@ export function ConnectionsPage() {
   const view = entry.content as ConnectionsView | null;
   if (!view) {
     return (
-      <GameShell icon="🟩" title="Connections">
+      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -146,7 +147,7 @@ export function ConnectionsPage() {
   if (showResult) {
     const mistakesMade = MAX_MISTAKES - view.mistakesRemaining;
     return (
-      <GameShell icon="🟩" title="Connections">
+      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
         <ResultScreen
           gameName="Connections"
           won={view.solved.length === 4}
@@ -175,7 +176,7 @@ export function ConnectionsPage() {
 
   return (
     <GameShell
-      icon="🟩"
+      icon={<GameIcon slug="connections" size="lg" />}
       title="Connections"
       subtitle="Find groups of four!"
       headerRight={

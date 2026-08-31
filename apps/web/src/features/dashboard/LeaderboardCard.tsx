@@ -5,6 +5,7 @@ import { Card } from "../../components/Card";
 import { Avatar } from "../../components/Avatar";
 import { Skeleton } from "../../components/Skeleton";
 import { EmptyState } from "../../components/EmptyState";
+import { Icon } from "../../components/Icon";
 
 const RANGE_TABS: { key: LeaderboardRange; label: string }[] = [
   { key: "daily", label: "Today" },
@@ -12,7 +13,7 @@ const RANGE_TABS: { key: LeaderboardRange; label: string }[] = [
   { key: "all-time", label: "All Time" },
 ];
 
-const MEDALS = ["🥇", "🥈", "🥉"];
+const RANK_COLORS = ["text-yellow-400", "text-slate-300", "text-orange-400"];
 
 export function LeaderboardCard() {
   const [scope, setScope] = useState<"friends" | "global">("friends");
@@ -24,8 +25,8 @@ export function LeaderboardCard() {
 
   return (
     <Card>
-      <h2 className="mb-3 font-display text-lg font-bold text-white">
-        <span aria-hidden="true">🏆</span> Leaderboard
+      <h2 className="mb-3 flex items-center gap-1.5 font-display text-lg font-bold text-white">
+        <Icon name="emoji_events" className="text-xl text-yellow-400" filled /> Leaderboard
       </h2>
 
       <div className="mb-3 flex gap-1 rounded-lg bg-white/[0.06] p-1">
@@ -69,7 +70,7 @@ export function LeaderboardCard() {
         </div>
       ) : !entries || entries.length === 0 ? (
         <EmptyState
-          icon="🏆"
+          icon={<Icon name="emoji_events" />}
           title="No scores yet"
           description={
             scope === "friends"
@@ -86,8 +87,12 @@ export function LeaderboardCard() {
                 entry.username === user?.username ? "bg-brand-500/15 ring-1 ring-brand-400/30" : ""
               }`}
             >
-              <span className="w-6 shrink-0 text-center text-sm font-semibold text-white/50">
-                {MEDALS[entry.rank - 1] ?? entry.rank}
+              <span className="flex w-6 shrink-0 items-center justify-center text-sm font-semibold text-white/50">
+                {entry.rank <= 3 ? (
+                  <Icon name="emoji_events" className={`text-lg ${RANK_COLORS[entry.rank - 1]}`} filled />
+                ) : (
+                  entry.rank
+                )}
               </span>
               <Avatar name={entry.displayName} size="sm" />
               <span className="flex-1 truncate text-sm font-medium text-white/85">{entry.displayName}</span>

@@ -5,6 +5,7 @@ import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
 import { TextField } from "../../../components/TextField";
 import { Spinner } from "../../../components/Spinner";
+import { GameIcon } from "../../../components/GameIcon";
 import { ApiClientError } from "../../../lib/api-client";
 
 interface GuessItGuess {
@@ -39,7 +40,7 @@ export function GuessItPage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon="🎯" title="Guess It">
+      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -49,7 +50,7 @@ export function GuessItPage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon="🎯" title="Guess It">
+      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <p className="text-center text-white/50">No Guess It puzzle is available today. Check back soon!</p>
       </GameShell>
     );
@@ -58,7 +59,7 @@ export function GuessItPage() {
   const view = entry.content as GuessItView | null;
   if (!view) {
     return (
-      <GameShell icon="🎯" title="Guess It">
+      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <div className="flex justify-center py-12">
           <Spinner className="h-8 w-8 text-brand-400" />
         </div>
@@ -92,7 +93,7 @@ export function GuessItPage() {
 
   if (showResult) {
     return (
-      <GameShell icon="🎯" title="Guess It">
+      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <ResultScreen
           gameName="Guess It"
           won={!!view.won}
@@ -112,7 +113,7 @@ export function GuessItPage() {
 
   return (
     <GameShell
-      icon="🎯"
+      icon={<GameIcon slug="guess-it" size="lg" />}
       title="Guess It"
       subtitle={view.category}
       headerRight={

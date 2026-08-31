@@ -2,6 +2,7 @@ import { useAdminStatsOverview, useAdminActivity } from "../../lib/admin-api";
 import { Card } from "../../components/Card";
 import { Spinner } from "../../components/Spinner";
 import { Badge } from "../../components/Badge";
+import { Icon } from "../../components/Icon";
 
 function StatTile({ label, value }: { label: string; value: string | number }) {
   return (
@@ -87,8 +88,9 @@ export function OverviewPage() {
           <div className="flex flex-col gap-1">
             {activity.topScores.map((s, i) => (
               <div key={s.username} className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm">
-                <span className="text-white/80">
-                  {i + 1}. {s.username} {s.isPerfectDay ? "🏆" : ""}
+                <span className="inline-flex items-center gap-1 text-white/80">
+                  {i + 1}. {s.username}
+                  {s.isPerfectDay ? <Icon name="emoji_events" className="text-sm text-yellow-400" filled /> : null}
                 </span>
                 <span className="font-semibold text-brand-300">{s.score}</span>
               </div>
