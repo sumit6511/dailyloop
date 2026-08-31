@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api-client";
 import { useAchievementCatalog, useUserAchievements } from "../../lib/achievements-api";
 import { Card } from "../../components/Card";
 import { Spinner } from "../../components/Spinner";
 import { Avatar } from "../../components/Avatar";
+import { Button } from "../../components/Button";
 import { RelationshipButton } from "./RelationshipButton";
 import type { Relationship } from "./relationship";
 
@@ -67,9 +68,22 @@ export function ProfilePage() {
             <span aria-hidden="true">🔥</span> {profile.stats.currentStreak} day streak
           </div>
         ) : null}
-        {profile.relationship ? (
+        {profile.relationship === "self" ? (
           <div className="mt-4 flex justify-center">
-            <RelationshipButton username={profile.username} userId={profile.id} relationship={profile.relationship} />
+            <Link to="/settings">
+              <Button variant="secondary" size="sm">
+                Edit Profile
+              </Button>
+            </Link>
+          </div>
+        ) : profile.relationship ? (
+          <div className="mt-4 flex justify-center">
+            <RelationshipButton
+              username={profile.username}
+              userId={profile.id}
+              relationship={profile.relationship}
+              displayName={profile.displayName}
+            />
           </div>
         ) : null}
       </Card>

@@ -1,10 +1,11 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { updateProfileSchema, type UserStatsDTO } from "@dailyloop/shared";
+import { updateProfileSchema, changePasswordSchema, SESSION_COOKIE_NAME, type UserStatsDTO } from "@dailyloop/shared";
 import { prisma } from "../lib/prisma.js";
 import { toMeDTO, toPublicUserDTO } from "../lib/dto.js";
 import { Errors } from "../lib/errors.js";
 import { getRelationship } from "../services/friends.js";
+import { hashPassword, verifyPassword } from "../lib/password.js";
 
 const searchQuerySchema = z.object({ q: z.string().optional() });
 
@@ -16,6 +17,23 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       data: body,
     });
     return reply.send({ data: toMeDTO(updated) });
+  });
+
+  app.patch("/me/password", { preHandler: app.requireAuth }, async (request, reply) => {
+    const body = changePasswordSchema.parse(request.body);
+    const user = request.currentUser!;
+
+    const valid = await verifyPassword(user.passwordHash, body.currentPassword);
+    if (!valid) throw Errors.badRequest("Current password is incorrect");
+
+    const passwordHash = await hashPassword(body.newPassword);
+    await prisma.$transaction([
+      prisma.user.update({ where: { id: user.id }, data: { passwordHash } }),
+      prisma.session.deleteMany({ where: { userId: user.id } }),
+    ]);
+
+    reply.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
+    return reply.send({ data: { ok: true } });
   });
 
   app.get("/search", { preHandler: app.requireAuth }, async (request, reply) => {

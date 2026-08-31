@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import { getTodayKey, dateKeyToJSDate, addDaysToKey } from "@dailyloop/shared";
+import { getTodayKey, dateKeyToJSDate, addDaysToKey, getWeekRangeKeys } from "@dailyloop/shared";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -65,16 +65,21 @@ describe("leaderboard routes", () => {
   it("sums each user's daily scores across the week for the weekly leaderboard", async () => {
     const harry = await registerUser("harry");
     const todayKey = getTodayKey("Asia/Kathmandu");
+    // Pick a second date guaranteed to fall in the same calendar week as today but never equal
+    // to it — "yesterday" doesn't work here since it falls in the *previous* week whenever the
+    // test happens to run on the first day of a new week.
+    const weekStartKey = getWeekRangeKeys(todayKey).start;
+    const otherDayKey = todayKey === weekStartKey ? addDaysToKey(weekStartKey, 1) : weekStartKey;
 
     await prisma.dailyScore.create({
       data: { userId: harry.userId, date: dateKeyToJSDate(todayKey), totalScore: 50, gamesCompleted: 1 },
     });
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: dateKeyToJSDate(addDaysToKey(todayKey, -1)), totalScore: 30, gamesCompleted: 1 },
+      data: { userId: harry.userId, date: dateKeyToJSDate(otherDayKey), totalScore: 30, gamesCompleted: 1 },
     });
-    // Outside this week (9 days ago) — should not count.
+    // Outside this week (2 days before it starts) — should not count.
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: dateKeyToJSDate(addDaysToKey(todayKey, -9)), totalScore: 1000, gamesCompleted: 1 },
+      data: { userId: harry.userId, date: dateKeyToJSDate(addDaysToKey(weekStartKey, -2)), totalScore: 1000, gamesCompleted: 1 },
     });
 
     const res = await app.inject({ method: "GET", url: "/api/leaderboard/weekly", cookies: harry.cookies });

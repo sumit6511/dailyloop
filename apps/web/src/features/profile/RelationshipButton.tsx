@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { Button } from "../../components/Button";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { useToast } from "../../lib/toast-context";
+import { ApiClientError } from "../../lib/api-client";
 import type { Relationship } from "./relationship";
 import {
   useSendFriendRequest,
@@ -12,27 +16,47 @@ interface RelationshipButtonProps {
   username: string;
   userId: string;
   relationship: Relationship;
+  displayName?: string;
 }
 
-export function RelationshipButton({ username, userId, relationship }: RelationshipButtonProps) {
+export function RelationshipButton({ username, userId, relationship, displayName }: RelationshipButtonProps) {
   const sendRequest = useSendFriendRequest();
   const cancelRequest = useCancelFriendRequest();
   const removeFriend = useRemoveFriend();
   const acceptRequest = useAcceptFriendRequest();
   const { data: requests } = useFriendRequests();
+  const { showToast } = useToast();
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+
+  const onError = (err: unknown) => showToast(err instanceof ApiClientError ? err.message : "Something went wrong", "error");
 
   if (relationship === "self") return null;
 
   if (relationship === "friends") {
     return (
-      <Button
-        variant="secondary"
-        size="sm"
-        isLoading={removeFriend.isPending}
-        onClick={() => removeFriend.mutate(userId)}
-      >
-        ✓ Friends
-      </Button>
+      <>
+        <Button variant="secondary" size="sm" onClick={() => setConfirmingRemove(true)}>
+          ✓ Friends
+        </Button>
+        <ConfirmDialog
+          open={confirmingRemove}
+          title={`Remove ${displayName ?? username}?`}
+          body="They'll no longer see your scores on the friends leaderboard, and you won't see theirs."
+          confirmLabel="Remove"
+          danger
+          isLoading={removeFriend.isPending}
+          onConfirm={() =>
+            removeFriend.mutate(userId, {
+              onSuccess: () => {
+                showToast(`Removed ${displayName ?? username}`, "info");
+                setConfirmingRemove(false);
+              },
+              onError,
+            })
+          }
+          onCancel={() => setConfirmingRemove(false)}
+        />
+      </>
     );
   }
 
@@ -44,7 +68,7 @@ export function RelationshipButton({ username, userId, relationship }: Relations
         size="sm"
         isLoading={cancelRequest.isPending}
         disabled={!outgoingRequest}
-        onClick={() => outgoingRequest && cancelRequest.mutate(outgoingRequest.id)}
+        onClick={() => outgoingRequest && cancelRequest.mutate(outgoingRequest.id, { onError })}
       >
         Request sent
       </Button>
@@ -58,7 +82,13 @@ export function RelationshipButton({ username, userId, relationship }: Relations
         size="sm"
         isLoading={acceptRequest.isPending}
         disabled={!incomingRequest}
-        onClick={() => incomingRequest && acceptRequest.mutate(incomingRequest.id)}
+        onClick={() =>
+          incomingRequest &&
+          acceptRequest.mutate(incomingRequest.id, {
+            onSuccess: () => showToast(`You're now friends with ${displayName ?? username}`, "success"),
+            onError,
+          })
+        }
       >
         Accept request
       </Button>
@@ -66,7 +96,16 @@ export function RelationshipButton({ username, userId, relationship }: Relations
   }
 
   return (
-    <Button size="sm" isLoading={sendRequest.isPending} onClick={() => sendRequest.mutate(username)}>
+    <Button
+      size="sm"
+      isLoading={sendRequest.isPending}
+      onClick={() =>
+        sendRequest.mutate(username, {
+          onSuccess: () => showToast("Friend request sent", "success"),
+          onError,
+        })
+      }
+    >
       Add friend
     </Button>
   );

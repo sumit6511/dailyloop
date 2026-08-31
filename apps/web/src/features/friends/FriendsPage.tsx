@@ -8,6 +8,8 @@ import { Avatar } from "../../components/Avatar";
 import { EmptyState } from "../../components/EmptyState";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { RelationshipButton } from "../profile/RelationshipButton";
+import { useToast } from "../../lib/toast-context";
+import { ApiClientError } from "../../lib/api-client";
 import {
   useFriends,
   useFriendRequests,
@@ -28,6 +30,9 @@ export function FriendsPage() {
   const rejectRequest = useRejectFriendRequest();
   const cancelRequest = useCancelFriendRequest();
   const removeFriend = useRemoveFriend();
+  const { showToast } = useToast();
+
+  const onError = (err: unknown) => showToast(err instanceof ApiClientError ? err.message : "Something went wrong", "error");
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -53,7 +58,12 @@ export function FriendsPage() {
                       {user.displayName} <span className="text-white/40">@{user.username}</span>
                     </span>
                   </Link>
-                  <RelationshipButton username={user.username} userId={user.id} relationship={user.relationship} />
+                  <RelationshipButton
+                    username={user.username}
+                    userId={user.id}
+                    relationship={user.relationship}
+                    displayName={user.displayName}
+                  />
                 </div>
               ))
             ) : (
@@ -76,10 +86,19 @@ export function FriendsPage() {
                     <span className="truncate text-sm font-medium text-white/85 hover:text-white">{r.user.displayName}</span>
                   </Link>
                   <div className="flex gap-2">
-                    <Button size="sm" isLoading={acceptRequest.isPending} onClick={() => acceptRequest.mutate(r.id)}>
+                    <Button
+                      size="sm"
+                      isLoading={acceptRequest.isPending}
+                      onClick={() =>
+                        acceptRequest.mutate(r.id, {
+                          onSuccess: () => showToast(`You're now friends with ${r.user.displayName}`, "success"),
+                          onError,
+                        })
+                      }
+                    >
                       Accept
                     </Button>
-                    <Button size="sm" variant="secondary" onClick={() => rejectRequest.mutate(r.id)}>
+                    <Button size="sm" variant="secondary" onClick={() => rejectRequest.mutate(r.id, { onError })}>
                       Reject
                     </Button>
                   </div>
@@ -96,7 +115,7 @@ export function FriendsPage() {
                     <Avatar name={r.user.displayName} size="sm" />
                     <span className="truncate text-sm font-medium text-white/85 hover:text-white">{r.user.displayName}</span>
                   </Link>
-                  <Button size="sm" variant="secondary" onClick={() => cancelRequest.mutate(r.id)}>
+                  <Button size="sm" variant="secondary" onClick={() => cancelRequest.mutate(r.id, { onError })}>
                     Cancel
                   </Button>
                 </div>
@@ -144,7 +163,13 @@ export function FriendsPage() {
         isLoading={removeFriend.isPending}
         onConfirm={() => {
           if (!pendingRemoval) return;
-          removeFriend.mutate(pendingRemoval.id, { onSuccess: () => setPendingRemoval(null) });
+          removeFriend.mutate(pendingRemoval.id, {
+            onSuccess: () => {
+              showToast(`Removed ${pendingRemoval.displayName}`, "info");
+              setPendingRemoval(null);
+            },
+            onError,
+          });
         }}
         onCancel={() => setPendingRemoval(null)}
       />

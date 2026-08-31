@@ -7,6 +7,7 @@ import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { PlayGamePage } from "./features/games/PlayGamePage";
 import { FriendsPage } from "./features/friends/FriendsPage";
 import { ProfilePage } from "./features/profile/ProfilePage";
+import { SettingsPage } from "./features/settings/SettingsPage";
 import { ProtectedRoute } from "./features/layout/ProtectedRoute";
 import { AppShell } from "./features/layout/AppShell";
 import { AdminRoute } from "./features/admin/AdminRoute";
@@ -34,6 +35,7 @@ export default function App() {
                 <Route path="/play/:slug" element={<PlayGamePage />} />
                 <Route path="/friends" element={<FriendsPage />} />
                 <Route path="/u/:username" element={<ProfilePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route
                   path="/admin"
                   element={

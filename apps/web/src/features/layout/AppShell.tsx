@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
+import { useFriendRequests } from "../../lib/friends-api";
 import { api } from "../../lib/api-client";
 import { Button } from "../../components/Button";
 import logoFull from "../../assets/logo-full.png";
@@ -10,6 +11,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const invalidateAuth = useInvalidateAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: requests } = useFriendRequests();
+  const incomingCount = requests?.incoming.length ?? 0;
 
   const handleLogout = async () => {
     await api.post("/auth/logout");
@@ -18,18 +21,29 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   const navLinkClass =
-    "text-sm font-medium text-white/65 transition-colors hover:text-white";
+    "flex items-center gap-1.5 text-sm font-medium text-white/65 transition-colors hover:text-white";
+
+  const requestBadge =
+    incomingCount > 0 ? (
+      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-flame-500 px-1 text-[10px] font-bold text-white">
+        {incomingCount}
+      </span>
+    ) : null;
 
   const navLinks = (
     <>
       <Link to="/friends" onClick={() => setMenuOpen(false)} className={navLinkClass}>
         Friends
+        {requestBadge}
       </Link>
       {user ? (
         <Link to={`/u/${user.username}`} onClick={() => setMenuOpen(false)} className={navLinkClass}>
           Profile
         </Link>
       ) : null}
+      <Link to="/settings" onClick={() => setMenuOpen(false)} className={navLinkClass}>
+        Settings
+      </Link>
       {user?.role === "ADMIN" ? (
         <Link to="/admin" onClick={() => setMenuOpen(false)} className={navLinkClass}>
           Admin
