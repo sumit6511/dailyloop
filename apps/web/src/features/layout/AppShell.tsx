@@ -66,7 +66,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             <nav className="hidden items-center gap-5 sm:flex">
               {navLinks}
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <span className="h-5 w-px bg-white/[0.12]" aria-hidden="true" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="!text-rose-300/80 hover:!bg-rose-500/10 hover:!text-rose-200 focus-visible:!outline-rose-400"
+              >
                 <Icon name="logout" className="text-base" /> Log out
               </Button>
             </nav>
@@ -85,13 +91,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           {menuOpen ? (
             <div className="mt-3 flex flex-col gap-3 border-t border-white/[0.1] pt-3 sm:hidden">
               {navLinks}
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                className="flex items-center gap-1.5 text-left text-sm font-medium text-white/65 hover:text-white"
-              >
-                <Icon name="logout" className="text-lg" /> Log out
-              </button>
+              <div className="mt-1 border-t border-white/[0.1] pt-3">
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  className="flex items-center gap-1.5 text-left text-sm font-medium text-rose-300/80 hover:text-rose-200"
+                >
+                  <Icon name="logout" className="text-lg" /> Log out
+                </button>
+              </div>
             </div>
           ) : null}
         </header>
