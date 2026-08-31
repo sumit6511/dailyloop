@@ -283,29 +283,44 @@ export function PuzzlesPage() {
                       <Button
                         size="sm"
                         variant="secondary"
+                        className="!px-2.5"
+                        aria-label="Publish"
+                        title="Publish"
                         onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "PUBLISHED" } })}
                       >
-                        <Icon name="publish" className="text-base" /> Publish
+                        <Icon name="publish" className="text-base" />
                       </Button>
                     ) : (
                       <Button
                         size="sm"
                         variant="secondary"
+                        className="!px-2.5"
+                        aria-label="Unpublish"
+                        title="Unpublish"
                         onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "ARCHIVED" } })}
                       >
-                        <Icon name="unpublished" className="text-base" /> Unpublish
+                        <Icon name="unpublished" className="text-base" />
                       </Button>
                     )}
                     <Button
                       size="sm"
                       variant="secondary"
+                      className="!px-2.5"
+                      aria-label={editingId === puzzle.id ? "Close editor" : "Edit"}
+                      title={editingId === puzzle.id ? "Close editor" : "Edit"}
                       onClick={() => setEditingId(editingId === puzzle.id ? null : puzzle.id)}
                     >
                       <Icon name={editingId === puzzle.id ? "close" : "edit"} className="text-base" />
-                      {editingId === puzzle.id ? "Close" : "Edit"}
                     </Button>
-                    <Button size="sm" variant="danger" onClick={() => setPendingDelete(puzzle)}>
-                      <Icon name="delete" className="text-base" /> Delete
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      className="!px-2.5"
+                      aria-label="Delete"
+                      title="Delete"
+                      onClick={() => setPendingDelete(puzzle)}
+                    >
+                      <Icon name="delete" className="text-base" />
                     </Button>
                   </div>
                 </div>
