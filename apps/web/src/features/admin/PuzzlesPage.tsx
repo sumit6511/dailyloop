@@ -14,6 +14,7 @@ import { Spinner } from "../../components/Spinner";
 import { Badge } from "../../components/Badge";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Icon } from "../../components/Icon";
+import { Select } from "../../components/Select";
 import { ApiClientError } from "../../lib/api-client";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "neutral"> = {
@@ -40,16 +41,11 @@ function GameSelect({
   games: { slug: string; name: string }[];
   includeAll?: boolean;
 }) {
-  return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} className={INPUT_CLASSES}>
-      {includeAll ? <option value="">All games</option> : null}
-      {games.map((g) => (
-        <option key={g.slug} value={g.slug}>
-          {g.name}
-        </option>
-      ))}
-    </select>
-  );
+  const options = [
+    ...(includeAll ? [{ value: "", label: "All games" }] : []),
+    ...games.map((g) => ({ value: g.slug, label: g.name })),
+  ];
+  return <Select value={value} onChange={onChange} options={options} aria-label="Game" />;
 }
 
 function PuzzleEditor({ puzzle, onClose }: { puzzle: AdminPuzzleDTO; onClose: () => void }) {
@@ -214,14 +210,15 @@ export function PuzzlesPage() {
                 onChange={(e) => setCreateForm((p) => ({ ...p, date: e.target.value }))}
                 className={INPUT_CLASSES}
               />
-              <select
+              <Select
                 value={createForm.status}
-                onChange={(e) => setCreateForm((p) => ({ ...p, status: e.target.value }))}
-                className={INPUT_CLASSES}
-              >
-                <option value="SCHEDULED">Scheduled</option>
-                <option value="PUBLISHED">Published</option>
-              </select>
+                onChange={(v) => setCreateForm((p) => ({ ...p, status: v }))}
+                options={[
+                  { value: "SCHEDULED", label: "Scheduled" },
+                  { value: "PUBLISHED", label: "Published" },
+                ]}
+                aria-label="Status"
+              />
             </div>
             <textarea
               value={createForm.content}
@@ -253,16 +250,17 @@ export function PuzzlesPage() {
             onChange={(e) => setFilters((p) => ({ ...p, date: e.target.value }))}
             className={INPUT_CLASSES}
           />
-          <select
+          <Select
             value={filters.status}
-            onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}
-            className={INPUT_CLASSES}
-          >
-            <option value="">All statuses</option>
-            <option value="SCHEDULED">Scheduled</option>
-            <option value="PUBLISHED">Published</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
+            onChange={(v) => setFilters((p) => ({ ...p, status: v }))}
+            options={[
+              { value: "", label: "All statuses" },
+              { value: "SCHEDULED", label: "Scheduled" },
+              { value: "PUBLISHED", label: "Published" },
+              { value: "ARCHIVED", label: "Archived" },
+            ]}
+            aria-label="Status filter"
+          />
         </div>
 
         {isLoading || !puzzles ? (
