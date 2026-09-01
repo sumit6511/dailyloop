@@ -22,9 +22,7 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
         <div className="relative">
           <GameIcon slug={game.slug} size="md" />
           {isCompleted ? (
-            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-950 bg-emerald-500">
-              <Icon name="check" className="text-[10px] text-white" />
-            </span>
+            <Icon name="check" className="absolute -bottom-1 -right-1 text-base text-emerald-400" />
           ) : null}
         </div>
         <div>
