@@ -149,7 +149,7 @@ export function FriendsPage() {
                   title="Remove friend"
                   onClick={() => setPendingRemoval({ id: friend.id, displayName: friend.displayName })}
                 >
-                  <Icon name="person_remove" className="text-base" />
+                  <Icon name="person_remove" className="text-base text-rose-400" />
                 </Button>
               </div>
             ))}
