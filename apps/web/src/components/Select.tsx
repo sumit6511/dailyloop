@@ -44,6 +44,19 @@ export function Select({ value, onChange, options, className = "", "aria-label":
     };
   }, [open]);
 
+  // The panel's width depends on its longest option label (w-max), so it's only known once
+  // rendered — clamp its left edge afterward rather than guessing a width up front.
+  useLayoutEffect(() => {
+    if (!open || !rect || !panelRef.current) return;
+    const margin = 8;
+    const panelWidth = panelRef.current.getBoundingClientRect().width;
+    const maxLeft = window.innerWidth - panelWidth - margin;
+    const clampedLeft = Math.max(margin, Math.min(rect.left, maxLeft));
+    if (clampedLeft !== rect.left) {
+      setRect((prev) => (prev ? { ...prev, left: clampedLeft } : prev));
+    }
+  }, [open, rect]);
+
   useEffect(() => {
     if (!open) return;
     function handlePointerDown(e: MouseEvent) {

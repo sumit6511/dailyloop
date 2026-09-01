@@ -144,7 +144,7 @@ export function FriendsPage() {
                 <Button
                   size="sm"
                   variant="secondary"
-                  className="!px-2.5"
+                  className="!h-11 !w-11 !px-0"
                   aria-label={`Remove ${friend.displayName}`}
                   title="Remove friend"
                   onClick={() => setPendingRemoval({ id: friend.id, displayName: friend.displayName })}

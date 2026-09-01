@@ -63,7 +63,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
         }}
       />
-      <div className="sticky top-0 z-20 px-3 pt-3 sm:px-6 sm:pt-4">
+      <div className="sticky top-0 z-20 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(1rem,env(safe-area-inset-top))]">
         <header className="glass-strong mx-auto max-w-5xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center">
@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               onClick={() => setMenuOpen((open) => !open)}
               aria-expanded={menuOpen}
               aria-label="Toggle menu"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-lg text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white sm:hidden"
+              className="flex h-11 w-11 items-center justify-center rounded-lg text-lg text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white sm:hidden"
             >
               <Icon name={menuOpen ? "close" : "menu"} className="text-xl" />
             </button>

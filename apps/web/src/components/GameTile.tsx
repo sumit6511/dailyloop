@@ -27,7 +27,7 @@ const STATE_CLASSES: Record<GameTileState, string> = {
 const SIZE_CLASSES: Record<NonNullable<GameTileProps["size"]>, string> = {
   sm: "h-10 w-10 text-sm",
   md: "h-12 w-12 text-lg sm:h-14 sm:w-14 sm:text-xl",
-  lg: "h-16 w-16 text-2xl",
+  lg: "h-14 w-14 text-xl sm:h-16 sm:w-16 sm:text-2xl",
 };
 
 // States that represent a fresh piece of feedback (a reveal, a correct/incorrect answer) get a

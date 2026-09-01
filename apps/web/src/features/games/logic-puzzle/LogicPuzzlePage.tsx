@@ -183,7 +183,7 @@ export function LogicPuzzlePage() {
                 disabled={given}
                 onClick={() => setSelected({ row: r, col: c })}
                 style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
-                className={`relative flex h-11 w-11 items-center justify-center text-lg font-bold transition-colors sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
+                className={`relative flex h-10 w-10 items-center justify-center text-lg font-bold transition-colors sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
                   isJustFilled ? "animate-pop-in" : ""
                 } ${celebrating ? "animate-tile-bounce" : ""} ${
                   given
@@ -224,7 +224,7 @@ export function LogicPuzzlePage() {
         </Button>
       </div>
 
-      <div className="mt-3 flex justify-center gap-2">
+      <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:gap-2">
         {[1, 2, 3, 4, 5, 6].map((n) => (
           <GameTile
             key={n}

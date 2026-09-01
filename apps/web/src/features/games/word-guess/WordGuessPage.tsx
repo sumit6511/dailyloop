@@ -267,7 +267,7 @@ export function WordGuessPage() {
                 type="button"
                 onClick={() => void submitGuess()}
                 disabled={submitMove.isPending || current.length !== WORD_LENGTH}
-                className="rounded-lg bg-white/[0.08] px-3 text-xs font-bold text-white/80 transition-colors hover:bg-white/[0.14] disabled:opacity-40"
+                className="rounded-lg bg-white/[0.08] px-2 text-xs font-bold text-white/80 transition-colors hover:bg-white/[0.14] disabled:opacity-40"
               >
                 Enter
               </button>
@@ -277,7 +277,7 @@ export function WordGuessPage() {
                 key={letter}
                 state={letterStatus.has(letter) ? STATUS_TO_TILE_STATE[letterStatus.get(letter)!] : "default"}
                 onClick={() => setCurrent((prev) => (prev.length < WORD_LENGTH ? prev + letter : prev))}
-                className="h-11 min-w-7 rounded-lg border-0 px-2 text-sm normal-case sm:min-w-9"
+                className="!h-11 !w-6 rounded-lg border-0 px-0 text-sm normal-case sm:!w-9"
               >
                 {letter}
               </GameTile>
@@ -287,7 +287,7 @@ export function WordGuessPage() {
                 type="button"
                 onClick={() => setCurrent((prev) => prev.slice(0, -1))}
                 aria-label="Backspace"
-                className="rounded-lg bg-white/[0.08] px-3 text-xs font-bold text-white/80 transition-colors hover:bg-white/[0.14]"
+                className="rounded-lg bg-white/[0.08] px-2 text-xs font-bold text-white/80 transition-colors hover:bg-white/[0.14]"
               >
                 <Icon name="backspace" className="text-base" />
               </button>

@@ -41,7 +41,7 @@ export function DashboardPage() {
           aria-hidden="true"
         />
         <div className="relative">
-          <h1 className="flex items-center gap-2 font-display text-3xl font-bold sm:text-4xl">
+          <h1 className="flex flex-wrap items-center gap-2 font-display text-3xl font-bold sm:text-4xl">
             {getGreeting()}, {user?.displayName} <Icon name="waving_hand" className="text-3xl text-amber-300" filled />
           </h1>
           <p className="mt-2 max-w-md text-white/70">Today's puzzles are waiting.</p>

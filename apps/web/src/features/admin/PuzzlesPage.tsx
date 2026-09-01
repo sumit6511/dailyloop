@@ -281,7 +281,7 @@ export function PuzzlesPage() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        className="!px-2.5"
+                        className="!h-11 !w-11 !px-0"
                         aria-label="Publish"
                         title="Publish"
                         onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "PUBLISHED" } })}
@@ -292,7 +292,7 @@ export function PuzzlesPage() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        className="!px-2.5"
+                        className="!h-11 !w-11 !px-0"
                         aria-label="Unpublish"
                         title="Unpublish"
                         onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "ARCHIVED" } })}
@@ -303,7 +303,7 @@ export function PuzzlesPage() {
                     <Button
                       size="sm"
                       variant="secondary"
-                      className="!px-2.5"
+                      className="!h-11 !w-11 !px-0"
                       aria-label={editingId === puzzle.id ? "Close editor" : "Edit"}
                       title={editingId === puzzle.id ? "Close editor" : "Edit"}
                       onClick={() => setEditingId(editingId === puzzle.id ? null : puzzle.id)}
@@ -313,7 +313,7 @@ export function PuzzlesPage() {
                     <Button
                       size="sm"
                       variant="danger"
-                      className="!px-2.5"
+                      className="!h-11 !w-11 !px-0"
                       aria-label="Delete"
                       title="Delete"
                       onClick={() => setPendingDelete(puzzle)}
