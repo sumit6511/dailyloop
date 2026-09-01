@@ -55,6 +55,14 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-dvh">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-x-0 top-0 z-10 h-24 backdrop-blur-xl sm:h-28"
+        style={{
+          maskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, black 45%, transparent 100%)",
+        }}
+      />
       <div className="sticky top-0 z-20 px-3 pt-3 sm:px-6 sm:pt-4">
         <header className="glass-strong mx-auto max-w-5xl px-4 py-3 sm:px-6">
           <div className="flex items-center justify-between">
