@@ -23,10 +23,10 @@ export function UsersPage() {
             <tr className="border-b border-white/[0.1] text-left text-xs font-semibold uppercase tracking-wide text-white/50">
               <th className="pb-2">User</th>
               <th className="pb-2">Email</th>
-              <th className="pb-2">Role</th>
-              <th className="pb-2">Streak</th>
-              <th className="pb-2">Games</th>
-              <th className="pb-2">Points</th>
+              <th className="pb-2 text-center">Role</th>
+              <th className="pb-2 text-center">Streak</th>
+              <th className="pb-2 text-center">Games</th>
+              <th className="pb-2 text-center">Points</th>
             </tr>
           </thead>
           <tbody>
@@ -37,16 +37,16 @@ export function UsersPage() {
                   <div className="text-xs text-white/40">@{user.username}</div>
                 </td>
                 <td className="py-2 text-white/60">{user.email}</td>
-                <td className="py-2">
+                <td className="py-2 text-center">
                   <Badge tone={user.role === "ADMIN" ? "brand" : "neutral"}>{user.role}</Badge>
                 </td>
-                <td className="py-2 text-white/60">
+                <td className="py-2 text-center text-white/60">
                   <span className="inline-flex items-center gap-1">
                     <Icon name="local_fire_department" className="text-sm text-flame-400" filled /> {user.currentStreak}
                   </span>
                 </td>
-                <td className="py-2 text-white/60">{user.gamesPlayed}</td>
-                <td className="py-2 text-white/60">{user.totalPoints}</td>
+                <td className="py-2 text-center text-white/60">{user.gamesPlayed}</td>
+                <td className="py-2 text-center text-white/60">{user.totalPoints}</td>
               </tr>
             ))}
           </tbody>
