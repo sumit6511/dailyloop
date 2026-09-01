@@ -41,22 +41,22 @@ export function OverviewPage() {
             <thead>
               <tr className="border-b border-white/[0.1] text-left text-xs font-semibold uppercase tracking-wide text-white/50">
                 <th className="pb-2">Game</th>
-                <th className="pb-2">Status</th>
-                <th className="pb-2">Puzzles</th>
-                <th className="pb-2">Completed</th>
-                <th className="pb-2">Avg Score</th>
+                <th className="pb-2 text-center">Status</th>
+                <th className="pb-2 text-center">Puzzles</th>
+                <th className="pb-2 text-center">Completed</th>
+                <th className="pb-2 text-center">Avg Score</th>
               </tr>
             </thead>
             <tbody>
               {stats.games.map((game) => (
                 <tr key={game.slug} className="border-b border-white/[0.06]">
                   <td className="py-2 font-medium text-white/85">{game.name}</td>
-                  <td className="py-2">
+                  <td className="py-2 text-center">
                     <Badge tone={game.isEnabled ? "success" : "neutral"}>{game.isEnabled ? "Enabled" : "Disabled"}</Badge>
                   </td>
-                  <td className="py-2 text-white/60">{game.puzzleCount}</td>
-                  <td className="py-2 text-white/60">{game.completedCount}</td>
-                  <td className="py-2 text-white/60">{game.averageScore}</td>
+                  <td className="py-2 text-center text-white/60">{game.puzzleCount}</td>
+                  <td className="py-2 text-center text-white/60">{game.completedCount}</td>
+                  <td className="py-2 text-center text-white/60">{game.averageScore}</td>
                 </tr>
               ))}
             </tbody>
