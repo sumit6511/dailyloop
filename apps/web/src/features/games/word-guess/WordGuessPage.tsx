@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useGameToday, useAutoStartAttempt, useSubmitMove } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
-import { Spinner } from "../../../components/Spinner";
+import { Skeleton } from "../../../components/Skeleton";
 import { GameTile, type GameTileState } from "../../../components/GameTile";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
@@ -45,6 +45,20 @@ const GRID_FEEDBACK_CLASSES: Record<LetterStatus, string> = {
 };
 
 const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+
+function BoardSkeleton() {
+  return (
+    <div className="mx-auto flex flex-col gap-1.5">
+      {Array.from({ length: 6 }, (_, row) => (
+        <div key={row} className="flex gap-1.5">
+          {Array.from({ length: WORD_LENGTH }, (_, col) => (
+            <Skeleton key={col} shape="block" className="h-12 w-12 sm:h-14 sm:w-14" />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const FLIP_MS = 500;
 const STAGGER_MS = 220;
@@ -139,8 +153,8 @@ export function WordGuessPage() {
   if (isLoading || !entry) {
     return (
       <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
@@ -157,8 +171,8 @@ export function WordGuessPage() {
   if (!view) {
     return (
       <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );

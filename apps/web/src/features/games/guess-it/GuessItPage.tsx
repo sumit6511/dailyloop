@@ -4,7 +4,7 @@ import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
 import { TextField } from "../../../components/TextField";
-import { Spinner } from "../../../components/Spinner";
+import { Skeleton } from "../../../components/Skeleton";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
@@ -22,6 +22,19 @@ interface GuessItView {
   complete: boolean;
   won?: boolean;
   answer?: string;
+}
+
+function BoardSkeleton() {
+  return (
+    <div className="mx-auto flex max-w-sm flex-col gap-4">
+      <Skeleton className="w-1/3" />
+      <div className="flex flex-col gap-2">
+        <Skeleton className="w-full" />
+        <Skeleton className="w-5/6" />
+      </div>
+      <Skeleton shape="block" className="h-11 w-full" />
+    </div>
+  );
 }
 
 const CELEBRATE_MS = 600;
@@ -42,8 +55,8 @@ export function GuessItPage() {
   if (isLoading || !entry) {
     return (
       <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
@@ -61,8 +74,8 @@ export function GuessItPage() {
   if (!view) {
     return (
       <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
@@ -130,20 +143,24 @@ export function GuessItPage() {
       }
     >
       <div className="flex flex-col gap-3">
-        {view.clues.map((clue, i) => (
-          <div
-            key={i}
-            style={{ animationDelay: `${i * 80}ms` }}
-            className={`animate-pop-in px-4 py-3 transition-colors ${
-              celebrating && i === view.clues.length - 1
-                ? "border border-emerald-400/40 bg-emerald-500/15"
-                : "glass-subtle"
-            }`}
-          >
-            <div className="text-xs font-bold uppercase tracking-wide text-brand-300">Clue {i + 1}</div>
-            <p className="mt-1 text-sm text-white/80">{clue}</p>
-          </div>
-        ))}
+        {view.clues.map((clue, i) => {
+          const isCelebratingClue = celebrating && i === view.clues.length - 1;
+          return (
+            <div
+              key={i}
+              style={{ animationDelay: `${i * 80}ms` }}
+              className={`animate-pop-in relative px-4 py-3 transition-colors ${
+                isCelebratingClue ? "border border-emerald-400/40 bg-emerald-500/15" : "glass-subtle"
+              }`}
+            >
+              {isCelebratingClue ? (
+                <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-2xl bg-emerald-500/30 blur-lg" aria-hidden="true" />
+              ) : null}
+              <div className="text-xs font-bold uppercase tracking-wide text-brand-300">Clue {i + 1}</div>
+              <p className="mt-1 text-sm text-white/80">{clue}</p>
+            </div>
+          );
+        })}
       </div>
 
       {view.guesses.length > 0 ? (

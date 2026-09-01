@@ -6,9 +6,13 @@ interface ToastEntry {
   id: number;
   message: string;
   variant: ToastVariant;
+  leaving?: boolean;
 }
 
 const AUTO_DISMISS_MS = 3500;
+// Matches the animate-toast-out duration in index.css — the toast is removed from the DOM
+// only after its exit animation finishes, instead of vanishing instantly.
+const EXIT_MS = 180;
 
 const VARIANT_CLASSES: Record<ToastVariant, string> = {
   success: "border-emerald-400/30 text-emerald-200",
@@ -27,7 +31,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const nextId = useRef(0);
 
   const dismissToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, leaving: true } : t)));
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, EXIT_MS);
   }, []);
 
   const showToast = useCallback(
@@ -53,7 +60,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role="status"
-            className={`animate-toast-in glass-strong pointer-events-auto flex max-w-sm items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-white ${VARIANT_CLASSES[toast.variant]}`}
+            className={`${toast.leaving ? "animate-toast-out" : "animate-toast-in"} glass-strong pointer-events-auto flex max-w-sm items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-white ${VARIANT_CLASSES[toast.variant]}`}
           >
             <Icon name={VARIANT_ICON[toast.variant]} className="text-lg" filled />
             <span className="flex-1">{toast.message}</span>

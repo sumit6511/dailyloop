@@ -3,7 +3,7 @@ import { useGameToday, useAutoStartAttempt, useSubmitMove } from "../../../lib/g
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
-import { Spinner } from "../../../components/Spinner";
+import { Skeleton } from "../../../components/Skeleton";
 import { GameTile } from "../../../components/GameTile";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
@@ -22,6 +22,16 @@ interface ConnectionsView {
   mistakesRemaining: number;
   complete: boolean;
   categories?: SolvedGroup[];
+}
+
+function BoardSkeleton() {
+  return (
+    <div className="mx-auto grid max-w-md grid-cols-4 gap-2">
+      {Array.from({ length: 16 }, (_, i) => (
+        <Skeleton key={i} shape="block" className="aspect-square" />
+      ))}
+    </div>
+  );
 }
 
 const DIFFICULTY_STYLES: Record<number, string> = {
@@ -71,8 +81,8 @@ export function ConnectionsPage() {
   if (isLoading || !entry) {
     return (
       <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
@@ -90,8 +100,8 @@ export function ConnectionsPage() {
   if (!view) {
     return (
       <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );

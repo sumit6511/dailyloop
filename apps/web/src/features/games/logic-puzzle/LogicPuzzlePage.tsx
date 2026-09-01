@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useGameToday, useAutoStartAttempt, useSubmitMove, useCheckProgress } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
-import { Spinner } from "../../../components/Spinner";
+import { Skeleton } from "../../../components/Skeleton";
 import { GameTile } from "../../../components/GameTile";
 import { Button } from "../../../components/Button";
 import { GameIcon } from "../../../components/GameIcon";
@@ -26,6 +26,16 @@ const BOX_ROWS = 2;
 const BOX_COLS = 3;
 const GRID_SIZE = 6;
 const CELEBRATE_MS = 900;
+
+function BoardSkeleton() {
+  return (
+    <div className="mx-auto grid w-fit grid-cols-6 gap-0.5 rounded-xl border-2 border-white/[0.16] bg-white/[0.16] p-0.5">
+      {Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => (
+        <Skeleton key={i} shape="block" className="h-10 w-10 !rounded-none sm:h-12 sm:w-12" />
+      ))}
+    </div>
+  );
+}
 
 function boxOf(row: number, col: number): number {
   return Math.floor(row / BOX_ROWS) * (GRID_SIZE / BOX_COLS) + Math.floor(col / BOX_COLS);
@@ -55,8 +65,8 @@ export function LogicPuzzlePage() {
   if (isLoading || !entry) {
     return (
       <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
@@ -74,8 +84,8 @@ export function LogicPuzzlePage() {
   if (!view) {
     return (
       <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
@@ -162,8 +172,12 @@ export function LogicPuzzlePage() {
 
   return (
     <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle" subtitle="Fill every row, column, and box with 1–6.">
-      <div className="mx-auto grid w-fit grid-cols-6 gap-0.5 rounded-xl border-2 border-white/[0.16] bg-white/[0.16] p-0.5">
-        {view.grid.map((row, r) =>
+      <div className="relative mx-auto w-fit">
+        {celebrating ? (
+          <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-xl bg-emerald-500/40 blur-xl" aria-hidden="true" />
+        ) : null}
+        <div className="grid grid-cols-6 gap-0.5 rounded-xl border-2 border-white/[0.16] bg-white/[0.16] p-0.5">
+          {view.grid.map((row, r) =>
           row.map((value, c) => {
             const given = isGiven(r, c);
             const isSelected = selected?.row === r && selected?.col === c;
@@ -210,6 +224,7 @@ export function LogicPuzzlePage() {
             );
           }),
         )}
+        </div>
       </div>
 
       {error ? (

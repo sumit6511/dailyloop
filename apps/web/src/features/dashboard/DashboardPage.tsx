@@ -2,11 +2,28 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/use-auth";
 import { useTodayLineup } from "../../lib/games-api";
 import { api } from "../../lib/api-client";
-import { Spinner } from "../../components/Spinner";
+import { Card } from "../../components/Card";
+import { Skeleton } from "../../components/Skeleton";
 import { StreakBadge } from "../../components/StreakBadge";
 import { Icon } from "../../components/Icon";
 import { GameCard } from "./GameCard";
 import { LeaderboardCard } from "./LeaderboardCard";
+
+function GameCardSkeleton() {
+  return (
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Skeleton shape="block" className="h-11 w-11 rounded-xl" />
+        <div className="flex flex-1 flex-col gap-1.5">
+          <Skeleton className="w-2/3" />
+          <Skeleton className="w-full" />
+        </div>
+      </div>
+      <Skeleton className="w-16" />
+      <Skeleton shape="block" className="mt-auto h-9 w-full" />
+    </Card>
+  );
+}
 
 interface StreakDTO {
   currentStreak: number;
@@ -60,8 +77,10 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">
           {isLoading || !games ? (
-            <div className="flex justify-center py-12">
-              <Spinner className="h-8 w-8 text-brand-400" />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {Array.from({ length: 4 }, (_, i) => (
+                <GameCardSkeleton key={i} />
+              ))}
             </div>
           ) : (
             <>
@@ -74,7 +93,7 @@ export function DashboardPage() {
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-white/[0.08]">
                     <div
-                      className="h-full rounded-full bg-brand-500 transition-all"
+                      className="h-full rounded-full bg-brand-500 transition-[width] duration-700 ease-out"
                       style={{ width: `${(completedCount / availableCount) * 100}%` }}
                     />
                   </div>
@@ -82,8 +101,10 @@ export function DashboardPage() {
               ) : null}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {games.map((game) => (
-                  <GameCard key={game.slug} game={game} />
+                {games.map((game, i) => (
+                  <div key={game.slug} className="animate-pop-in" style={{ animationDelay: `${i * 60}ms` }}>
+                    <GameCard game={game} />
+                  </div>
                 ))}
               </div>
             </>

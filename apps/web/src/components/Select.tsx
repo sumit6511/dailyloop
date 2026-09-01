@@ -98,7 +98,7 @@ export function Select({ value, onChange, options, className = "", "aria-label":
               ref={panelRef}
               role="listbox"
               style={{ top: rect.top, left: rect.left, minWidth: rect.width }}
-              className="glass-strong fixed z-50 max-h-64 w-max overflow-y-auto p-1"
+              className="animate-menu-in glass-strong fixed z-50 max-h-64 w-max overflow-y-auto p-1"
             >
               {options.map((option) => (
                 <button

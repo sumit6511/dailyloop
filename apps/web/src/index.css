@@ -170,6 +170,63 @@ body {
   animation: toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes toast-out {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-6px) scale(0.95); opacity: 0; }
+}
+
+.animate-toast-out {
+  animation: toast-out 0.18s ease-in forwards;
+}
+
+@keyframes route-fade {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-route-fade {
+  animation: route-fade 0.22s ease-out;
+}
+
+@keyframes menu-in {
+  0% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-menu-in {
+  animation: menu-in 0.16s ease-out;
+}
+
+/* Native <dialog> open/close transition — @starting-style lets the browser animate from a
+   pre-open state instead of the open/close being an instant, unanimatable display swap. */
+dialog {
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out,
+    overlay 0.2s ease-out allow-discrete,
+    display 0.2s ease-out allow-discrete;
+}
+
+dialog::backdrop {
+  transition: opacity 0.2s ease-out;
+}
+
+dialog:not([open]) {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
 /* Respect reduced-motion globally rather than adding motion-reduce: variants to every
    transition/animation individually across every component. */
 @media (prefers-reduced-motion: reduce) {

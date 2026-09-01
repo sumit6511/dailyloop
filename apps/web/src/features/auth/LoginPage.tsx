@@ -52,7 +52,7 @@ export function LoginPage() {
           {...register("password")}
         />
         {formError ? (
-          <p role="alert" className="text-sm font-medium text-rose-400">
+          <p role="alert" className="animate-shake text-sm font-medium text-rose-400">
             {formError}
           </p>
         ) : null}

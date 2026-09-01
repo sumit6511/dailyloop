@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
 import { useFriendRequests } from "../../lib/friends-api";
 import { api } from "../../lib/api-client";
@@ -11,6 +11,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const invalidateAuth = useInvalidateAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: requests } = useFriendRequests();
   const incomingCount = requests?.incoming.length ?? 0;
@@ -95,7 +96,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           {menuOpen ? (
-            <div className="mt-3 flex flex-col gap-3 border-t border-white/[0.1] pt-3 sm:hidden">
+            <div className="animate-menu-in mt-3 flex flex-col gap-3 border-t border-white/[0.1] pt-3 sm:hidden">
               {navLinks}
               <div className="mt-1 border-t border-white/[0.1] pt-3">
                 <button
@@ -110,7 +111,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           ) : null}
         </header>
       </div>
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        <div key={location.pathname} className="animate-route-fade">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

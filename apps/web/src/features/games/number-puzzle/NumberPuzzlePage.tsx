@@ -3,7 +3,7 @@ import { useGameToday, useAutoStartAttempt, useSubmitMove, useUndoMove } from ".
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
-import { Spinner } from "../../../components/Spinner";
+import { Skeleton } from "../../../components/Skeleton";
 import { GameTile } from "../../../components/GameTile";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
@@ -24,6 +24,19 @@ interface NumberPuzzleView {
   steps: NumberPuzzleStep[];
   complete: boolean;
   won?: boolean;
+}
+
+function BoardSkeleton() {
+  return (
+    <div className="flex flex-col items-center gap-6">
+      <Skeleton className="h-10 w-24" />
+      <div className="flex flex-wrap justify-center gap-2">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} shape="block" className="h-14 w-14 sm:h-16 sm:w-16" />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 const OPS = ["+", "-", "*", "/"] as const;
@@ -49,8 +62,8 @@ export function NumberPuzzlePage() {
   if (isLoading || !entry) {
     return (
       <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
@@ -68,8 +81,8 @@ export function NumberPuzzlePage() {
   if (!view) {
     return (
       <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
-        <div className="flex justify-center py-12">
-          <Spinner className="h-8 w-8 text-brand-400" />
+        <div className="py-4">
+          <BoardSkeleton />
         </div>
       </GameShell>
     );
