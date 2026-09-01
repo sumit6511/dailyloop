@@ -40,10 +40,6 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
         ) : null}
       </div>
 
-      {isCompleted && game.score !== null ? (
-        <p className="text-sm font-semibold text-white/80">Score: {game.score}</p>
-      ) : null}
-
       <div className="mt-auto pt-1">
         {!game.available ? (
           <Button variant="secondary" size="sm" disabled className="w-full">
