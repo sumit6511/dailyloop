@@ -19,7 +19,14 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
       }`}
     >
       <div className="flex items-center gap-2">
-        <GameIcon slug={game.slug} size="md" />
+        <div className="relative">
+          <GameIcon slug={game.slug} size="md" />
+          {isCompleted ? (
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border-2 border-slate-950 bg-emerald-500">
+              <Icon name="check" className="text-[10px] text-white" />
+            </span>
+          ) : null}
+        </div>
         <div>
           <h3 className="font-display font-bold text-white">{game.name}</h3>
           <p className="text-xs text-white/50">{game.description}</p>
@@ -28,15 +35,6 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
 
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone="neutral">{DIFFICULTY_LABEL[game.difficulty] ?? game.difficulty}</Badge>
-        {isCompleted ? (
-          <Badge tone="success">
-            <Icon name="check_circle" className="text-xs" filled /> Completed
-          </Badge>
-        ) : isInProgress ? (
-          <Badge tone="warning">
-            <Icon name="hourglass_top" className="text-xs" /> In progress
-          </Badge>
-        ) : null}
       </div>
 
       {isCompleted && game.score !== null ? (
