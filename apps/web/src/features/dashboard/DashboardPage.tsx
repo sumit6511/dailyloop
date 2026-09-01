@@ -45,12 +45,12 @@ export function DashboardPage() {
             {getGreeting()}, {user?.displayName} <Icon name="waving_hand" className="text-3xl text-amber-300" filled />
           </h1>
           <p className="mt-2 max-w-md text-white/70">Today's puzzles are waiting.</p>
-          <div className="mt-6 flex flex-wrap items-center gap-6">
+          <div className="mt-6 flex flex-wrap items-start gap-6">
             <StreakBadge currentStreak={streak?.currentStreak ?? 0} lastCompletedDate={streak?.lastCompletedDate ?? null} />
-            <div className="rounded-2xl border border-white/[0.12] bg-white/[0.06] px-4 py-2">
-              <span className="inline-flex items-center gap-1 text-lg font-bold">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-lg font-bold text-white">
                 <Icon name="star" className="text-lg text-yellow-300" filled /> {todayScore}
-              </span>{" "}
+              </span>
               <span className="text-sm text-white/70">points today</span>
             </div>
           </div>
