@@ -33,6 +33,11 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
 
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone="neutral">{DIFFICULTY_LABEL[game.difficulty] ?? game.difficulty}</Badge>
+        {isCompleted ? (
+          <Badge tone="success">Completed</Badge>
+        ) : isInProgress ? (
+          <Badge tone="warning">In progress</Badge>
+        ) : null}
       </div>
 
       {isCompleted && game.score !== null ? (
