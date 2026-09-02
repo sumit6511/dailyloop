@@ -143,6 +143,24 @@ export function NumberPuzzlePage() {
     }
   };
 
+  const resetPuzzle = async () => {
+    if (view.steps.length === 0 || combiningIndices || undoMove.isPending) return;
+    setError(null);
+    resetSelection();
+    try {
+      // Undo one step at a time — there's no dedicated "reset" endpoint, and undo is already
+      // proven safe for this game (unlike Logic Puzzle, Number Puzzle doesn't track mistakes,
+      // so replaying undo repeatedly can't be used to erase a scoring penalty).
+      let stepsLeft = view.steps.length;
+      while (stepsLeft > 0) {
+        const response = await undoMove.mutateAsync();
+        stepsLeft = (response.content as NumberPuzzleView).steps.length;
+      }
+    } catch (err) {
+      showToast(err instanceof ApiClientError ? err.message : "Couldn't reset the puzzle", "error");
+    }
+  };
+
   const submitFinal = async () => {
     setError(null);
     try {
@@ -230,15 +248,20 @@ export function NumberPuzzlePage() {
               </div>
             ))}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            isLoading={undoMove.isPending}
-            disabled={!!combiningIndices}
-            onClick={() => void undoLastStep()}
-          >
-            <Icon name="undo" className="text-base" /> Undo last step
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              isLoading={undoMove.isPending}
+              disabled={!!combiningIndices}
+              onClick={() => void undoLastStep()}
+            >
+              <Icon name="undo" className="text-base" /> Undo last step
+            </Button>
+            <Button variant="ghost" size="sm" disabled={!!combiningIndices || undoMove.isPending} onClick={() => void resetPuzzle()}>
+              <Icon name="restart_alt" className="text-base" /> Reset
+            </Button>
+          </div>
         </div>
       ) : null}
 

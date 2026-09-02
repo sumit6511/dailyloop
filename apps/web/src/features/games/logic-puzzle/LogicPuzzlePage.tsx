@@ -5,6 +5,7 @@ import { ResultScreen } from "../ResultScreen";
 import { Skeleton } from "../../../components/Skeleton";
 import { GameTile } from "../../../components/GameTile";
 import { Button } from "../../../components/Button";
+import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
@@ -91,6 +92,8 @@ export function LogicPuzzlePage() {
   const [notesMode, setNotesMode] = useState(false);
   // Pencil marks are purely a local scratchpad — never sent to the server, never scored.
   const [notes, setNotes] = useState<Record<string, Set<number>>>({});
+  const [resetting, setResetting] = useState(false);
+  const [confirmingReset, setConfirmingReset] = useState(false);
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
 
@@ -204,6 +207,34 @@ export function LogicPuzzlePage() {
     }
   };
 
+  const resetGrid = async () => {
+    setConfirmingReset(false);
+    const filledCells: { row: number; col: number }[] = [];
+    for (let r = 0; r < GRID_SIZE; r++) {
+      for (let c = 0; c < GRID_SIZE; c++) {
+        if (!isGiven(r, c) && view.grid[r]![c] !== 0) filledCells.push({ row: r, col: c });
+      }
+    }
+    if (filledCells.length === 0) return;
+    setResetting(true);
+    setError(null);
+    setSelected(null);
+    setWrongCells([]);
+    setNotes({});
+    try {
+      // Erasing (value 0) never counts toward the mistake tally in replay() — same guarantee
+      // the single-cell Erase button already relies on — so resetting the whole board this way
+      // can't be used to wipe out a real scored mistake, unlike undoing moves would.
+      for (const cell of filledCells) {
+        await submitMove.mutateAsync({ row: cell.row, col: cell.col, value: 0 });
+      }
+    } catch (err) {
+      showToast(err instanceof ApiClientError ? err.message : "Couldn't reset the puzzle", "error");
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const showResult = view.complete && !celebrating;
 
   if (showResult) {
@@ -245,7 +276,7 @@ export function LogicPuzzlePage() {
               <button
                 key={`${r}-${c}`}
                 type="button"
-                disabled={given}
+                disabled={given || resetting}
                 onClick={() => setSelected({ row: r, col: c })}
                 style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
                 className={`relative flex h-10 w-10 items-center justify-center text-lg font-bold transition-colors sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
@@ -300,7 +331,7 @@ export function LogicPuzzlePage() {
             key={n}
             size="sm"
             onClick={() => (notesMode ? toggleNote(n) : void fillCell(n))}
-            disabled={!selected}
+            disabled={!selected || resetting}
           >
             {n}
           </GameTile>
@@ -314,18 +345,43 @@ export function LogicPuzzlePage() {
               void fillCell(0);
             }
           }}
-          disabled={!selected}
+          disabled={!selected || resetting}
           aria-label="Erase cell"
         >
           <Icon name="backspace" className="text-base" />
         </GameTile>
       </div>
 
-      <div className="mt-4 flex justify-center">
-        <Button variant="secondary" size="sm" isLoading={checkProgress.isPending} onClick={() => void checkAnswers()}>
+      <div className="mt-4 flex justify-center gap-2">
+        <Button
+          variant="secondary"
+          size="sm"
+          isLoading={checkProgress.isPending}
+          disabled={resetting}
+          onClick={() => void checkAnswers()}
+        >
           <Icon name="fact_check" className="text-lg" /> Check my answers
         </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          isLoading={resetting}
+          disabled={!view.grid.some((row, r) => row.some((v, c) => v !== 0 && !isGiven(r, c)))}
+          onClick={() => setConfirmingReset(true)}
+        >
+          <Icon name="restart_alt" className="text-lg" /> Reset
+        </Button>
       </div>
+
+      <ConfirmDialog
+        open={confirmingReset}
+        title="Reset the grid?"
+        body="This clears every cell you've filled in so far, keeping the given clues. This can't be undone."
+        confirmLabel="Reset"
+        danger
+        onConfirm={() => void resetGrid()}
+        onCancel={() => setConfirmingReset(false)}
+      />
     </GameShell>
   );
 }
