@@ -96,6 +96,14 @@ const GAMES = [
     difficulty: "easy",
     sortOrder: 4,
   },
+  {
+    slug: "pathway",
+    name: "Pathway",
+    description: "Draw one continuous path through every cell, in checkpoint order.",
+    icon: "🧵",
+    difficulty: "hard",
+    sortOrder: 5,
+  },
 ];
 
 async function seedGames() {

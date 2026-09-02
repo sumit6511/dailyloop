@@ -4,6 +4,7 @@ import { wordGuessGame } from "./word-guess/index.js";
 import { numberPuzzleGame } from "./number-puzzle/index.js";
 import { logicPuzzleGame } from "./logic-puzzle/index.js";
 import { guessItGame } from "./guess-it/index.js";
+import { pathwayGame } from "./pathway/index.js";
 
 /** Called once at app startup. Safe to call more than once (idempotent). */
 export function registerAllGames(): void {
@@ -12,6 +13,7 @@ export function registerAllGames(): void {
   registerGame(numberPuzzleGame);
   registerGame(logicPuzzleGame);
   registerGame(guessItGame);
+  registerGame(pathwayGame);
 }
 
-export { connectionsGame, wordGuessGame, numberPuzzleGame, logicPuzzleGame, guessItGame };
+export { connectionsGame, wordGuessGame, numberPuzzleGame, logicPuzzleGame, guessItGame, pathwayGame };
