@@ -26,6 +26,7 @@ const BOX_ROWS = 2;
 const BOX_COLS = 3;
 const GRID_SIZE = 6;
 const CELEBRATE_MS = 900;
+const GROUP_CELEBRATE_MS = 650;
 
 function BoardSkeleton() {
   return (
@@ -45,6 +46,34 @@ function cellKey(row: number, col: number): string {
   return `${row}-${col}`;
 }
 
+function rowCells(row: number): [number, number][] {
+  return Array.from({ length: GRID_SIZE }, (_, c) => [row, c]);
+}
+
+function colCells(col: number): [number, number][] {
+  return Array.from({ length: GRID_SIZE }, (_, r) => [r, col]);
+}
+
+function boxCells(row: number, col: number): [number, number][] {
+  const box = boxOf(row, col);
+  const cells: [number, number][] = [];
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      if (boxOf(r, c) === box) cells.push([r, c]);
+    }
+  }
+  return cells;
+}
+
+// A row/column/box is "solved" once it holds each of 1-6 exactly once — checked purely from
+// the client's own grid (no server round-trip), so the celebration fires the instant a move
+// completes one, not only when the player explicitly checks their answers.
+function groupIsComplete(grid: number[][], cells: [number, number][]): boolean {
+  const values = cells.map(([r, c]) => grid[r]![c]!);
+  if (values.some((v) => v === 0)) return false;
+  return new Set(values).size === GRID_SIZE;
+}
+
 export function LogicPuzzlePage() {
   const { data: entry, isLoading } = useGameToday("logic-puzzle");
   const submitMove = useSubmitMove("logic-puzzle");
@@ -55,6 +84,7 @@ export function LogicPuzzlePage() {
   const [error, setError] = useState<string | null>(null);
   const [justFilled, setJustFilled] = useState<{ row: number; col: number } | null>(null);
   const [celebrating, setCelebrating] = useState(false);
+  const [celebratingCells, setCelebratingCells] = useState<Set<string>>(new Set());
   const [wrongCells, setWrongCells] = useState<{ row: number; col: number }[]>([]);
   const [notesMode, setNotesMode] = useState(false);
   // Pencil marks are purely a local scratchpad — never sent to the server, never scored.
@@ -129,9 +159,17 @@ export function LogicPuzzlePage() {
       if (response.newlyUnlockedAchievements?.length) {
         setNewAchievements(response.newlyUnlockedAchievements);
       }
-      if ((response.content as LogicPuzzleView).won) {
+      const newView = response.content as LogicPuzzleView;
+      if (newView.won) {
         setCelebrating(true);
         setTimeout(() => setCelebrating(false), CELEBRATE_MS);
+      } else if (value !== 0) {
+        const groups = [rowCells(cell.row), colCells(cell.col), boxCells(cell.row, cell.col)];
+        const completed = groups.filter((g) => groupIsComplete(newView.grid, g));
+        if (completed.length > 0) {
+          setCelebratingCells(new Set(completed.flat().map(([r, c]) => cellKey(r, c))));
+          setTimeout(() => setCelebratingCells(new Set()), GROUP_CELEBRATE_MS);
+        }
       }
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
@@ -187,6 +225,7 @@ export function LogicPuzzlePage() {
               (r === selected.row || c === selected.col || boxOf(r, c) === boxOf(selected.row, selected.col));
             const isJustFilled = justFilled?.row === r && justFilled?.col === c;
             const isWrong = wrongCells.some((w) => w.row === r && w.col === c);
+            const isCelebratingCell = celebratingCells.has(cellKey(r, c));
             const cellNotes = value === 0 ? notes[cellKey(r, c)] : undefined;
             const rightBorder = c === 2 ? "border-r-2 border-r-white/[0.16]" : "";
             const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/[0.16]" : "";
@@ -199,16 +238,20 @@ export function LogicPuzzlePage() {
                 style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
                 className={`relative flex h-10 w-10 items-center justify-center text-lg font-bold transition-colors sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
                   isJustFilled ? "animate-pop-in" : ""
-                } ${celebrating ? "animate-tile-bounce" : ""} ${
+                } ${celebrating || isCelebratingCell ? "animate-tile-bounce" : ""} ${
+                  isCelebratingCell ? "ring-2 ring-inset ring-emerald-400/70" : ""
+                } ${
                   given
                     ? "bg-white/[0.03] text-white/50"
                     : isWrong
                       ? "bg-rose-500/20 text-rose-300 ring-2 ring-inset ring-rose-500/60"
-                      : isSelected
-                        ? "bg-brand-600 text-white"
-                        : isPeer
-                          ? "bg-brand-500/[0.12] text-white"
-                          : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
+                      : isCelebratingCell
+                        ? "bg-emerald-500/25 text-emerald-100"
+                        : isSelected
+                          ? "bg-brand-600 text-white"
+                          : isPeer
+                            ? "bg-brand-500/[0.12] text-white"
+                            : "bg-white/[0.06] text-white hover:bg-white/[0.1]"
                 }`}
               >
                 {value !== 0 ? (
