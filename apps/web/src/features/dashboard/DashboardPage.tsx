@@ -38,6 +38,13 @@ function getGreeting(): string {
   return "Good evening";
 }
 
+function getHeroSubtitle(completedCount: number, availableCount: number): string {
+  if (availableCount === 0) return "No puzzles available today. Check back soon!";
+  if (completedCount === 0) return "Today's puzzles are waiting.";
+  if (completedCount < availableCount) return `${completedCount} of ${availableCount} done — keep going!`;
+  return "All of today's puzzles are done. Nice work!";
+}
+
 export function DashboardPage() {
   const { user } = useAuth();
   const { data: games, isLoading } = useTodayLineup();
@@ -61,7 +68,9 @@ export function DashboardPage() {
           <h1 className="flex flex-wrap items-center gap-2 font-display text-3xl font-bold sm:text-4xl">
             {getGreeting()}, {user?.displayName} <Icon name="waving_hand" className="text-3xl text-amber-300" filled />
           </h1>
-          <p className="mt-2 max-w-md text-white/70">Today's puzzles are waiting.</p>
+          <p className="mt-2 max-w-md text-white/70">
+            {isLoading || !games ? "Today's puzzles are waiting." : getHeroSubtitle(completedCount, availableCount)}
+          </p>
           <div className="mt-6 flex flex-wrap items-start gap-6">
             <StreakBadge currentStreak={streak?.currentStreak ?? 0} lastCompletedDate={streak?.lastCompletedDate ?? null} />
             <div className="flex items-center gap-2">
