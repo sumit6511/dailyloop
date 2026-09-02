@@ -95,20 +95,30 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </div>
 
-          {menuOpen ? (
-            <div className="animate-menu-in mt-3 flex flex-col gap-3 border-t border-white/[0.1] pt-3 sm:hidden">
-              {navLinks}
-              <div className="mt-1 border-t border-white/[0.1] pt-3">
-                <button
-                  type="button"
-                  onClick={() => void handleLogout()}
-                  className="flex items-center gap-1.5 text-left text-sm font-medium text-rose-300/80 hover:text-rose-200"
-                >
-                  <Icon name="logout" className="text-lg" /> Log out
-                </button>
+          <div
+            className={`grid transition-[grid-template-rows] duration-[250ms] ease-out sm:hidden ${
+              menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div
+                className={`mt-3 flex flex-col gap-3 border-t border-white/[0.1] pt-3 transition-opacity duration-200 ${
+                  menuOpen ? "opacity-100 delay-100" : "opacity-0"
+                }`}
+              >
+                {navLinks}
+                <div className="mt-1 border-t border-white/[0.1] pt-3">
+                  <button
+                    type="button"
+                    onClick={() => void handleLogout()}
+                    className="flex items-center gap-1.5 text-left text-sm font-medium text-rose-300/80 hover:text-rose-200"
+                  >
+                    <Icon name="logout" className="text-lg" /> Log out
+                  </button>
+                </div>
               </div>
             </div>
-          ) : null}
+          </div>
         </header>
       </div>
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
