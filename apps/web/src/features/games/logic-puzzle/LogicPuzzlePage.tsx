@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGameToday, useAutoStartAttempt, useSubmitMove, useCheckProgress } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
@@ -97,38 +97,11 @@ export function LogicPuzzlePage() {
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
 
-  if (isLoading || !entry) {
-    return (
-      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
-        <div className="py-4">
-          <BoardSkeleton />
-        </div>
-      </GameShell>
-    );
-  }
+  const view = (entry?.content ?? null) as LogicPuzzleView | null;
 
-  if (!entry.available) {
-    return (
-      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
-        <p className="text-center text-white/50">No Logic Puzzle is available today. Check back soon!</p>
-      </GameShell>
-    );
-  }
+  const isGiven = useCallback((row: number, col: number) => (view ? view.puzzle[row]![col] !== 0 : false), [view]);
 
-  const view = entry.content as LogicPuzzleView | null;
-  if (!view) {
-    return (
-      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
-        <div className="py-4">
-          <BoardSkeleton />
-        </div>
-      </GameShell>
-    );
-  }
-
-  const isGiven = (row: number, col: number) => view.puzzle[row]![col] !== 0;
-
-  const clearNotes = (row: number, col: number) => {
+  const clearNotes = useCallback((row: number, col: number) => {
     setNotes((prev) => {
       const key = cellKey(row, col);
       if (!prev[key]) return prev;
@@ -136,21 +109,24 @@ export function LogicPuzzlePage() {
       delete next[key];
       return next;
     });
-  };
+  }, []);
 
-  const toggleNote = (n: number) => {
-    if (!selected || isGiven(selected.row, selected.col)) return;
-    const key = cellKey(selected.row, selected.col);
-    setNotes((prev) => {
-      const current = new Set(prev[key]);
-      if (current.has(n)) current.delete(n);
-      else current.add(n);
-      return { ...prev, [key]: current };
-    });
-  };
+  const toggleNote = useCallback(
+    (n: number) => {
+      if (!selected || isGiven(selected.row, selected.col)) return;
+      const key = cellKey(selected.row, selected.col);
+      setNotes((prev) => {
+        const current = new Set(prev[key]);
+        if (current.has(n)) current.delete(n);
+        else current.add(n);
+        return { ...prev, [key]: current };
+      });
+    },
+    [selected, isGiven],
+  );
 
-  const fillCell = async (value: number) => {
-    if (!selected || view.complete || isGiven(selected.row, selected.col)) return;
+  const fillCell = useCallback(async (value: number) => {
+    if (!view || !selected || view.complete || isGiven(selected.row, selected.col)) return;
     setError(null);
     setWrongCells([]); // the grid is about to change — any earlier check result is now stale
     const cell = selected;
@@ -189,7 +165,57 @@ export function LogicPuzzlePage() {
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
     }
-  };
+  }, [view, selected, isGiven, clearNotes, submitMove, silentCheck]);
+
+  // Keyboard input mirrors the on-screen number pad exactly: digits 1-6 fill the selected cell
+  // (or toggle a pencil mark in Notes mode), Backspace/Delete/0 erase it. Placed before the
+  // early returns below (Rules of Hooks) — the `!view`/`!selected` guard means it's a no-op
+  // whenever the puzzle isn't actually loaded yet.
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!view || !selected || view.complete || resetting) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isGiven(selected.row, selected.col)) return;
+      if (e.key >= "1" && e.key <= "6") {
+        const n = Number(e.key);
+        if (notesMode) toggleNote(n);
+        else void fillCell(n);
+      } else if (e.key === "Backspace" || e.key === "Delete" || e.key === "0") {
+        if (notesMode) clearNotes(selected.row, selected.col);
+        else void fillCell(0);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [view, selected, notesMode, resetting, fillCell, toggleNote, clearNotes, isGiven]);
+
+  if (isLoading || !entry) {
+    return (
+      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
+        <div className="py-4">
+          <BoardSkeleton />
+        </div>
+      </GameShell>
+    );
+  }
+
+  if (!entry.available) {
+    return (
+      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
+        <p className="text-center text-white/50">No Logic Puzzle is available today. Check back soon!</p>
+      </GameShell>
+    );
+  }
+
+  if (!view) {
+    return (
+      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
+        <div className="py-4">
+          <BoardSkeleton />
+        </div>
+      </GameShell>
+    );
+  }
 
   const checkAnswers = async () => {
     setError(null);
