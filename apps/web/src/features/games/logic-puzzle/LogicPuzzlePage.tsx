@@ -65,19 +65,21 @@ function boxCells(row: number, col: number): [number, number][] {
   return cells;
 }
 
-// A row/column/box is "solved" once it holds each of 1-6 exactly once — checked purely from
-// the client's own grid (no server round-trip), so the celebration fires the instant a move
-// completes one, not only when the player explicitly checks their answers.
-function groupIsComplete(grid: number[][], cells: [number, number][]): boolean {
-  const values = cells.map(([r, c]) => grid[r]![c]!);
-  if (values.some((v) => v === 0)) return false;
-  return new Set(values).size === GRID_SIZE;
+// Cheap client-side pre-filter: is every cell in this group filled at all? This alone doesn't
+// mean the group is *correct* — the client never has the solution mid-game, so actual
+// correctness is verified separately via checkProgress before celebrating.
+function groupIsFilled(grid: number[][], cells: [number, number][]): boolean {
+  return cells.every(([r, c]) => grid[r]![c] !== 0);
 }
 
 export function LogicPuzzlePage() {
   const { data: entry, isLoading } = useGameToday("logic-puzzle");
   const submitMove = useSubmitMove("logic-puzzle");
   const checkProgress = useCheckProgress<CheckResult>("logic-puzzle");
+  // Separate mutation instance from `checkProgress` above — this one runs silently in the
+  // background after a move to gate the group-completion celebration, so its pending state
+  // never flashes the loading spinner on the visible "Check my answers" button.
+  const silentCheck = useCheckProgress<CheckResult>("logic-puzzle");
   const { showToast } = useToast();
   const [selected, setSelected] = useState<{ row: number; col: number } | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
@@ -165,10 +167,20 @@ export function LogicPuzzlePage() {
         setTimeout(() => setCelebrating(false), CELEBRATE_MS);
       } else if (value !== 0) {
         const groups = [rowCells(cell.row), colCells(cell.col), boxCells(cell.row, cell.col)];
-        const completed = groups.filter((g) => groupIsComplete(newView.grid, g));
-        if (completed.length > 0) {
-          setCelebratingCells(new Set(completed.flat().map(([r, c]) => cellKey(r, c))));
-          setTimeout(() => setCelebratingCells(new Set()), GROUP_CELEBRATE_MS);
+        const filledGroups = groups.filter((g) => groupIsFilled(newView.grid, g));
+        if (filledGroups.length > 0) {
+          try {
+            const check = await silentCheck.mutateAsync();
+            const wrongSet = new Set(check.cells.filter((c) => !c.correct).map((c) => cellKey(c.row, c.col)));
+            const correctGroups = filledGroups.filter((g) => g.every(([r, c]) => !wrongSet.has(cellKey(r, c))));
+            if (correctGroups.length > 0) {
+              setCelebratingCells(new Set(correctGroups.flat().map(([r, c]) => cellKey(r, c))));
+              setTimeout(() => setCelebratingCells(new Set()), GROUP_CELEBRATE_MS);
+            }
+          } catch {
+            // Cosmetic-only feature — if the correctness check fails, just skip the celebration
+            // silently rather than surfacing an error for something the player didn't ask for.
+          }
         }
       }
     } catch (err) {
