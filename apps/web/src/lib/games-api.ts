@@ -70,6 +70,13 @@ export function useCheckProgress<T>(slug: string) {
   });
 }
 
+/** Read-only "what's a legal next move?" suggestion — not every game supports this (see getHint). */
+export function useHint<T>(slug: string) {
+  return useMutation({
+    mutationFn: () => api.post<T>(`/games/${slug}/attempts/hint`),
+  });
+}
+
 interface UndoResponse {
   content: unknown;
 }

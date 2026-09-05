@@ -131,30 +131,17 @@ describe("attempt lifecycle", () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it("checks Logic Puzzle progress, flagging wrong cells without revealing the solution", async () => {
+  it("gets a Logic Puzzle hint, suggesting a legal cell without revealing the rest of the solution", async () => {
     const { cookies } = await registerUser("harry");
     await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
     await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
 
-    await app.inject({
-      method: "POST",
-      url: "/api/games/logic-puzzle/attempts/submit",
-      cookies,
-      payload: { move: { row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0] } }, // correct
-    });
-    await app.inject({
-      method: "POST",
-      url: "/api/games/logic-puzzle/attempts/submit",
-      cookies,
-      payload: { move: { row: 5, col: 5, value: ((LOGIC_PUZZLE_SOLUTION[5]![5]! % 6) + 1) } }, // wrong
-    });
-
-    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/check", cookies });
+    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
     expect(res.statusCode).toBe(200);
     const body = res.json().data;
+    expect(body).toEqual({ row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0] });
+    // The other blank's solved value shouldn't leak just because a hint was requested.
     expect(JSON.stringify(body)).not.toContain(String(LOGIC_PUZZLE_SOLUTION[5]![5]));
-    expect(body.cells.find((c: { row: number; col: number }) => c.row === 0 && c.col === 0)?.correct).toBe(true);
-    expect(body.cells.find((c: { row: number; col: number }) => c.row === 5 && c.col === 5)?.correct).toBe(false);
   });
 
   it("rejects checking progress for a game that doesn't support it", async () => {
@@ -166,11 +153,20 @@ describe("attempt lifecycle", () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it("rejects checking progress before starting the attempt", async () => {
+  it("rejects a hint request for a game that doesn't support it", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
+
+    const res = await app.inject({ method: "POST", url: "/api/games/connections/attempts/hint", cookies });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("rejects a hint request before starting the attempt", async () => {
     const { cookies } = await registerUser("harry");
     await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
 
-    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/check", cookies });
+    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
     expect(res.statusCode).toBe(400);
   });
 

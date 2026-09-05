@@ -5,7 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
 import { getTodayLineup, getTodayEntryForSlug } from "../services/games-today.js";
-import { startAttempt, submitMove, checkAttempt, undoLastMove } from "../services/attempts.js";
+import { startAttempt, submitMove, checkAttempt, undoLastMove, getHint } from "../services/attempts.js";
 
 // Undo is only safe where reversing a move doesn't erase a genuine mistake's scoring impact —
 // see the doc comment on `undoLastMove` for why this isn't offered to every game.
@@ -96,6 +96,21 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
       }
       if (result.kind === "not_started") throw Errors.badRequest("Start the game before checking your progress");
       return reply.send({ data: result.result });
+    },
+  );
+
+  app.post<{ Params: { slug: string } }>(
+    "/:slug/attempts/hint",
+    { preHandler: app.requireAuth },
+    async (request, reply) => {
+      const result = await getHint(request.currentUser!.id, request.params.slug);
+      if (result.kind === "no_module_or_game") throw Errors.notFound("Game not found");
+      if (result.kind === "not_supported") throw Errors.badRequest("This game doesn't support hints");
+      if (result.kind === "not_available") {
+        throw Errors.badRequest("No puzzle is available for this game today");
+      }
+      if (result.kind === "not_started") throw Errors.badRequest("Start the game before asking for a hint");
+      return reply.send({ data: result.suggestion });
     },
   );
 

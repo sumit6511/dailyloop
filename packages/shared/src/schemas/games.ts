@@ -60,4 +60,7 @@ export interface TodayGameEntryDTO {
   mistakeCount: number | null;
   /** Sanitized puzzle content, or null when unavailable or the game has no engine module yet. */
   content: unknown | null;
+  /** When the current attempt began — ISO string, null before an attempt exists. Lets a client
+   * compute an elapsed-time display that survives a page refresh instead of resetting to zero. */
+  startedAt: string | null;
 }

@@ -65,11 +65,17 @@ export interface DailyGameModule<TContent = unknown, TMove = unknown, TResult = 
   sanitizeForClient(content: TContent, attempt: AttemptState<TMove> | null): unknown;
   /**
    * Optional: lets a client ask "is what I've filled in so far correct?" without revealing the
-   * solution — e.g. Logic Puzzle flags which filled cells are wrong. Games that don't support
-   * this (most of them; a wrong guess is already immediate feedback for e.g. Connections/Word
-   * Guess) simply omit it, and the route responds with a 400.
+   * solution. Most games omit this — a wrong guess is already immediate feedback for e.g.
+   * Connections/Word Guess — and the route responds with a 400 for any game that doesn't define
+   * it.
    */
   checkProgress?(content: TContent, moves: TMove[]): unknown;
+  /**
+   * Optional: a read-only suggestion for what to do next — e.g. Logic Puzzle deduces a
+   * currently-solvable cell+value via Sudoku logic. Never touches the move log or game state;
+   * games that don't support this simply omit it, and the route responds with a 400.
+   */
+  hint?(content: TContent, moves: TMove[]): unknown;
 }
 
 // The registry/API layer manages many different games generically and can't know each

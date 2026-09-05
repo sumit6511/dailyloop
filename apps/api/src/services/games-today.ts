@@ -16,7 +16,16 @@ async function buildEntry(game: Game, userId: string): Promise<TodayGameEntryDTO
   const puzzle = await findTodaysPuzzle(game.id);
 
   if (!puzzle) {
-    return { ...base, available: false, puzzleNumber: null, status: "not_started", score: null, mistakeCount: null, content: null };
+    return {
+      ...base,
+      available: false,
+      puzzleNumber: null,
+      status: "not_started",
+      score: null,
+      mistakeCount: null,
+      content: null,
+      startedAt: null,
+    };
   }
 
   const attempt = await prisma.gameAttempt.findUnique({
@@ -37,6 +46,7 @@ async function buildEntry(game: Game, userId: string): Promise<TodayGameEntryDTO
     score: attempt?.status === "COMPLETED" ? attempt.score : null,
     mistakeCount: attempt ? attempt.mistakeCount : null,
     content,
+    startedAt: attempt ? attempt.startedAt.toISOString() : null,
   };
 }
 

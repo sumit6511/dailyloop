@@ -2,10 +2,10 @@ import { z } from "zod";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { createRng } from "../../rng.js";
-import { SIZE, generateSolvedGrid, carvePuzzle, type Grid } from "./sudoku.js";
+import { SIZE, generateSolvedGrid, carvePuzzle, isValidPlacement, isValidCompleteGrid, findHint, type Grid } from "./sudoku.js";
 
 export interface LogicPuzzleContent {
-  /** Server-only until the attempt is complete. */
+  /** Server-only — never sent to the client except via the read-only hint endpoint's fallback. */
   solution: Grid;
   /** 0 = blank — the given clues, safe to send to the client immediately. */
   puzzle: Grid;
@@ -24,14 +24,17 @@ export interface LogicPuzzleResult {
   won: boolean;
 }
 
-export interface LogicPuzzleCheckCell {
-  row: number;
-  col: number;
-  correct: boolean;
-}
-
 const MAX_REMOVALS = 16;
 
+/**
+ * A non-zero move is only ever committed if it doesn't duplicate a value already in its row,
+ * column, or box — checked against the *current* grid, never the hidden solution. A rejected
+ * move counts as a mistake and leaves the grid untouched, so a cell is never visibly wrong: it's
+ * either correct, blank, or (transiently, client-side) a rejected attempt that never landed.
+ * Since the puzzle's solution is guaranteed unique at generation time, a full grid that satisfies
+ * every constraint is necessarily *the* solution — so win detection never needs to compare
+ * against it either.
+ */
 function replay(content: LogicPuzzleContent, moves: LogicPuzzleMove[]): ValidationResult<LogicPuzzleResult> {
   const grid = content.puzzle.map((row) => [...row]);
   let mistakes = 0;
@@ -40,15 +43,23 @@ function replay(content: LogicPuzzleContent, moves: LogicPuzzleMove[]): Validati
     if (move.row < 0 || move.row >= SIZE || move.col < 0 || move.col >= SIZE) continue;
     if (content.puzzle[move.row]![move.col] !== 0) continue; // can't overwrite a given clue
     if (move.value < 0 || move.value > SIZE) continue;
-    if (move.value !== 0 && move.value !== content.solution[move.row]![move.col]) {
+
+    if (move.value === 0) {
+      grid[move.row]![move.col] = 0; // erase always succeeds, never a mistake
+      continue;
+    }
+
+    const previous = grid[move.row]![move.col]!;
+    grid[move.row]![move.col] = 0; // isValidPlacement assumes the target cell is empty
+    if (isValidPlacement(grid, move.row, move.col, move.value)) {
+      grid[move.row]![move.col] = move.value;
+    } else {
+      grid[move.row]![move.col] = previous; // rejected — restore whatever was there before
       mistakes++;
     }
-    grid[move.row]![move.col] = move.value;
   }
 
-  const isFull = grid.every((row) => row.every((cell) => cell !== 0));
-  const won = isFull && grid.every((row, r) => row.every((cell, c) => cell === content.solution[r]![c]));
-
+  const won = isValidCompleteGrid(grid);
   return { won, complete: won, mistakes, result: { grid, mistakes, won } };
 }
 
@@ -101,20 +112,15 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
       puzzle: content.puzzle,
       grid: result.grid,
       complete,
-      ...(complete ? { solution: content.solution, mistakes: result.mistakes, won: result.won } : {}),
+      ...(complete ? { mistakes: result.mistakes, won: result.won } : {}),
     };
   },
 
-  checkProgress(content, moves) {
+  /** Read-only — never touches the move log. Every committed cell is already guaranteed legal
+   * under the constraint-rejection model above, so `findHint` can deduce purely from the current
+   * grid; `content.solution` is only a defensive fallback (see sudoku.ts). */
+  hint(content, moves) {
     const { result } = replay(content, moves);
-    const cells: LogicPuzzleCheckCell[] = [];
-    for (let r = 0; r < SIZE; r++) {
-      for (let c = 0; c < SIZE; c++) {
-        const value = result.grid[r]![c]!;
-        if (value === 0 || content.puzzle[r]![c] !== 0) continue; // empty or a given clue
-        cells.push({ row: r, col: c, correct: value === content.solution[r]![c] });
-      }
-    }
-    return { cells };
+    return findHint(result.grid, content.solution);
   },
 };
