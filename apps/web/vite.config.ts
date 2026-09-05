@@ -13,6 +13,10 @@ export default defineConfig({
   envDir: path.resolve(__dirname, "../../"),
   server: {
     port: 5173,
+    // Fail loudly if 5173 is taken instead of silently starting on the next free port — a
+    // silent fallback here once meant the dev server was actually on 5174 while everyone kept
+    // opening 5173 (a different, unrelated project) and hitting confusing, unrelated errors.
+    strictPort: true,
   },
   test: {
     environment: "jsdom",
