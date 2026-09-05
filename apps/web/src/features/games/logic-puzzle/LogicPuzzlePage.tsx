@@ -145,21 +145,27 @@ export function LogicPuzzlePage() {
         setCelebrating(true);
         setTimeout(() => setCelebrating(false), CELEBRATE_MS);
       } else if (value !== 0) {
-        const groups = [rowCells(cell.row), colCells(cell.col), boxCells(cell.row, cell.col)];
-        const filledGroups = groups.filter((g) => groupIsFilled(newView.grid, g));
-        if (filledGroups.length > 0) {
-          try {
-            const check = await silentCheck.mutateAsync();
-            const wrongSet = new Set(check.cells.filter((c) => !c.correct).map((c) => cellKey(c.row, c.col)));
+        try {
+          // Live per-move correctness check — flags a wrong placement with the same red ring
+          // "Check my answers" already uses, instead of making the player ask for it, and also
+          // gates the row/column/box celebration below on the same result.
+          const check = await silentCheck.mutateAsync();
+          const wrong = check.cells.filter((c) => !c.correct);
+          setWrongCells(wrong);
+
+          const groups = [rowCells(cell.row), colCells(cell.col), boxCells(cell.row, cell.col)];
+          const filledGroups = groups.filter((g) => groupIsFilled(newView.grid, g));
+          if (filledGroups.length > 0) {
+            const wrongSet = new Set(wrong.map((c) => cellKey(c.row, c.col)));
             const correctGroups = filledGroups.filter((g) => g.every(([r, c]) => !wrongSet.has(cellKey(r, c))));
             if (correctGroups.length > 0) {
               setCelebratingCells(new Set(correctGroups.flat().map(([r, c]) => cellKey(r, c))));
               setTimeout(() => setCelebratingCells(new Set()), GROUP_CELEBRATE_MS);
             }
-          } catch {
-            // Cosmetic-only feature — if the correctness check fails, just skip the celebration
-            // silently rather than surfacing an error for something the player didn't ask for.
           }
+        } catch {
+          // Cosmetic-only feature — if the correctness check fails, just skip the live warning
+          // silently rather than surfacing an error for something the player didn't ask for.
         }
       }
     } catch (err) {
