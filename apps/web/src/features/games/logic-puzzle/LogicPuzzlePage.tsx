@@ -116,6 +116,28 @@ function formatElapsed(totalSeconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
+const TIMER_STORAGE_PREFIX = "dailyloop:logic-puzzle:timer:";
+
+// Keyed by puzzle number (not a wall-clock timestamp) so a new day's puzzle always starts at
+// 0:00, and so the banked value only ever reflects time actually spent on this page.
+function loadElapsedSeconds(puzzleNumber: number): number {
+  try {
+    const raw = localStorage.getItem(`${TIMER_STORAGE_PREFIX}${puzzleNumber}`);
+    const parsed = raw ? Number(raw) : 0;
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveElapsedSeconds(puzzleNumber: number, seconds: number): void {
+  try {
+    localStorage.setItem(`${TIMER_STORAGE_PREFIX}${puzzleNumber}`, String(seconds));
+  } catch {
+    // Best-effort — losing a tick of persistence isn't worth surfacing an error for.
+  }
+}
+
 function SettingRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-white/80">
@@ -248,23 +270,36 @@ export function LogicPuzzlePage() {
   const [hintsUsed, setHintsUsed] = useState(0);
   const [resetting, setResetting] = useState(false);
   const [confirmingReset, setConfirmingReset] = useState(false);
-  const [, forceTick] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
 
   const view = (entry?.content ?? null) as LogicPuzzleView | null;
 
-  // Drives the header timer — ticks once a second while the puzzle is in progress and simply
-  // stops (rather than resetting) once it's complete, freezing the display at the final time.
+  // Resume from whatever active time was already banked for *this* puzzle, keyed by puzzle
+  // number. Deliberately not derived from `Date.now() - startedAt` — that would count wall-clock
+  // time even while the player had navigated away, so the timer would keep running "in the
+  // background" instead of pausing when they exit the puzzle.
   useEffect(() => {
-    if (!entry?.startedAt || view?.complete) return;
-    const id = setInterval(() => forceTick((t) => t + 1), 1000);
-    return () => clearInterval(id);
-  }, [entry?.startedAt, view?.complete]);
+    if (!entry?.puzzleNumber) return;
+    setElapsedSeconds(loadElapsedSeconds(entry.puzzleNumber));
+  }, [entry?.puzzleNumber]);
 
-  const elapsedSeconds = entry?.startedAt
-    ? Math.max(0, Math.floor((Date.now() - new Date(entry.startedAt).getTime()) / 1000))
-    : 0;
+  // Ticks once a second only while this page is mounted and the puzzle is in progress — the
+  // interval (and with it, the timer) stops the moment the player leaves, and its cleanup runs
+  // on unmount, which is exactly what "exiting the puzzle" is in a single-page app.
+  useEffect(() => {
+    if (!entry?.puzzleNumber || view?.complete) return;
+    const puzzleNumber = entry.puzzleNumber;
+    const id = setInterval(() => {
+      setElapsedSeconds((prev) => {
+        const next = prev + 1;
+        saveElapsedSeconds(puzzleNumber, next);
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [entry?.puzzleNumber, view?.complete]);
 
   const isGiven = useCallback((row: number, col: number) => (view ? view.puzzle[row]![col] !== 0 : false), [view]);
 
