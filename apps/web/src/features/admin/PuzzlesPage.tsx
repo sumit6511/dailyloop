@@ -106,6 +106,8 @@ export function PuzzlesPage() {
 
   const [generateForm, setGenerateForm] = useState({ gameSlug: "", date: todayInputValue() });
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [generateSummary, setGenerateSummary] = useState<string | null>(null);
+  const [generatingAll, setGeneratingAll] = useState(false);
   const generatePuzzle = useGeneratePuzzle();
 
   const [createForm, setCreateForm] = useState({
@@ -134,12 +136,43 @@ export function PuzzlesPage() {
 
   const handleGenerate = async () => {
     setGenerateError(null);
+    setGenerateSummary(null);
+
+    // "All games" (an empty gameSlug) means every game, not "no game chosen" — generate one at a
+    // time, treating a game with no generator module or one that already has a puzzle for this
+    // date as a skip rather than a failure, since those are expected, not errors.
     if (!generateForm.gameSlug) {
-      setGenerateError("Choose a game first");
+      setGeneratingAll(true);
+      const generated: string[] = [];
+      const skipped: string[] = [];
+      const failed: string[] = [];
+      try {
+        for (const game of gameOptions) {
+          try {
+            await generatePuzzle.mutateAsync({ gameSlug: game.slug, date: generateForm.date });
+            generated.push(game.name);
+          } catch (err) {
+            if (err instanceof ApiClientError && (err.status === 400 || err.status === 409)) {
+              skipped.push(game.name);
+            } else {
+              failed.push(game.name);
+            }
+          }
+        }
+      } finally {
+        setGeneratingAll(false);
+      }
+      setGenerateSummary(
+        `Generated ${generated.length} of ${gameOptions.length} puzzle${gameOptions.length === 1 ? "" : "s"}` +
+          (skipped.length > 0 ? ` — skipped ${skipped.join(", ")} (already exists or no generator)` : ""),
+      );
+      if (failed.length > 0) setGenerateError(`Failed to generate for: ${failed.join(", ")}`);
       return;
     }
+
     try {
-      await generatePuzzle.mutateAsync(generateForm);
+      const created = await generatePuzzle.mutateAsync(generateForm);
+      setGenerateSummary(`Generated a puzzle for ${created.gameSlug}.`);
     } catch (err) {
       setGenerateError(err instanceof ApiClientError ? err.message : "Failed to generate");
     }
@@ -173,6 +206,8 @@ export function PuzzlesPage() {
           <h2 className="mb-3 font-display text-lg font-bold text-white">Generate a puzzle</h2>
           <p className="mb-3 text-xs text-white/50">
             Uses the game's real generator — only works for games with an engine module.
+            Choose "All games" to generate every game's puzzle for that date at once, skipping any
+            that already have one or don't have a generator.
           </p>
           <div className="flex flex-wrap items-end gap-2">
             <GameSelect
@@ -187,11 +222,12 @@ export function PuzzlesPage() {
               onChange={(e) => setGenerateForm((p) => ({ ...p, date: e.target.value }))}
               className={INPUT_CLASSES}
             />
-            <Button isLoading={generatePuzzle.isPending} onClick={() => void handleGenerate()}>
+            <Button isLoading={generatingAll || generatePuzzle.isPending} onClick={() => void handleGenerate()}>
               <Icon name="auto_awesome" className="text-lg" /> Generate
             </Button>
           </div>
           {generateError ? <p className="mt-2 text-xs font-medium text-rose-400">{generateError}</p> : null}
+          {generateSummary ? <p className="mt-2 text-xs font-medium text-emerald-400">{generateSummary}</p> : null}
         </Card>
 
         <Card intensity="subtle">
@@ -202,7 +238,6 @@ export function PuzzlesPage() {
                 value={createForm.gameSlug}
                 onChange={(v) => setCreateForm((p) => ({ ...p, gameSlug: v }))}
                 games={gameOptions}
-                includeAll
               />
               <input
                 type="date"
