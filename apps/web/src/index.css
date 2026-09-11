@@ -37,6 +37,35 @@ body {
   @apply bg-slate-950 text-white antialiased;
 }
 
+/* One thin, glass-toned scrollbar for every scrollable area in the app — dropdown/select
+   panels, the admin sidebar and tab bar, modal content, overflowing tables — instead of each
+   browser's default opaque bar. `scrollbar-color` covers Firefox; WebKit/Blink (Chrome, Safari,
+   Edge) need the vendor-prefixed pseudo-elements since they ignore that property. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
 .font-display {
   font-family: var(--font-display);
 }
