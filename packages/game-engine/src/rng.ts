@@ -44,3 +44,24 @@ export function shuffle<T>(rng: () => number, items: readonly T[]): T[] {
 export function pickN<T>(rng: () => number, items: readonly T[], count: number): T[] {
   return shuffle(rng, items).slice(0, count);
 }
+
+/**
+ * Picks `count` items from a fixed content bank, preferring ones that haven't been used
+ * recently. `recentlyUsedOldestFirst` lists prior identities oldest-first (an identity can
+ * appear more than once across a long history — only its *last* occurrence matters); an
+ * identity that never appears ranks ahead of everything that has. The rng shuffles first so
+ * ties (all "never used") aren't broken in bank order every time.
+ */
+export function pickLeastRecentlyUsed<T>(
+  rng: () => number,
+  items: readonly T[],
+  identityOf: (item: T) => string,
+  recentlyUsedOldestFirst: readonly string[],
+  count: number,
+): T[] {
+  const lastSeenIndex = new Map<string, number>();
+  recentlyUsedOldestFirst.forEach((id, i) => lastSeenIndex.set(id, i)); // later overwrites earlier
+  return shuffle(rng, items)
+    .sort((a, b) => (lastSeenIndex.get(identityOf(a)) ?? -1) - (lastSeenIndex.get(identityOf(b)) ?? -1))
+    .slice(0, count);
+}

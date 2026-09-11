@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createRng, randInt, shuffle, pickN, hashSeed } from "./rng.js";
+import { createRng, randInt, shuffle, pickN, pickLeastRecentlyUsed, hashSeed } from "./rng.js";
 
 describe("hashSeed", () => {
   it("is deterministic for the same input", () => {
@@ -55,5 +55,38 @@ describe("pickN", () => {
     const result = pickN(rng, ["a", "b", "c", "d", "e"], 3);
     expect(result).toHaveLength(3);
     expect(new Set(result).size).toBe(3);
+  });
+});
+
+describe("pickLeastRecentlyUsed", () => {
+  it("prefers never-used items over any listed as recently used", () => {
+    const rng = createRng("lru-check-1");
+    const items = ["a", "b", "c", "d", "e"];
+    const result = pickLeastRecentlyUsed(rng, items, (x) => x, ["a", "b", "c", "d"], 1);
+    expect(result).toEqual(["e"]);
+  });
+
+  it("ranks an identity by its LAST occurrence, not its first", () => {
+    // "a" appears early (looks stale) but also very late (actually the most recently used) —
+    // a naive indexOf-based implementation would wrongly prefer "a" over "b".
+    const rng = createRng("lru-check-2");
+    const items = ["a", "b"];
+    const recentlyUsedOldestFirst = ["a", "b", "a"]; // "a" used again after "b" — "a" is more recent
+    const result = pickLeastRecentlyUsed(rng, items, (x) => x, recentlyUsedOldestFirst, 1);
+    expect(result).toEqual(["b"]);
+  });
+
+  it("returns count distinct items with no duplicates", () => {
+    const rng = createRng("lru-check-3");
+    const result = pickLeastRecentlyUsed(rng, ["a", "b", "c", "d", "e"], (x) => x, ["a", "c"], 3);
+    expect(result).toHaveLength(3);
+    expect(new Set(result).size).toBe(3);
+  });
+
+  it("is deterministic for the same rng seed and inputs", () => {
+    const items = ["a", "b", "c", "d", "e", "f"];
+    const a = pickLeastRecentlyUsed(createRng("lru-determinism"), items, (x) => x, [], 3);
+    const b = pickLeastRecentlyUsed(createRng("lru-determinism"), items, (x) => x, [], 3);
+    expect(a).toEqual(b);
   });
 });

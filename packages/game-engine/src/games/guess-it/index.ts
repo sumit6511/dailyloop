@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { dateKeyToJSDate } from "@dailyloop/shared";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
+import { createRng, pickLeastRecentlyUsed } from "../../rng.js";
 import { GUESS_IT_ENTRIES } from "./entries.js";
 
 const CLUE_COUNT = 4;
@@ -63,10 +63,6 @@ function replay(content: GuessItContent, moves: GuessItMove[]): ValidationResult
   return { won, complete, mistakes, result: { guesses, cluesRevealed, won, gaveUp } };
 }
 
-function daysSinceEpoch(dateKey: string): number {
-  return Math.floor(dateKeyToJSDate(dateKey).getTime() / 86_400_000);
-}
-
 const CLUES_BASE_SCORE: Record<number, number> = { 1: 90, 2: 70, 3: 50, 4: 30 };
 
 export const guessItGame: DailyGameModule<GuessItContent, GuessItMove, GuessItResult> = {
@@ -85,10 +81,14 @@ export const guessItGame: DailyGameModule<GuessItContent, GuessItMove, GuessItRe
 
   moveSchema: z.object({ guess: z.string().min(1).max(100) }),
 
-  generatePuzzle(_seed, dateKey) {
-    const index = daysSinceEpoch(dateKey) % GUESS_IT_ENTRIES.length;
-    const entry = GUESS_IT_ENTRIES[index]!;
+  generatePuzzle(_seed, dateKey, recentlyUsed = []) {
+    const rng = createRng(`guess-it-${dateKey}`);
+    const entry = pickLeastRecentlyUsed(rng, GUESS_IT_ENTRIES, (e) => e.answer, recentlyUsed, 1)[0]!;
     return { category: entry.category, answer: entry.answer, aliases: entry.aliases, clues: entry.clues };
+  },
+
+  contentIdentity(content) {
+    return [content.answer];
   },
 
   validateAttempt(content, moves) {

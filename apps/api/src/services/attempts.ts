@@ -18,7 +18,7 @@ export async function startAttempt(userId: string, gameSlug: string): Promise<St
   const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
   if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
 
-  const puzzle = await findTodaysPuzzle(game.id);
+  const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
   let attempt = await prisma.gameAttempt.findUnique({
@@ -47,7 +47,7 @@ export async function checkAttempt(userId: string, gameSlug: string): Promise<Ch
   if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
   if (!module.checkProgress) return { kind: "not_supported" };
 
-  const puzzle = await findTodaysPuzzle(game.id);
+  const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
   const attempt = await prisma.gameAttempt.findUnique({
@@ -73,7 +73,7 @@ export async function getHint(userId: string, gameSlug: string): Promise<HintRes
   if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
   if (!module.hint) return { kind: "not_supported" };
 
-  const puzzle = await findTodaysPuzzle(game.id);
+  const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
   const attempt = await prisma.gameAttempt.findUnique({
@@ -104,7 +104,7 @@ export async function undoLastMove(userId: string, gameSlug: string): Promise<Un
   const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
   if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
 
-  const puzzle = await findTodaysPuzzle(game.id);
+  const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
   const attempt = await prisma.gameAttempt.findUnique({
@@ -146,7 +146,7 @@ export async function submitMove(userId: string, gameSlug: string, rawMove: unkn
   const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
   if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
 
-  const puzzle = await findTodaysPuzzle(game.id);
+  const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
   const attempt = await prisma.gameAttempt.findUnique({

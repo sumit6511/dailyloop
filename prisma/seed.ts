@@ -128,14 +128,25 @@ async function seedPuzzles(games: { id: string; slug: string }[]): Promise<void>
 
     let created = 0;
     let puzzleNumber = (await prisma.dailyPuzzle.count({ where: { gameId: game.id } })) + 1;
+    // Oldest-first, accumulated as we seed forward in time, so bulk-seeding gets the same
+    // least-recently-used spacing the real app builds up day by day. Doesn't look further back
+    // than -PUZZLE_HISTORY_DAYS even if older rows exist outside this window — an acceptable
+    // simplification for what's fundamentally a fresh-DB script.
+    const recentlyUsed: string[] = [];
 
     for (let offset = -PUZZLE_HISTORY_DAYS; offset <= PUZZLE_FUTURE_DAYS; offset++) {
       const dateKey = addDaysToKey(todayKey, offset);
       const date = dateKeyToJSDate(dateKey);
       const existing = await prisma.dailyPuzzle.findUnique({ where: { gameId_date: { gameId: game.id, date } } });
-      if (existing) continue;
+      if (existing) {
+        // Feed the accumulator even when skipping, or re-running seed on a partially-seeded DB
+        // loses LRU memory for already-seeded days and the next newly-generated day repeats them.
+        if (module.contentIdentity) recentlyUsed.push(...module.contentIdentity(existing.content));
+        continue;
+      }
 
-      const content = module.generatePuzzle(`${game.slug}-${dateKey}`, dateKey);
+      const content = module.generatePuzzle(`${game.slug}-${dateKey}`, dateKey, recentlyUsed);
+      if (module.contentIdentity) recentlyUsed.push(...module.contentIdentity(content));
       await prisma.dailyPuzzle.create({
         data: {
           gameId: game.id,

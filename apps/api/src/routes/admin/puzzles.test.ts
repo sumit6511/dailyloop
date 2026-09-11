@@ -128,4 +128,34 @@ describe("admin puzzle routes", () => {
     });
     expect(res.statusCode).toBe(400);
   });
+
+  it("404s generating a puzzle for an unknown game", async () => {
+    const adminCookies = await registerAndGetCookies("admin4", "ADMIN");
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/admin/puzzles/generate",
+      cookies: adminCookies,
+      payload: { gameSlug: "does-not-exist", date: getTodayKey("Asia/Kathmandu") },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("generates a real puzzle using the game's own generator, then 409s a repeat for the same game+date", async () => {
+    const adminCookies = await registerAndGetCookies("admin5", "ADMIN");
+    await prisma.game.create({
+      data: { slug: "logic-puzzle", name: "Logic Puzzle", description: "d", icon: "🧠", sortOrder: 0 },
+    });
+    const payload = { gameSlug: "logic-puzzle", date: getTodayKey("Asia/Kathmandu") };
+
+    const first = await app.inject({ method: "POST", url: "/api/admin/puzzles/generate", cookies: adminCookies, payload });
+    expect(first.statusCode).toBe(201);
+    const body = first.json().data;
+    expect(body.status).toBe("SCHEDULED");
+    expect(body.content.puzzle).toBeDefined();
+    expect(body.content.solution).toBeDefined();
+
+    const second = await app.inject({ method: "POST", url: "/api/admin/puzzles/generate", cookies: adminCookies, payload });
+    expect(second.statusCode).toBe(409);
+  });
 });

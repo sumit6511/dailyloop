@@ -1,14 +1,29 @@
 import { describe, it, expect } from "vitest";
 import { guessItGame, type GuessItContent, type GuessItMove } from "./index.js";
+import { GUESS_IT_ENTRIES } from "./entries.js";
+
+const DATE = "2026-08-29";
 
 describe("guess-it: generatePuzzle", () => {
-  it("is deterministic and rotates through the entry bank across dates", () => {
-    const a = guessItGame.generatePuzzle("s", "2026-08-29");
-    const b = guessItGame.generatePuzzle("s", "2026-08-29");
+  it("is deterministic for the same date and recentlyUsed", () => {
+    const a = guessItGame.generatePuzzle("s", DATE);
+    const b = guessItGame.generatePuzzle("s", DATE);
     expect(a).toEqual(b);
+  });
 
-    const c = guessItGame.generatePuzzle("s", "2026-08-30");
-    expect(a.answer).not.toBe(c.answer);
+  it("prefers an entry that hasn't been used recently", () => {
+    const answers = GUESS_IT_ENTRIES.map((e) => e.answer);
+    const recentlyUsed = answers.slice(1); // every entry except the first marked as recently used
+    const content = guessItGame.generatePuzzle("s", DATE, recentlyUsed);
+    expect(content.answer).toBe(answers[0]);
+  });
+});
+
+describe("guess-it: contentIdentity", () => {
+  it("returns the answer", () => {
+    expect(guessItGame.contentIdentity!({ category: "c", answer: "Facebook", aliases: [], clues: ["1", "2", "3", "4"] })).toEqual([
+      "Facebook",
+    ]);
   });
 });
 

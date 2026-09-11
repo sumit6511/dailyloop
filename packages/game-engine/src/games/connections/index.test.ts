@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { connectionsGame, type ConnectionsMove } from "./index.js";
+import { CATEGORY_BANK } from "./categories.js";
 
 const DATE = "2026-08-29";
 
@@ -8,7 +9,7 @@ function generate() {
 }
 
 describe("connections: generatePuzzle", () => {
-  it("is deterministic for the same date", () => {
+  it("is deterministic for the same date and recentlyUsed", () => {
     expect(generate()).toEqual(generate());
   });
 
@@ -22,10 +23,20 @@ describe("connections: generatePuzzle", () => {
     expect(new Set(content.words)).toEqual(new Set(fromCategories));
   });
 
-  it("differs across dates (rotates through the category bank)", () => {
-    const day1 = connectionsGame.generatePuzzle("s", "2026-08-29");
-    const day2 = connectionsGame.generatePuzzle("s", "2026-08-30");
-    expect(day1.categories.map((c) => c.title)).not.toEqual(day2.categories.map((c) => c.title));
+  it("prefers categories that haven't been used recently", () => {
+    const allTitles = CATEGORY_BANK.map((c) => c.title);
+    const neverUsed = new Set(allTitles.slice(0, 4));
+    const recentlyUsed = allTitles.slice(4); // every other category marked as recently used
+
+    const content = connectionsGame.generatePuzzle("s", DATE, recentlyUsed);
+    expect(new Set(content.categories.map((c) => c.title))).toEqual(neverUsed);
+  });
+});
+
+describe("connections: contentIdentity", () => {
+  it("returns the 4 category titles this content used", () => {
+    const content = generate();
+    expect(connectionsGame.contentIdentity!(content)).toEqual(content.categories.map((c) => c.title));
   });
 });
 

@@ -5,6 +5,7 @@ import { createPuzzleSchema, updatePuzzleSchema, generatePuzzleSchema, dateKeyTo
 import { getGameModule } from "@dailyloop/game-engine";
 import { prisma } from "../../lib/prisma.js";
 import { Errors } from "../../lib/errors.js";
+import { nextPuzzleNumber, generatePuzzleForGame } from "../../services/puzzle-generation.js";
 
 const listQuerySchema = z.object({
   gameSlug: z.string().optional(),
@@ -14,10 +15,6 @@ const listQuerySchema = z.object({
     .optional(),
   status: z.enum(["SCHEDULED", "PUBLISHED", "ARCHIVED"]).optional(),
 });
-
-async function nextPuzzleNumber(gameId: string): Promise<number> {
-  return (await prisma.dailyPuzzle.count({ where: { gameId } })) + 1;
-}
 
 export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
   app.get("/puzzles", async (request, reply) => {
@@ -144,29 +141,19 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
 
   app.post("/puzzles/generate", async (request, reply) => {
     const body = generatePuzzleSchema.parse(request.body);
-    const game = await prisma.game.findUnique({ where: { slug: body.gameSlug } });
-    if (!game) throw Errors.notFound("Game not found");
-
-    const module = getGameModule(body.gameSlug);
-    if (!module) throw Errors.badRequest(`"${body.gameSlug}" doesn't have a generator implemented yet`);
-
-    const date = dateKeyToJSDate(body.date);
-    const existing = await prisma.dailyPuzzle.findUnique({ where: { gameId_date: { gameId: game.id, date } } });
-    if (existing) throw Errors.conflict(`A puzzle for ${game.slug} on ${body.date} already exists`);
-
-    const content = module.generatePuzzle(`${body.gameSlug}-${body.date}`, body.date);
-
-    const puzzle = await prisma.dailyPuzzle.create({
-      data: {
-        gameId: game.id,
-        date,
-        puzzleNumber: await nextPuzzleNumber(game.id),
-        status: "SCHEDULED",
-        content: content as Prisma.InputJsonValue,
-        createdById: request.currentUser!.id,
-      },
+    const result = await generatePuzzleForGame(body.gameSlug, body.date, {
+      status: "SCHEDULED",
+      createdById: request.currentUser!.id,
     });
 
-    return reply.status(201).send({ data: { ...puzzle, gameSlug: game.slug, date: body.date } });
+    if (result.kind === "game_not_found") throw Errors.notFound("Game not found");
+    if (result.kind === "no_module") {
+      throw Errors.badRequest(`"${body.gameSlug}" doesn't have a generator implemented yet`);
+    }
+    if (result.kind === "already_exists") {
+      throw Errors.conflict(`A puzzle for ${body.gameSlug} on ${body.date} already exists`);
+    }
+
+    return reply.status(201).send({ data: { ...result.puzzle, gameSlug: body.gameSlug, date: body.date } });
   });
 };

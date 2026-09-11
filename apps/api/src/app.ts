@@ -17,6 +17,7 @@ import { leaderboardRoutes } from "./routes/leaderboard.js";
 import { friendRoutes } from "./routes/friends.js";
 import { achievementRoutes } from "./routes/achievements.js";
 import { adminRoutes } from "./routes/admin/index.js";
+import { cronRoutes } from "./routes/cron.js";
 
 export async function buildApp() {
   registerAllGames();
@@ -76,6 +77,7 @@ export async function buildApp() {
   await app.register(friendRoutes, { prefix: "/api/friends" });
   await app.register(achievementRoutes, { prefix: "/api/achievements" });
   await app.register(adminRoutes, { prefix: "/api/admin" });
+  await app.register(cronRoutes, { prefix: "/api/cron" });
 
   return app;
 }

@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 import { getTodayKey, dateKeyToJSDate, addDaysToKey } from "@dailyloop/shared";
+import { registerGame } from "@dailyloop/game-engine";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -142,6 +144,69 @@ describe("game routes", () => {
     });
 
     const res = await app.inject({ method: "GET", url: "/api/games/mock-game/today", cookies });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.available).toBe(false);
+  });
+
+  it("auto-generates today's puzzle on first request when nothing was scheduled or published", async () => {
+    const { cookies } = await registerUser("harry");
+    await prisma.game.create({
+      data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 0 },
+    });
+
+    const res = await app.inject({ method: "GET", url: "/api/games/word-guess/today", cookies });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.available).toBe(true);
+
+    const created = await prisma.dailyPuzzle.findFirst({ where: { game: { slug: "word-guess" } } });
+    expect(created?.status).toBe("PUBLISHED");
+    expect((created?.content as { answer: string }).answer).toMatch(/^[A-Z]{5}$/);
+  });
+
+  it("doesn't resurrect an ARCHIVED puzzle for today by auto-generating a replacement", async () => {
+    const { cookies } = await registerUser("harry");
+    const game = await prisma.game.create({
+      data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 0 },
+    });
+    await prisma.dailyPuzzle.create({
+      data: {
+        gameId: game.id,
+        date: dateKeyToJSDate(getTodayKey("Asia/Kathmandu")),
+        puzzleNumber: 1,
+        status: "ARCHIVED",
+        content: { answer: "CRANE" },
+      },
+    });
+
+    const res = await app.inject({ method: "GET", url: "/api/games/word-guess/today", cookies });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().data.available).toBe(false);
+    // Still exactly the one ARCHIVED row — nothing new was created alongside it.
+    expect(await prisma.dailyPuzzle.count({ where: { gameId: game.id } })).toBe(1);
+  });
+
+  it("degrades to unavailable (not a 500) when a game's generator throws", async () => {
+    registerGame({
+      id: "throwing-game",
+      name: "Throwing Game",
+      description: "d",
+      icon: "💥",
+      difficulty: "easy",
+      contentSchema: z.any(),
+      moveSchema: z.any(),
+      generatePuzzle: () => {
+        throw new Error("boom");
+      },
+      validateAttempt: () => ({ won: false, complete: false, mistakes: 0, result: {} }),
+      calculateScore: () => ({ base: 0, speedBonus: 0, accuracyBonus: 0, mistakePenalty: 0, total: 0 }),
+      sanitizeForClient: () => null,
+    });
+    const { cookies } = await registerUser("harry");
+    await prisma.game.create({
+      data: { slug: "throwing-game", name: "Throwing Game", description: "d", icon: "💥", sortOrder: 0 },
+    });
+
+    const res = await app.inject({ method: "GET", url: "/api/games/throwing-game/today", cookies });
     expect(res.statusCode).toBe(200);
     expect(res.json().data.available).toBe(false);
   });

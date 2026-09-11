@@ -1,20 +1,27 @@
 import { describe, it, expect } from "vitest";
 import { wordGuessGame, type WordGuessContent, type WordGuessMove } from "./index.js";
+import { ANSWER_WORDS } from "./words.js";
 
 const DATE = "2026-08-29";
 
 describe("word-guess: generatePuzzle", () => {
-  it("is deterministic for the same date and produces a 5-letter uppercase answer", () => {
+  it("is deterministic for the same date and recentlyUsed, and produces a 5-letter uppercase answer", () => {
     const a = wordGuessGame.generatePuzzle("unused-seed", DATE);
     const b = wordGuessGame.generatePuzzle("unused-seed", DATE);
     expect(a).toEqual(b);
     expect(a.answer).toMatch(/^[A-Z]{5}$/);
   });
 
-  it("differs across dates", () => {
-    const day1 = wordGuessGame.generatePuzzle("s", "2026-08-29").answer;
-    const day2 = wordGuessGame.generatePuzzle("s", "2026-08-30").answer;
-    expect(day1).not.toBe(day2);
+  it("prefers a word that hasn't been used recently", () => {
+    const recentlyUsed = ANSWER_WORDS.slice(1); // every word except the first marked as recently used
+    const content = wordGuessGame.generatePuzzle("s", DATE, recentlyUsed);
+    expect(content.answer).toBe(ANSWER_WORDS[0]);
+  });
+});
+
+describe("word-guess: contentIdentity", () => {
+  it("returns the answer word", () => {
+    expect(wordGuessGame.contentIdentity!({ answer: "CRANE" })).toEqual(["CRANE"]);
   });
 });
 

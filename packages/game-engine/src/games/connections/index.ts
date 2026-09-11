@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { dateKeyToJSDate, MAX_MISTAKES } from "@dailyloop/shared";
+import { MAX_MISTAKES } from "@dailyloop/shared";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
-import { shuffle, createRng } from "../../rng.js";
+import { shuffle, createRng, pickLeastRecentlyUsed } from "../../rng.js";
 import { CATEGORY_BANK, type ConnectionsCategory } from "./categories.js";
 
 export interface ConnectionsContent {
@@ -69,10 +69,6 @@ function replay(content: ConnectionsContent, moves: ConnectionsMove[]): Validati
   return { won, complete: won || gaveUp, mistakes, result: { solved, mistakes, won, gaveUp } };
 }
 
-function daysSinceEpoch(dateKey: string): number {
-  return Math.floor(dateKeyToJSDate(dateKey).getTime() / 86_400_000);
-}
-
 export const connectionsGame: DailyGameModule<ConnectionsContent, ConnectionsMove, ConnectionsResult> = {
   id: "connections",
   name: "Connections",
@@ -95,15 +91,16 @@ export const connectionsGame: DailyGameModule<ConnectionsContent, ConnectionsMov
 
   moveSchema: z.object({ words: z.array(z.string()).length(4) }),
 
-  generatePuzzle(_seed, dateKey) {
-    const bankSize = CATEGORY_BANK.length;
-    const startIndex = (daysSinceEpoch(dateKey) * 4) % bankSize;
-    const categories = Array.from({ length: 4 }, (_, i) => CATEGORY_BANK[(startIndex + i) % bankSize]!);
-
+  generatePuzzle(_seed, dateKey, recentlyUsed = []) {
     const rng = createRng(`connections-${dateKey}`);
+    const categories = pickLeastRecentlyUsed(rng, CATEGORY_BANK, (c) => c.title, recentlyUsed, 4);
     const words = shuffle(rng, categories.flatMap((category) => category.words));
 
     return { categories, words };
+  },
+
+  contentIdentity(content) {
+    return content.categories.map((c) => c.title);
   },
 
   validateAttempt(content, moves) {

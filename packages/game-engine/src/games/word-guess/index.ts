@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { dateKeyToJSDate } from "@dailyloop/shared";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
+import { createRng, pickLeastRecentlyUsed } from "../../rng.js";
 import { ANSWER_WORDS, EXTRA_VALID_GUESSES } from "./words.js";
 
 const MAX_GUESSES = 6;
@@ -77,10 +77,6 @@ function replay(content: WordGuessContent, moves: WordGuessMove[]): ValidationRe
   return { won, complete: won || gaveUp, mistakes, result: { guesses, won, gaveUp } };
 }
 
-function daysSinceEpoch(dateKey: string): number {
-  return Math.floor(dateKeyToJSDate(dateKey).getTime() / 86_400_000);
-}
-
 export const wordGuessGame: DailyGameModule<WordGuessContent, WordGuessMove, WordGuessResult> = {
   id: "word-guess",
   name: "Word Guess",
@@ -102,9 +98,13 @@ export const wordGuessGame: DailyGameModule<WordGuessContent, WordGuessMove, Wor
       ),
   }),
 
-  generatePuzzle(_seed, dateKey) {
-    const index = daysSinceEpoch(dateKey) % ANSWER_WORDS.length;
-    return { answer: ANSWER_WORDS[index]! };
+  generatePuzzle(_seed, dateKey, recentlyUsed = []) {
+    const rng = createRng(`word-guess-${dateKey}`);
+    return { answer: pickLeastRecentlyUsed(rng, ANSWER_WORDS, (w) => w, recentlyUsed, 1)[0]! };
+  },
+
+  contentIdentity(content) {
+    return [content.answer];
   },
 
   validateAttempt(content, moves) {

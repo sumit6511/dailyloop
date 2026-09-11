@@ -1,0 +1,16 @@
+name: Pre-generate tomorrow's puzzles
+
+on:
+  schedule:
+    # 00:05 Asia/Kathmandu (UTC+5:45) == 18:20 UTC the previous day.
+    - cron: "20 18 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the generate-tomorrow endpoint
+        run: |
+          curl -sf -X POST "${{ secrets.API_BASE_URL }}/api/cron/generate-tomorrow" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

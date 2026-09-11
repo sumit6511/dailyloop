@@ -22,6 +22,8 @@ services:
         generateValue: true
       - key: DEFAULT_TIMEZONE
         value: Asia/Kathmandu
+      - key: CRON_SECRET
+        generateValue: true
       - key: CORS_ORIGIN
         fromService:
           type: web

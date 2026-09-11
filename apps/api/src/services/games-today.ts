@@ -13,7 +13,7 @@ async function buildEntry(game: Game, userId: string): Promise<TodayGameEntryDTO
     difficulty: game.difficulty,
   };
 
-  const puzzle = await findTodaysPuzzle(game.id);
+  const puzzle = await findTodaysPuzzle(game.id, game.slug);
 
   if (!puzzle) {
     return {

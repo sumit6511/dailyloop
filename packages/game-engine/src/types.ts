@@ -47,8 +47,13 @@ export interface DailyGameModule<TContent = unknown, TMove = unknown, TResult = 
   contentSchema: ZodType<TContent>;
   /** Shape of a single incoming move (one Connections group guess, one Wordle guess, ...). */
   moveSchema: ZodType<TMove>;
-  /** Deterministic: same (seed, dateKey) must always produce the same content. */
-  generatePuzzle(seed: string, dateKey: string): TContent;
+  /**
+   * Deterministic: same (seed, dateKey, recentlyUsed) must always produce the same content.
+   * `recentlyUsed` is an optional list of prior `contentIdentity` keys (oldest first) a
+   * DB-aware caller supplies so a fixed-content-bank game can avoid repeating them soon —
+   * procedural games with no bank simply ignore it.
+   */
+  generatePuzzle(seed: string, dateKey: string, recentlyUsed?: string[]): TContent;
   /**
    * Re-derives complete state from the full move history every time (not just the latest
    * move) — moves are replayed from scratch rather than trusting incrementally-cached state,
@@ -76,6 +81,13 @@ export interface DailyGameModule<TContent = unknown, TMove = unknown, TResult = 
    * games that don't support this simply omit it, and the route responds with a 400.
    */
   hint?(content: TContent, moves: TMove[]): unknown;
+  /**
+   * Optional: identifies which fixed-content-bank entries this generated content used (e.g.
+   * Connections' 4 category titles, Word Guess's answer) — lets a DB-aware caller build the
+   * `recentlyUsed` list for `generatePuzzle` generically, without knowing each game's content
+   * shape. Procedural games (no fixed bank) omit this.
+   */
+  contentIdentity?(content: TContent): string[];
 }
 
 // The registry/API layer manages many different games generically and can't know each
