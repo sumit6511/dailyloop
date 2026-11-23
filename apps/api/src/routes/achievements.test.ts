@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { getTodayKey, dateKeyToJSDate, addDaysToKey, ACHIEVEMENT_CATALOG } from "@dailyloop/shared";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
+import { syncAchievementCatalog } from "../services/achievements.js";
 
 const CONNECTIONS_CONTENT = {
   categories: [
@@ -215,5 +216,43 @@ describe("achievements", () => {
 
     const body = await winConnections(cookies);
     expect(body.newlyUnlockedAchievements).toContain("PERFECT_DAY");
+  });
+
+  it("unlocks FLAWLESS for a clean win, but not after a mistake", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishConnectionsToday();
+    expect((await winConnections(cookies)).newlyUnlockedAchievements).toContain("FLAWLESS");
+
+    const sumit = await registerUser("sumit");
+    await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies: sumit.cookies });
+    await app.inject({
+      method: "POST",
+      url: "/api/games/connections/attempts/submit",
+      cookies: sumit.cookies,
+      payload: { move: { words: ["ONE", "FIVE", "NINE", "RED"] } }, // one mistake first
+    });
+    expect((await winConnections(sumit.cookies)).newlyUnlockedAchievements).not.toContain("FLAWLESS");
+  });
+
+  it("unlocks ALL_ROUNDER only once every enabled game has been won", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishConnectionsToday();
+    const other = await prisma.game.create({
+      data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 1 },
+    });
+    expect((await winConnections(cookies)).newlyUnlockedAchievements).not.toContain("ALL_ROUNDER");
+
+    // Disabling the unwon game means every *enabled* game is now won; the next win unlocks it.
+    await prisma.game.update({ where: { id: other.id }, data: { isEnabled: false } });
+    await prisma.gameAttempt.deleteMany();
+    await prisma.dailyScore.deleteMany();
+    expect((await winConnections(cookies)).newlyUnlockedAchievements).toContain("ALL_ROUNDER");
+  });
+
+  it("restores missing catalog rows at startup so new achievements can be earned", async () => {
+    await prisma.achievement.delete({ where: { key: "FLAWLESS" } });
+    await syncAchievementCatalog(prisma);
+    expect(await prisma.achievement.findUnique({ where: { key: "FLAWLESS" } })).not.toBeNull();
+    expect(await prisma.achievement.count()).toBe(ACHIEVEMENT_CATALOG.length);
   });
 });

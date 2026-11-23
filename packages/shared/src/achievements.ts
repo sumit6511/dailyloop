@@ -33,5 +33,23 @@ export const ACHIEVEMENT_CATALOG: AchievementDefinition[] = [
     description: "Complete every game available in a single day.",
     icon: "verified",
   },
-  { key: "SPEED_DEMON", name: "Speed Demon", description: "Complete a game in under 15 seconds.", icon: "bolt" },
+  { key: "SPEED_DEMON", name: "Speed Demon", description: "Win a game in under 15 seconds.", icon: "bolt" },
+  {
+    key: "FLAWLESS",
+    name: "Flawless",
+    description: "Win a game without a single mistake or hint.",
+    icon: "diamond",
+  },
+  {
+    key: "ALL_ROUNDER",
+    name: "All-Rounder",
+    description: "Win every game at least once.",
+    icon: "extension",
+  },
+  {
+    key: "STREAK_100",
+    name: "Centurion",
+    description: "Complete a daily game 100 days in a row.",
+    icon: "auto_awesome",
+  },
 ];

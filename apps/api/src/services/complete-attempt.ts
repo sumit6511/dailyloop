@@ -87,6 +87,8 @@ export async function completeAttempt(input: CompleteAttemptInput) {
       currentStreak: streak?.currentStreak ?? 0,
       isPerfectDay,
       durationMs: input.durationMs,
+      mistakeCount: input.mistakeCount,
+      hintsUsed: attempt.hintsUsed,
     });
 
     return { attempt, dailyScore, streak, newlyUnlockedAchievements };

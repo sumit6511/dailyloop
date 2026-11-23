@@ -1,7 +1,11 @@
 import { buildApp } from "./app.js";
 import { env } from "./config/env.js";
+import { prisma } from "./lib/prisma.js";
+import { syncAchievementCatalog } from "./services/achievements.js";
 
 const app = await buildApp();
+// New achievements ship in code; make sure their rows exist before anyone can earn them.
+await syncAchievementCatalog(prisma);
 
 try {
   const address = await app.listen({ port: env.PORT, host: "0.0.0.0" });
