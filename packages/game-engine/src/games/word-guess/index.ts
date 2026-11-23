@@ -3,9 +3,12 @@ import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { createRng, pickLeastRecentlyUsed } from "../../rng.js";
 import { ANSWER_WORDS, EXTRA_VALID_GUESSES } from "./words.js";
+import { DICTIONARY_GUESSES } from "./valid-guesses.js";
 
 const MAX_GUESSES = 6;
-const ALL_VALID_GUESSES = new Set<string>([...ANSWER_WORDS, ...EXTRA_VALID_GUESSES]);
+// Answers stay curated and common; *guesses* accept any real 5-letter word (~12.6k), so a
+// player is never told an ordinary word like SLATE or BRAKE "isn't in our dictionary".
+const ALL_VALID_GUESSES = new Set<string>([...ANSWER_WORDS, ...EXTRA_VALID_GUESSES, ...DICTIONARY_GUESSES]);
 
 export interface WordGuessContent {
   /** Server-only — never sent to the client until the attempt is complete. */

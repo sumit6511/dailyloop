@@ -115,3 +115,21 @@ describe("word-guess: sanitizeForClient", () => {
     expect(done.answer).toBe("CRANE");
   });
 });
+
+describe("word-guess: moveSchema", () => {
+  it("accepts ordinary words that aren't in the curated lists, normalising case and whitespace", () => {
+    for (const guess of ["slate", " STARE ", "Brake", "games", "adieu"]) {
+      expect(wordGuessGame.moveSchema.safeParse({ guess }).success).toBe(true);
+    }
+  });
+
+  it("accepts every possible answer", () => {
+    for (const guess of ANSWER_WORDS) expect(wordGuessGame.moveSchema.safeParse({ guess }).success).toBe(true);
+  });
+
+  it("still rejects non-words and the wrong length", () => {
+    for (const guess of ["ZZZZZ", "QWRTY", "ABCD", "ABCDEF", "AB1DE"]) {
+      expect(wordGuessGame.moveSchema.safeParse({ guess }).success).toBe(false);
+    }
+  });
+});
