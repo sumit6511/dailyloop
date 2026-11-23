@@ -60,6 +60,9 @@ export interface TodayGameEntryDTO {
   mistakeCount: number | null;
   /** Hints charged to the current attempt (they lower its score); null before an attempt exists. */
   hintsUsed: number | null;
+  /** Active play time so far (see ACTIVE_TIME) — what a pausable timer should display and what
+   * games with active timing are scored on. Null before an attempt exists. */
+  activeMs: number | null;
   /** Sanitized puzzle content, or null when unavailable or the game has no engine module yet. */
   content: unknown | null;
   /** When the current attempt began — ISO string, null before an attempt exists. Lets a client

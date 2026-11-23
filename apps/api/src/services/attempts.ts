@@ -1,5 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import { Prisma, type AttemptStatus, type GameAttempt } from "@prisma/client";
+import { ACTIVE_TIME } from "@dailyloop/shared";
 import { getGameModule } from "@dailyloop/game-engine";
 import { prisma } from "../lib/prisma.js";
 import { AttemptConflictError, completeAttempt } from "./complete-attempt.js";
@@ -31,6 +32,18 @@ async function compareAndSet(attempt: GameAttempt, data: Prisma.GameAttemptUpdat
   return count === 1;
 }
 
+/**
+ * Active-time bookkeeping for one more piece of activity at `now`: the gap since the previous
+ * activity counts as play only if it's short enough that the player was plausibly still on the
+ * puzzle (ACTIVE_TIME.MAX_GAP_MS); anything longer is treated as time away. Folded into every
+ * attempt write, so it shares their compare-and-set and can't lose an increment.
+ */
+export function activity(attempt: Pick<GameAttempt, "activeMs" | "lastActiveAt">, now: Date) {
+  const gap = attempt.lastActiveAt ? now.getTime() - attempt.lastActiveAt.getTime() : Infinity;
+  const credited = gap >= 0 && gap <= ACTIVE_TIME.MAX_GAP_MS ? gap : 0;
+  return { activeMs: attempt.activeMs + credited, lastActiveAt: now };
+}
+
 class TooMuchContentionError extends Error {
   constructor() {
     super("Couldn't update the attempt after repeated concurrent writes");
@@ -54,7 +67,7 @@ export async function startAttempt(userId: string, gameSlug: string): Promise<St
   if (!attempt) {
     try {
       attempt = await prisma.gameAttempt.create({
-        data: { userId, dailyPuzzleId: puzzle.id, status: "IN_PROGRESS", attemptLog: [] },
+        data: { userId, dailyPuzzleId: puzzle.id, status: "IN_PROGRESS", attemptLog: [], lastActiveAt: new Date() },
       });
     } catch (err) {
       // Two starts raced (e.g. a double-mounted page) and the other one created the row first.
@@ -131,7 +144,8 @@ export async function getHint(userId: string, gameSlug: string): Promise<HintRes
     const hint = JSON.parse(JSON.stringify(suggestion)) as Prisma.InputJsonValue;
     if (isDeepStrictEqual(attempt.lastHint, hint)) return { kind: "ok", hint, hintsUsed: attempt.hintsUsed };
 
-    if (await compareAndSet(attempt, { hintsUsed: { increment: 1 }, lastHint: hint })) {
+    const charge = { hintsUsed: { increment: 1 }, lastHint: hint, ...activity(attempt, new Date()) };
+    if (await compareAndSet(attempt, charge)) {
       return { kind: "ok", hint, hintsUsed: attempt.hintsUsed + 1 };
     }
     // Lost a race with another hint or a move — re-read and decide again.
@@ -174,6 +188,7 @@ export async function undoLastMove(userId: string, gameSlug: string): Promise<Un
     const written = await compareAndSet(attempt, {
       attemptLog: newMoves as Prisma.InputJsonValue,
       mistakeCount: validation.mistakes,
+      ...activity(attempt, new Date()),
     });
     if (written) {
       return {
@@ -226,11 +241,14 @@ export async function submitMove(userId: string, gameSlug: string, rawMove: unkn
 
     const moves = [...movesOf(attempt.attemptLog), parsedMove.data];
     const validation = module.validateAttempt(puzzle.content, moves);
+    const now = new Date();
+    const active = activity(attempt, now);
 
     if (!validation.complete) {
       const written = await compareAndSet(attempt, {
         attemptLog: moves as Prisma.InputJsonValue,
         mistakeCount: validation.mistakes,
+        ...active,
       });
       if (!written) continue;
       return {
@@ -243,7 +261,8 @@ export async function submitMove(userId: string, gameSlug: string, rawMove: unkn
       };
     }
 
-    const durationMs = Date.now() - attempt.startedAt.getTime();
+    const durationMs =
+      module.timing === "active" ? active.activeMs : now.getTime() - attempt.startedAt.getTime();
     const scoreBreakdown = module.calculateScore(puzzle.content, validation.result, {
       durationMs,
       hintsUsed: attempt.hintsUsed,
@@ -255,6 +274,7 @@ export async function submitMove(userId: string, gameSlug: string, rawMove: unkn
         userId,
         dailyPuzzleId: puzzle.id,
         expectedVersion: attempt.version,
+        activeMs: active.activeMs,
         won: validation.won,
         mistakeCount: validation.mistakes,
         durationMs,
@@ -274,6 +294,37 @@ export async function submitMove(userId: string, gameSlug: string, rawMove: unkn
       score: scoreBreakdown.total,
       newlyUnlockedAchievements,
     };
+  }
+  throw new TooMuchContentionError();
+}
+
+export type HeartbeatResult =
+  | { kind: "no_module_or_game" }
+  | { kind: "not_available" }
+  | { kind: "not_started" }
+  | { kind: "ok"; activeMs: number; complete: boolean };
+
+/**
+ * "The player is still on this puzzle." Sent periodically by pages that show a pausable timer;
+ * credits the time since the last activity (if short enough) and returns the running total, so
+ * the page can display exactly the time that will be scored. Harmless for any game: it only
+ * changes the scored duration of modules with `timing: "active"`.
+ */
+export async function recordHeartbeat(userId: string, gameSlug: string): Promise<HeartbeatResult> {
+  const module = getGameModule(gameSlug);
+  const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
+  if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
+
+  const puzzle = await findTodaysPuzzle(game.id, game.slug);
+  if (!puzzle) return { kind: "not_available" };
+
+  for (let tries = 0; tries < MAX_WRITE_ATTEMPTS; tries++) {
+    const attempt = await loadAttempt(userId, puzzle.id);
+    if (!attempt) return { kind: "not_started" };
+    if (attempt.status === "COMPLETED") return { kind: "ok", activeMs: attempt.activeMs, complete: true };
+
+    const active = activity(attempt, new Date());
+    if (await compareAndSet(attempt, active)) return { kind: "ok", activeMs: active.activeMs, complete: false };
   }
   throw new TooMuchContentionError();
 }

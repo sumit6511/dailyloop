@@ -24,6 +24,7 @@ async function buildEntry(game: Game, userId: string): Promise<TodayGameEntryDTO
       score: null,
       mistakeCount: null,
       hintsUsed: null,
+      activeMs: null,
       content: null,
       startedAt: null,
     };
@@ -47,6 +48,7 @@ async function buildEntry(game: Game, userId: string): Promise<TodayGameEntryDTO
     score: attempt?.status === "COMPLETED" ? attempt.score : null,
     mistakeCount: attempt ? attempt.mistakeCount : null,
     hintsUsed: attempt ? attempt.hintsUsed : null,
+    activeMs: attempt ? attempt.activeMs : null,
     content,
     startedAt: attempt ? attempt.startedAt.toISOString() : null,
   };

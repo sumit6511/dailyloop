@@ -59,4 +59,9 @@ export const api = {
   put: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: "PUT", body: data !== undefined ? JSON.stringify(data) : undefined }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  /** Fire-and-forget POST that survives the page unloading (tab close, reload, external
+   * navigation) — a normal fetch is cancelled at unload. Response and errors are ignored. */
+  postOnUnload: (path: string) => {
+    void fetch(`${API_URL}${path}`, { method: "POST", credentials: "include", keepalive: true }).catch(() => {});
+  },
 };

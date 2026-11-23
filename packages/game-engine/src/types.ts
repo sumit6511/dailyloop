@@ -48,6 +48,13 @@ export interface DailyGameModule<TContent = unknown, TMove = unknown, TResult = 
   description: string;
   icon: string;
   difficulty: Difficulty;
+  /**
+   * How the scored duration (ScoreMeta.durationMs) is measured. "wall-clock" (the default) is
+   * time since the attempt started. "active" counts only time the player was actually on the
+   * puzzle — for games whose UI pauses its clock when the player leaves, and which must then
+   * send heartbeats (see ACTIVE_TIME in @dailyloop/shared) so thinking time isn't lost.
+   */
+  timing?: "wall-clock" | "active";
   contentSchema: ZodType<TContent>;
   /** Shape of a single incoming move (one Connections group guess, one Wordle guess, ...). */
   moveSchema: ZodType<TMove>;

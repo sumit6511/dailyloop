@@ -9,6 +9,17 @@ export const SCORE = {
   HINT_PENALTY: 10,
 } as const;
 
+/**
+ * Active-time tracking for games that pause their clock when the player leaves. The server adds
+ * the gap between consecutive pieces of activity (moves, hints, heartbeats) to an attempt's
+ * active time only when that gap is at most MAX_GAP_MS; a longer gap means the player was away.
+ * Clients send a heartbeat every HEARTBEAT_MS while the puzzle is on screen.
+ */
+export const ACTIVE_TIME = {
+  HEARTBEAT_MS: 15_000,
+  MAX_GAP_MS: 45_000,
+} as const;
+
 export const SESSION_COOKIE_NAME = "dp_session";
 export const SESSION_DURATION_DAYS = 30;
 

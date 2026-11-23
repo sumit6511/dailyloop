@@ -17,6 +17,8 @@ interface CompleteAttemptInput {
   dailyPuzzleId: string;
   /** The `version` the caller computed the result from; completion only happens if it's unchanged. */
   expectedVersion: number;
+  /** Active play time up to and including this final move. */
+  activeMs: number;
   won: boolean;
   mistakeCount: number;
   durationMs: number;
@@ -47,6 +49,8 @@ export async function completeAttempt(input: CompleteAttemptInput) {
       },
       data: {
         version: { increment: 1 },
+        activeMs: input.activeMs,
+        lastActiveAt: new Date(),
         status: "COMPLETED",
         attemptLog: input.moves as Prisma.InputJsonValue,
         mistakeCount: input.mistakeCount,

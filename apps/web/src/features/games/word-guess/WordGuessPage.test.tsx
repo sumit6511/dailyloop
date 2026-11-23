@@ -18,6 +18,7 @@ function seedInProgressEntry() {
     score: null,
     mistakeCount: 0,
     hintsUsed: null,
+    activeMs: null,
     content: { guesses: [], guessesRemaining: 6, complete: false },
   });
   return queryClient;

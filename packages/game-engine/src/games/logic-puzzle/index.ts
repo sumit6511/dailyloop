@@ -74,6 +74,8 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
   description: "Solve a daily 6×6 mini logic grid.",
   icon: "🧠",
   difficulty: "hard",
+  // The page shows a timer that pauses while you're away, so score the same time it shows.
+  timing: "active",
 
   contentSchema: z.object({
     solution: z.array(z.array(z.number().int().min(1).max(SIZE)).length(SIZE)).length(SIZE),

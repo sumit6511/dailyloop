@@ -5,7 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
 import { getTodayLineup, getTodayEntryForSlug } from "../services/games-today.js";
-import { startAttempt, submitMove, checkAttempt, undoLastMove, getHint } from "../services/attempts.js";
+import { startAttempt, submitMove, checkAttempt, undoLastMove, getHint, recordHeartbeat } from "../services/attempts.js";
 
 // Undo is only safe where reversing a move doesn't erase a genuine mistake's scoring impact —
 // see the doc comment on `undoLastMove` for why this isn't offered to every game.
@@ -112,6 +112,20 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
       if (result.kind === "not_started") throw Errors.badRequest("Start the game before asking for a hint");
       if (result.kind === "already_completed") throw Errors.badRequest("This puzzle is already complete");
       return reply.send({ data: { hint: result.hint, hintsUsed: result.hintsUsed } });
+    },
+  );
+
+  app.post<{ Params: { slug: string } }>(
+    "/:slug/attempts/heartbeat",
+    { preHandler: app.requireAuth },
+    async (request, reply) => {
+      const result = await recordHeartbeat(request.currentUser!.id, request.params.slug);
+      if (result.kind === "no_module_or_game") throw Errors.notFound("Game not found");
+      if (result.kind === "not_available") {
+        throw Errors.badRequest("No puzzle is available for this game today");
+      }
+      if (result.kind === "not_started") throw Errors.badRequest("Start the game first");
+      return reply.send({ data: { activeMs: result.activeMs, complete: result.complete } });
     },
   );
 

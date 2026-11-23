@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
-import { getTodayKey, dateKeyToJSDate, addDaysToKey, SCORE } from "@dailyloop/shared";
+import { getTodayKey, dateKeyToJSDate, addDaysToKey, SCORE, ACTIVE_TIME } from "@dailyloop/shared";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
+import { activity } from "../services/attempts.js";
 
 const CONNECTIONS_CONTENT = {
   categories: [
@@ -441,6 +442,63 @@ describe("attempt lifecycle", () => {
       );
       for (const res of responses) expect(res.statusCode).toBe(200);
       expect(await prisma.gameAttempt.count()).toBe(1);
+    });
+  });
+  describe("active play time", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("scores Logic Puzzle on time actually spent on the puzzle, not time away", async () => {
+      const { cookies } = await registerUser("harry");
+      await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
+      // Fake only Date — real timers keep Fastify and Prisma working.
+      const t0 = Date.now();
+      vi.useFakeTimers({ toFake: ["Date"], now: t0 });
+      const at = (ms: number) => vi.setSystemTime(t0 + ms);
+      const heartbeat = async () =>
+        (await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/heartbeat", cookies })).json().data;
+      const play = (row: number, col: number) =>
+        app.inject({
+          method: "POST",
+          url: "/api/games/logic-puzzle/attempts/submit",
+          cookies,
+          payload: { move: { row, col, value: LOGIC_PUZZLE_SOLUTION[row]![col] } },
+        });
+
+      await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
+      at(10_000);
+      expect((await heartbeat()).activeMs).toBe(10_000);
+      at(20_000);
+      expect((await heartbeat()).activeMs).toBe(20_000);
+      at(20_000 + 10 * 60_000); // left the page for ten minutes
+      expect((await heartbeat()).activeMs).toBe(20_000);
+      at(35_000 + 10 * 60_000);
+      await play(0, 0);
+      const today = await app.inject({ method: "GET", url: "/api/games/logic-puzzle/today", cookies });
+      expect(today.json().data.activeMs).toBe(35_000);
+      at(40_000 + 10 * 60_000);
+      expect((await play(5, 5)).json().data.complete).toBe(true);
+
+      const attempt = await prisma.gameAttempt.findFirstOrThrow();
+      expect(attempt.durationMs).toBe(40_000);
+      expect((await heartbeat()).complete).toBe(true);
+    });
+
+    it("rejects a heartbeat before the attempt has started", async () => {
+      const { cookies } = await registerUser("harry");
+      await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
+      const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/heartbeat", cookies });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it("credits a gap only up to the away threshold", () => {
+      const last = new Date(1_000_000);
+      const after = (ms: number) => activity({ activeMs: 500, lastActiveAt: last }, new Date(last.getTime() + ms)).activeMs;
+      expect(after(ACTIVE_TIME.MAX_GAP_MS)).toBe(500 + ACTIVE_TIME.MAX_GAP_MS);
+      expect(after(ACTIVE_TIME.MAX_GAP_MS + 1)).toBe(500);
+      expect(after(-5_000)).toBe(500); // clock skew never subtracts time
+      expect(activity({ activeMs: 0, lastActiveAt: null }, last).activeMs).toBe(0);
     });
   });
 });

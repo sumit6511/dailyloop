@@ -12,6 +12,7 @@ import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
 import { useToast } from "../../../lib/toast-context";
+import { useActiveTimer } from "../../../lib/use-active-timer";
 import { getSettings, setSettings, type LogicPuzzleSettings } from "./settings";
 
 interface LogicPuzzleView {
@@ -118,28 +119,6 @@ function formatElapsed(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-const TIMER_STORAGE_PREFIX = "dailyloop:logic-puzzle:timer:";
-
-// Keyed by puzzle number (not a wall-clock timestamp) so a new day's puzzle always starts at
-// 0:00, and so the banked value only ever reflects time actually spent on this page.
-function loadElapsedSeconds(puzzleNumber: number): number {
-  try {
-    const raw = localStorage.getItem(`${TIMER_STORAGE_PREFIX}${puzzleNumber}`);
-    const parsed = raw ? Number(raw) : 0;
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function saveElapsedSeconds(puzzleNumber: number, seconds: number): void {
-  try {
-    localStorage.setItem(`${TIMER_STORAGE_PREFIX}${puzzleNumber}`, String(seconds));
-  } catch {
-    // Best-effort — losing a tick of persistence isn't worth surfacing an error for.
-  }
 }
 
 function SettingRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
@@ -276,37 +255,18 @@ export function LogicPuzzlePage() {
   const [latestHintsUsed, setLatestHintsUsed] = useState<number | null>(null);
   const [resetting, setResetting] = useState(false);
   const [confirmingReset, setConfirmingReset] = useState(false);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
   const hintsUsed = latestHintsUsed ?? entry?.hintsUsed ?? 0;
 
   const view = (entry?.content ?? null) as LogicPuzzleView | null;
 
-  // Resume from whatever active time was already banked for *this* puzzle, keyed by puzzle
-  // number. Deliberately not derived from `Date.now() - startedAt` — that would count wall-clock
-  // time even while the player had navigated away, so the timer would keep running "in the
-  // background" instead of pausing when they exit the puzzle.
-  useEffect(() => {
-    if (!entry?.puzzleNumber) return;
-    setElapsedSeconds(loadElapsedSeconds(entry.puzzleNumber));
-  }, [entry?.puzzleNumber]);
-
-  // Ticks once a second only while this page is mounted and the puzzle is in progress — the
-  // interval (and with it, the timer) stops the moment the player leaves, and its cleanup runs
-  // on unmount, which is exactly what "exiting the puzzle" is in a single-page app.
-  useEffect(() => {
-    if (!entry?.puzzleNumber || view?.complete) return;
-    const puzzleNumber = entry.puzzleNumber;
-    const id = setInterval(() => {
-      setElapsedSeconds((prev) => {
-        const next = prev + 1;
-        saveElapsedSeconds(puzzleNumber, next);
-        return next;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [entry?.puzzleNumber, view?.complete]);
+  // Active play time, kept in step with the server — the timer pauses while the player is away,
+  // and the server scores exactly the time shown (logic-puzzle uses `timing: "active"`).
+  const elapsedSeconds = useActiveTimer("logic-puzzle", {
+    initialActiveMs: entry?.activeMs,
+    running: entry?.status === "in_progress" && !view?.complete,
+  });
 
   const isGiven = useCallback((row: number, col: number) => (view ? view.puzzle[row]![col] !== 0 : false), [view]);
 
