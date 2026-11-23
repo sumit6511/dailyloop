@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { speedBonus } from "../../scoring.js";
+import { addDaysToKey } from "@dailyloop/shared";
+import { tierForDate } from "../../difficulty.js";
 import { pathwayGame, type PathwayContent } from "./index.js";
+import { solvePathway } from "./generator.js";
 
 // A hand-built 3x3 fixture (not the real generator) so behavior tests reason about known
 // input/output, matching the convention used by logic-puzzle's own tests.
@@ -36,6 +39,19 @@ const FIXTURE: PathwayContent = {
 };
 
 describe("generatePuzzle", () => {
+  it("scales the board with the day's difficulty and is always uniquely solvable", () => {
+    const sizes: Record<string, number> = {};
+    for (let day = 0; day < 7; day++) {
+      const dateKey = addDaysToKey("2026-08-24", day); // Monday..Sunday
+      const content = pathwayGame.generatePuzzle("ignored", dateKey);
+      expect(content.difficulty).toBe(tierForDate(dateKey));
+      expect(solvePathway(content, 2)).toHaveLength(1);
+      sizes[content.difficulty!] = content.size;
+    }
+    expect(sizes.easy).toBeLessThan(sizes.medium!);
+    expect(sizes.medium).toBeLessThan(sizes.hard!);
+  });
+
   it("is deterministic for the same seed and dateKey", () => {
     const a = pathwayGame.generatePuzzle("ignored", "2026-01-01");
     const b = pathwayGame.generatePuzzle("ignored", "2026-01-01");

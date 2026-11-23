@@ -2,9 +2,13 @@ import { z } from "zod";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { createRng } from "../../rng.js";
-import { edgeKey, generatePathwayPuzzle, type Cell, type PathwayPuzzle } from "./generator.js";
+import { tierForDate, type PuzzleTier } from "../../difficulty.js";
+import { edgeKey, generatePathwayPuzzle, type Cell, type PathwayOptions, type PathwayPuzzle } from "./generator.js";
 
-export type PathwayContent = PathwayPuzzle;
+export type PathwayContent = PathwayPuzzle & {
+  /** The day's tier (absent on puzzles generated before tiers existed). */
+  difficulty?: PuzzleTier;
+};
 export type PathwayMove = Cell;
 
 export interface PathwayResult {
@@ -13,9 +17,13 @@ export interface PathwayResult {
   won: boolean;
 }
 
-const GRID_SIZE = 5;
-const CHECKPOINT_COUNT = 5;
-const WALL_COUNT = 6;
+// Bigger boards with proportionally fewer numbers as the week goes on. Walls are then added
+// only where needed to make the solution unique (see generatePathwayPuzzle).
+const TIER_OPTIONS: Record<PuzzleTier, PathwayOptions> = {
+  easy: { size: 5, checkpointCount: 7 },
+  medium: { size: 6, checkpointCount: 8 },
+  hard: { size: 7, checkpointCount: 8 },
+};
 
 const cellSchema = z.object({ row: z.number().int().min(0), col: z.number().int().min(0) });
 
@@ -133,13 +141,15 @@ export const pathwayGame: DailyGameModule<PathwayContent, PathwayMove, PathwayRe
     checkpoints: z.array(cellSchema),
     walls: z.array(z.object({ a: cellSchema, b: cellSchema })),
     solution: z.array(cellSchema),
+    difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   }) as z.ZodType<PathwayContent>,
 
   moveSchema: cellSchema as z.ZodType<PathwayMove>,
 
   generatePuzzle(_seed, dateKey) {
-    const rng = createRng(`pathway-${dateKey}`);
-    return generatePathwayPuzzle(rng, GRID_SIZE, CHECKPOINT_COUNT, WALL_COUNT);
+    const difficulty = tierForDate(dateKey);
+    const puzzle = generatePathwayPuzzle(createRng(`pathway-${dateKey}`), TIER_OPTIONS[difficulty]);
+    return { ...puzzle, difficulty };
   },
 
   validateAttempt(content, moves) {
@@ -158,7 +168,14 @@ export const pathwayGame: DailyGameModule<PathwayContent, PathwayMove, PathwayRe
 
   sanitizeForClient(content, attempt) {
     if (!attempt) {
-      return { size: content.size, checkpoints: content.checkpoints, walls: content.walls, path: [], complete: false };
+      return {
+        size: content.size,
+        checkpoints: content.checkpoints,
+        walls: content.walls,
+        difficulty: content.difficulty,
+        path: [],
+        complete: false,
+      };
     }
     const { result } = replay(content, attempt.moves);
     const complete = attempt.status === "COMPLETED";
@@ -166,6 +183,7 @@ export const pathwayGame: DailyGameModule<PathwayContent, PathwayMove, PathwayRe
       size: content.size,
       checkpoints: content.checkpoints,
       walls: content.walls,
+      difficulty: content.difficulty,
       path: result.path,
       complete,
       ...(complete ? { mistakes: result.mistakes, won: result.won } : {}),
