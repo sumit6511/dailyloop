@@ -1,3 +1,4 @@
+import { Suspense, type ReactNode } from "react";
 import { Routes, Route } from "react-router-dom";
 import { LoginPage } from "./features/auth/LoginPage";
 import { RegisterPage } from "./features/auth/RegisterPage";
@@ -12,10 +13,24 @@ import { ProtectedRoute } from "./features/layout/ProtectedRoute";
 import { AppShell } from "./features/layout/AppShell";
 import { AdminRoute } from "./features/admin/AdminRoute";
 import { AdminLayout } from "./features/admin/AdminLayout";
-import { OverviewPage } from "./features/admin/OverviewPage";
-import { PuzzlesPage } from "./features/admin/PuzzlesPage";
-import { GamesPage } from "./features/admin/GamesPage";
-import { UsersPage } from "./features/admin/UsersPage";
+import { PageLoading } from "./features/layout/PageLoading";
+import { lazyPage } from "./lib/lazy-page";
+
+// Admin pages are a separate chunk: most players never open them.
+const OverviewPage = lazyPage(() => import("./features/admin/OverviewPage"), "OverviewPage");
+const PuzzlesPage = lazyPage(() => import("./features/admin/PuzzlesPage"), "PuzzlesPage");
+const GamesPage = lazyPage(() => import("./features/admin/GamesPage"), "GamesPage");
+const UsersPage = lazyPage(() => import("./features/admin/UsersPage"), "UsersPage");
+
+function AdminPage({ children }: { children: ReactNode }) {
+  return (
+    <AdminRoute>
+      <AdminLayout>
+        <Suspense fallback={<PageLoading />}>{children}</Suspense>
+      </AdminLayout>
+    </AdminRoute>
+  );
+}
 import { NotFoundPage } from "./features/layout/NotFoundPage";
 
 export default function App() {
@@ -39,41 +54,33 @@ export default function App() {
                 <Route
                   path="/admin"
                   element={
-                    <AdminRoute>
-                      <AdminLayout>
-                        <OverviewPage />
-                      </AdminLayout>
-                    </AdminRoute>
+                    <AdminPage>
+                      <OverviewPage />
+                    </AdminPage>
                   }
                 />
                 <Route
                   path="/admin/puzzles"
                   element={
-                    <AdminRoute>
-                      <AdminLayout>
-                        <PuzzlesPage />
-                      </AdminLayout>
-                    </AdminRoute>
+                    <AdminPage>
+                      <PuzzlesPage />
+                    </AdminPage>
                   }
                 />
                 <Route
                   path="/admin/games"
                   element={
-                    <AdminRoute>
-                      <AdminLayout>
-                        <GamesPage />
-                      </AdminLayout>
-                    </AdminRoute>
+                    <AdminPage>
+                      <GamesPage />
+                    </AdminPage>
                   }
                 />
                 <Route
                   path="/admin/users"
                   element={
-                    <AdminRoute>
-                      <AdminLayout>
-                        <UsersPage />
-                      </AdminLayout>
-                    </AdminRoute>
+                    <AdminPage>
+                      <UsersPage />
+                    </AdminPage>
                   }
                 />
                 <Route path="*" element={<NotFoundPage />} />
