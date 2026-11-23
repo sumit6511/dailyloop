@@ -28,7 +28,8 @@ export function useActiveTimer(
 
   // Show the last known total immediately; the first heartbeat replaces it a moment later.
   useEffect(() => {
-    if (initialActiveMs != null) setSynced((prev) => prev ?? { ms: initialActiveMs, at: Date.now() });
+    if (initialActiveMs != null)
+      setSynced((prev) => prev ?? { ms: initialActiveMs, at: Date.now() });
   }, [initialActiveMs]);
 
   useEffect(() => {
@@ -68,6 +69,7 @@ export function useActiveTimer(
 
   if (!synced) return 0;
   // Between heartbeats, extrapolate — but never beyond what the server would still credit.
-  const sinceSync = running && visible ? Math.min(Date.now() - synced.at, ACTIVE_TIME.MAX_GAP_MS) : 0;
+  const sinceSync =
+    running && visible ? Math.min(Date.now() - synced.at, ACTIVE_TIME.MAX_GAP_MS) : 0;
   return Math.floor((synced.ms + sinceSync) / 1000);
 }

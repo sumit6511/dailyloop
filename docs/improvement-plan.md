@@ -65,13 +65,24 @@ Measured with the same audit (365 consecutive generated days) after the changes:
 Also fixed along the way: a Guess It clue that spelled out an accepted answer ("Air Jordan"), and
 `.env.example`'s empty `CRON_SECRET` crashing API startup when the README setup steps were followed.
 
-## Follow-ups (not done here)
+## Follow-ups (done in a second pass)
 
-- **Hints are free.** The hint endpoint is read-only, so a player can request unlimited Logic
-  Puzzle hints with no effect on score (`hintsUsed` is client-only). Recording a hint marker in the
-  attempt log and penalising it in `calculateScore` would close this.
-- **Speed bonus vs. paused timer.** The server measures `now - startedAt`, but the Logic Puzzle UI
-  timer pauses when you leave the page, so the shown time and the scored time can disagree.
-- **Concurrent move submits** are read-modify-write without a version check; an optimistic
-  `updateMany where: { id, updatedAt }` would make lost moves impossible rather than unlikely.
-- **Pathway hints** — the solver could power "next cell" hints the same way Logic Puzzle's does.
+- **Hints were free.** Hints are now charged server-side: `GameAttempt.hintsUsed` counts each
+  _distinct_ hint revealed (re-asking for the same one is free), feeds `ScoreMeta.hintsUsed`, and
+  Logic Puzzle / Pathway deduct `SCORE.HINT_PENALTY` (10) per hint and withhold their flawless
+  bonus. The Hint button shows the cost.
+- **Speed bonus vs. paused timer.** Games can opt into `timing: "active"` (Logic Puzzle does):
+  the server credits only gaps of at most `ACTIVE_TIME.MAX_GAP_MS` (45 s) between activity
+  (moves, hints, heartbeats every 15 s while the puzzle is visible), and the page's timer shows
+  that same server count. Time away is neither shown nor scored.
+- **Concurrent writes.** Every attempt write is a compare-and-set on `GameAttempt.version` with
+  retry, completion re-checks inside its transaction, and concurrent starts no longer crash. This
+  fixed real bugs: concurrent moves were dropped, and two racing winning moves could reset the
+  player's streak to 1.
+- **Pathway hints.** "Next cell" or "back up to here", powered by the solver. Older puzzles that
+  may have several solutions check whether the player's own route can still be finished before
+  telling them to back up.
+
+Remaining note: a pausable timer is inherently client-influenced — a player who deliberately
+blocks heartbeats can avoid being timed for any gap over 45 s between moves. That is the trade-off
+of letting the clock pause at all; moves and hints still count every shorter gap.

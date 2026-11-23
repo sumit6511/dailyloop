@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { useGameToday, useAutoStartAttempt, useSubmitMove } from "../../../lib/games-api";
+import { SCORE } from "@dailyloop/shared";
+import { useGameToday, useAutoStartAttempt, useSubmitMove, useHint } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Skeleton } from "../../../components/Skeleton";
 import { GameIcon } from "../../../components/GameIcon";
+import { Button } from "../../../components/Button";
+import { Icon } from "../../../components/Icon";
+import { ApiClientError } from "../../../lib/api-client";
+import { useToast } from "../../../lib/toast-context";
 
 interface Cell {
   row: number;
@@ -23,6 +28,13 @@ interface PathwayView {
   complete: boolean;
   won?: boolean;
   mistakes?: number;
+}
+
+/** "extend": the next cell to draw into. "retreat": the path can't be finished from here — back
+ * up to this cell (the last one from which it still can). */
+interface PathwayHint {
+  kind: "extend" | "retreat";
+  cell: Cell;
 }
 
 function sameCell(a: Cell, b: Cell): boolean {
@@ -96,6 +108,10 @@ function BoardSkeleton() {
 export function PathwayPage() {
   const { data: entry, isLoading } = useGameToday("pathway");
   const submitMove = useSubmitMove("pathway");
+  const hint = useHint<PathwayHint>("pathway");
+  const { showToast } = useToast();
+  const [hintSuggestion, setHintSuggestion] = useState<PathwayHint | null>(null);
+  const [latestHintsUsed, setLatestHintsUsed] = useState<number | null>(null);
   const [localPath, setLocalPath] = useState<Cell[]>([]);
   const [dragging, setDragging] = useState(false);
   const [blockedCell, setBlockedCell] = useState<Cell | null>(null);
@@ -106,6 +122,7 @@ export function PathwayPage() {
   const processingRef = useRef(false);
 
   useAutoStartAttempt("pathway", entry?.status);
+  const hintsUsed = latestHintsUsed ?? entry?.hintsUsed ?? 0;
 
   const view = (entry?.content ?? null) as PathwayView | null;
 
@@ -141,6 +158,7 @@ export function PathwayPage() {
     lastHitRef.current = move;
 
     const predicted = applyLocalStep(view, localPath, move);
+    if (predicted) setHintSuggestion(null); // the board changed, so the hint may no longer apply
     if (!predicted) {
       if (localPath.length > 0) {
         setBlockedCell(move);
@@ -150,6 +168,37 @@ export function PathwayPage() {
     }
     setLocalPath(predicted);
     queueRef.current.push(move);
+    void processQueue();
+  };
+
+  const requestHint = async () => {
+    if (!view || view.complete || hint.isPending) return;
+    try {
+      const { hint: suggestion, hintsUsed: charged } = await hint.mutateAsync();
+      setLatestHintsUsed(charged);
+      if (suggestion) setHintSuggestion(suggestion);
+      else showToast("No hint available right now.", "info");
+    } catch (err) {
+      showToast(err instanceof ApiClientError ? err.message : "Couldn't get a hint", "error");
+    }
+  };
+
+  const acceptHint = () => {
+    if (!view || !hintSuggestion) return;
+    const { kind, cell } = hintSuggestion;
+    setHintSuggestion(null);
+    if (kind === "extend") {
+      const predicted = applyLocalStep(view, localPath, cell);
+      if (!predicted) return;
+      setLocalPath(predicted);
+      queueRef.current.push(cell);
+    } else {
+      // Retreating is one step back at a time (each step lands on the second-to-last cell).
+      const target = cellIndex(localPath, cell);
+      if (target < 0) return;
+      for (let i = localPath.length - 2; i >= target; i--) queueRef.current.push(localPath[i]!);
+      setLocalPath(localPath.slice(0, target + 1));
+    }
     void processQueue();
   };
 
@@ -218,7 +267,10 @@ export function PathwayPage() {
           gameName="Pathway"
           won={!!view.won}
           score={entry.score ?? 0}
-          stats={[{ label: "Mistakes", value: String(view.mistakes ?? 0) }]}
+          stats={[
+            { label: "Mistakes", value: String(view.mistakes ?? 0) },
+            { label: "Hints used", value: String(hintsUsed) },
+          ]}
           newAchievementKeys={newAchievements}
         />
       </GameShell>
@@ -247,6 +299,7 @@ export function PathwayPage() {
             const onPath = localPath.some((c) => sameCell(c, cell));
             const isHead = localPath.length > 0 && sameCell(localPath[localPath.length - 1]!, cell);
             const isBlocked = blockedCell !== null && sameCell(blockedCell, cell);
+            const isHintTarget = hintSuggestion !== null && sameCell(hintSuggestion.cell, cell);
             const wallRight = cell.col + 1 < size && hasWall(walls, cell, { row: cell.row, col: cell.col + 1 });
             const wallBottom = cell.row + 1 < size && hasWall(walls, cell, { row: cell.row + 1, col: cell.col });
             const wallLeft = cell.col > 0 && hasWall(walls, cell, { row: cell.row, col: cell.col - 1 });
@@ -266,7 +319,7 @@ export function PathwayPage() {
                       : "text-white/70"
                 } ${wallTop ? "border-t-4 border-t-amber-400" : ""} ${wallRight ? "border-r-4 border-r-amber-400" : ""} ${
                   wallBottom ? "border-b-4 border-b-amber-400" : ""
-                } ${wallLeft ? "border-l-4 border-l-amber-400" : ""}`}
+                } ${wallLeft ? "border-l-4 border-l-amber-400" : ""} ${isHintTarget ? "ring-2 ring-inset ring-amber-300" : ""}`}
               >
                 {checkpointIdx >= 0 ? (
                   <span
@@ -291,6 +344,38 @@ export function PathwayPage() {
             strokeLinejoin="round"
           />
         </svg>
+      </div>
+
+      {hintSuggestion ? (
+        <div className="animate-pop-in mx-auto mt-4 flex max-w-sm flex-wrap items-center justify-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-100">
+          <Icon name="lightbulb" className="text-lg" filled />
+          {hintSuggestion.kind === "extend"
+            ? `Next, go to row ${hintSuggestion.cell.row + 1}, column ${hintSuggestion.cell.col + 1}.`
+            : `Your path can't be finished from here — back up to row ${hintSuggestion.cell.row + 1}, column ${
+                hintSuggestion.cell.col + 1
+              }.`}
+          <Button size="sm" variant="secondary" onClick={acceptHint}>
+            {hintSuggestion.kind === "extend" ? "Draw it" : "Back up"}
+          </Button>
+          <Button size="sm" variant="ghost" aria-label="Dismiss hint" onClick={() => setHintSuggestion(null)}>
+            <Icon name="close" className="text-base" />
+          </Button>
+        </div>
+      ) : null}
+
+      <div className="mt-4 flex justify-center">
+        <Button
+          variant="secondary"
+          size="sm"
+          isLoading={hint.isPending}
+          disabled={!!hintSuggestion}
+          onClick={() => void requestHint()}
+          title={`Each new hint costs ${SCORE.HINT_PENALTY} points`}
+          aria-label={`Hint (costs ${SCORE.HINT_PENALTY} points)`}
+        >
+          <Icon name="lightbulb" className="text-lg" /> Hint
+          <span className="text-xs font-medium text-amber-300/80">−{SCORE.HINT_PENALTY}</span>
+        </Button>
       </div>
 
       <p className="mt-4 text-center text-xs text-white/40">

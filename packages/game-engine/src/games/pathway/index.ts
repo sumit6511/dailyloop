@@ -3,7 +3,15 @@ import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { createRng } from "../../rng.js";
 import { tierForDate, type PuzzleTier } from "../../difficulty.js";
-import { edgeKey, generatePathwayPuzzle, type Cell, type PathwayOptions, type PathwayPuzzle } from "./generator.js";
+import { SCORE } from "@dailyloop/shared";
+import {
+  edgeKey,
+  generatePathwayPuzzle,
+  solvePathway,
+  type Cell,
+  type PathwayOptions,
+  type PathwayPuzzle,
+} from "./generator.js";
 
 export type PathwayContent = PathwayPuzzle & {
   /** The day's tier (absent on puzzles generated before tiers existed). */
@@ -158,12 +166,19 @@ export const pathwayGame: DailyGameModule<PathwayContent, PathwayMove, PathwayRe
 
   calculateScore(_content, result, meta) {
     if (!result.won) return buildScoreBreakdown({ base: 0 });
+    const hintsUsed = meta.hintsUsed ?? 0;
     return buildScoreBreakdown({
       base: 60,
-      accuracyBonus: result.mistakes === 0 ? 20 : 0,
+      accuracyBonus: result.mistakes === 0 && hintsUsed === 0 ? 20 : 0,
       mistakePenalty: result.mistakes * 8,
+      hintPenalty: hintsUsed * SCORE.HINT_PENALTY,
       speedBonus: speedBonus(meta.durationMs, 45_000, 360_000, 20),
     });
+  },
+
+  /** Read-only — never touches the move log (the API charges for it; see SCORE.HINT_PENALTY). */
+  hint(content, moves) {
+    return pathwayHint(content, replay(content, moves).result.path);
   },
 
   sanitizeForClient(content, attempt) {
@@ -190,5 +205,40 @@ export const pathwayGame: DailyGameModule<PathwayContent, PathwayMove, PathwayRe
     };
   },
 };
+
+export type PathwayHint = { kind: "extend"; cell: Cell } | { kind: "retreat"; cell: Cell };
+
+/** Bounds the legacy-puzzle completion search so a hint request can never take long. */
+const HINT_SEARCH_STEPS = 200_000;
+
+function longestCommonPrefix(a: Cell[], b: Cell[]): number {
+  let k = 0;
+  while (k < a.length && k < b.length && sameCell(a[k]!, b[k]!)) k++;
+  return k;
+}
+
+/**
+ * The next step toward a solution from the player's current path: either the cell to extend
+ * into, or — if the path can no longer be finished — the last cell to back up to.
+ *
+ * Puzzles generated with a difficulty tier have exactly one solution, so the path is on track
+ * exactly when it's a prefix of the stored one. Older puzzles could have several, so before
+ * telling a player to back up we ask the solver (with a step budget) whether their own path can
+ * still be finished; if not, backing up to where it left the stored solution always works.
+ */
+function pathwayHint(content: PathwayContent, path: Cell[]): PathwayHint | null {
+  const { solution } = content;
+  if (path.length === solution.length) return null; // already complete
+  if (path.length === 0) return { kind: "extend", cell: content.checkpoints[0]! };
+
+  const onTrack = longestCommonPrefix(path, solution);
+  if (onTrack === path.length) return { kind: "extend", cell: solution[path.length]! };
+
+  if (!content.difficulty) {
+    const completion = solvePathway(content, 1, { prefix: path, maxSteps: HINT_SEARCH_STEPS })[0];
+    if (completion) return { kind: "extend", cell: completion[path.length]! };
+  }
+  return { kind: "retreat", cell: path[onTrack - 1]! };
+}
 
 export type { Cell };

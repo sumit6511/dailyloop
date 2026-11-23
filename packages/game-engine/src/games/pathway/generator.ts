@@ -124,12 +124,22 @@ function pickCheckpointIndices(rng: () => number, pathLength: number, count: num
 
 /**
  * Enumerates paths that satisfy the constraints (start on 1, visit every cell exactly once,
- * touch checkpoints in order, end on the last one, never cross a wall), stopping after `limit`.
+ * touch checkpoints in order, end on the last one, never cross a wall), stopping after `limit`
+ * — optionally only those continuing a given partial path.
  * Pruned by connectivity and dead-end checks, so even a 7×7 board with sparse clues resolves in
  * milliseconds.
  */
-export function solvePathway(constraints: PathwayConstraints, limit = 2): Cell[][] {
+export interface SolveOptions {
+  /** Only find solutions that begin with this (legal) partial path. */
+  prefix?: Cell[];
+  /** Give up after this many search steps (returning whatever was found so far). */
+  maxSteps?: number;
+}
+
+export function solvePathway(constraints: PathwayConstraints, limit = 2, options: SolveOptions = {}): Cell[][] {
   const { size, checkpoints, walls } = constraints;
+  const { prefix = [], maxSteps = Infinity } = options;
+  let steps = 0;
   const total = size * size;
   if (checkpoints.length === 0) return [];
   const idx = (c: Cell) => c.row * size + c.col;
@@ -181,6 +191,7 @@ export function solvePathway(constraints: PathwayConstraints, limit = 2): Cell[]
   }
 
   function walk(cur: number, nextCheckpoint: number): boolean {
+    if (++steps > maxSteps) return true; // out of budget — stop searching
     if (path.length === total) {
       solutions.push(path.map((i) => ({ row: Math.floor(i / size), col: i % size })));
       return solutions.length >= limit;
@@ -199,11 +210,17 @@ export function solvePathway(constraints: PathwayConstraints, limit = 2): Cell[]
     return false;
   }
 
-  const start = idx(checkpoints[0]!);
-  visited[start] = 1;
-  path.push(start);
-  if (total === 1) solutions.push([checkpoints[0]!]);
-  else walk(start, 2);
+  const start = prefix.length > 0 ? prefix : [checkpoints[0]!];
+  let nextCheckpoint = 1;
+  for (const cell of start) {
+    const i = idx(cell);
+    visited[i] = 1;
+    path.push(i);
+    if (checkpointAt[i] === nextCheckpoint) nextCheckpoint++;
+  }
+  if (idx(start[0]!) !== idx(checkpoints[0]!)) return []; // every path starts on checkpoint 1
+  const head = path[path.length - 1]!;
+  if (path.length === total || viable(head)) walk(head, nextCheckpoint);
   return solutions;
 }
 

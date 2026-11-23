@@ -236,3 +236,85 @@ describe("sanitizeForClient", () => {
     });
   });
 });
+
+describe("hint", () => {
+  type Hint = { kind: "extend" | "retreat"; cell: { row: number; col: number } } | null;
+  const hintFor = (content: PathwayContent, moves: { row: number; col: number }[]) => pathwayGame.hint!(content, moves) as Hint;
+
+  it("leads from an empty board all the way to a solved puzzle without ever backtracking", () => {
+    const content = pathwayGame.generatePuzzle("ignored", "2026-08-30"); // a Sunday: 7x7
+    const moves: { row: number; col: number }[] = [];
+    for (let step = 0; step <= content.size * content.size; step++) {
+      const hint = hintFor(content, moves);
+      if (!hint) break;
+      expect(hint.kind).toBe("extend");
+      moves.push(hint.cell);
+    }
+    expect(pathwayGame.validateAttempt(content, moves).won).toBe(true);
+    expect(hintFor(content, moves)).toBeNull();
+  });
+
+  it("points back to the last good cell once the path has left the (unique) solution", () => {
+    const content = pathwayGame.generatePuzzle("ignored", "2026-08-24");
+    const { solution } = content;
+    // Follow the solution until the first point where some *other* legal step exists, take it.
+    let moves: { row: number; col: number }[] = [];
+    let offTrack: { row: number; col: number } | undefined;
+    for (let k = 1; k < solution.length - 1 && !offTrack; k++) {
+      moves = solution.slice(0, k);
+      const h = moves[k - 1]!;
+      offTrack = [
+        { row: h.row + 1, col: h.col },
+        { row: h.row - 1, col: h.col },
+        { row: h.row, col: h.col + 1 },
+        { row: h.row, col: h.col - 1 },
+      ].find(
+        (cell) =>
+          !(cell.row === solution[k]!.row && cell.col === solution[k]!.col) &&
+          pathwayGame.validateAttempt(content, [...moves, cell]).result.path.length === k + 1,
+      );
+    }
+    const head = moves[moves.length - 1]!;
+    expect(offTrack).toBeDefined();
+    expect(hintFor(content, [...moves, offTrack!])).toEqual({ kind: "retreat", cell: head });
+  });
+
+  it("doesn't send a player back on an older puzzle where their different route still works", () => {
+    // No walls and only a start and end: both the row snake and the column snake solve it.
+    const legacy: PathwayContent = {
+      size: 3,
+      checkpoints: [
+        { row: 0, col: 0 },
+        { row: 2, col: 2 },
+      ],
+      walls: [],
+      solution: FIXTURE.solution.slice(0, 6).concat([{ row: 2, col: 0 }, { row: 2, col: 1 }, { row: 2, col: 2 }]),
+    };
+    const columnSnakeStart = [
+      { row: 0, col: 0 },
+      { row: 1, col: 0 },
+    ];
+    expect(hintFor(legacy, columnSnakeStart)).toEqual({ kind: "extend", cell: { row: 2, col: 0 } });
+    // The same position on a tiered (unique-by-construction) puzzle trusts the stored solution.
+    expect(hintFor({ ...legacy, difficulty: "easy" }, columnSnakeStart)).toEqual({ kind: "retreat", cell: { row: 0, col: 0 } });
+  });
+
+  it("deducts for hints and withholds the flawless bonus", () => {
+    const meta = { durationMs: 10_000 };
+    const result = { path: FIXTURE.solution, mistakes: 0, won: true };
+    const unaided = pathwayGame.calculateScore(FIXTURE, result, meta);
+    const helped = pathwayGame.calculateScore(FIXTURE, result, { ...meta, hintsUsed: 1 });
+    expect(helped.hintPenalty).toBeGreaterThan(0);
+    expect(helped.accuracyBonus).toBe(0);
+    expect(helped.total).toBeLessThan(unaided.total);
+  });
+});
+
+describe("solvePathway with a prefix", () => {
+  it("only returns completions of the given partial path, and none for a dead end", () => {
+    const content = pathwayGame.generatePuzzle("ignored", "2026-08-24");
+    const prefix = content.solution.slice(0, 5);
+    expect(solvePathway(content, 2, { prefix })).toEqual([content.solution]);
+    expect(solvePathway(content, 1, { prefix: [content.solution[1]!] })).toEqual([]); // must start on 1
+  });
+});
