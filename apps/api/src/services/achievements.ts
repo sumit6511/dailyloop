@@ -43,7 +43,8 @@ export async function evaluateAchievements(tx: Tx, userId: string, context: Achi
   if (context.currentStreak >= 7) await maybeUnlock("STREAK_7");
   if (context.currentStreak >= 30) await maybeUnlock("STREAK_30");
   if (context.isPerfectDay) await maybeUnlock("PERFECT_DAY");
-  if (context.durationMs < SPEED_DEMON_THRESHOLD_MS) await maybeUnlock("SPEED_DEMON");
+  // A win only — otherwise giving up instantly (e.g. submitting Number Puzzle unsolved) would count.
+  if (context.won && context.durationMs < SPEED_DEMON_THRESHOLD_MS) await maybeUnlock("SPEED_DEMON");
 
   if (context.won) {
     const totalWins = await tx.gameAttempt.count({ where: { userId, won: true, status: "COMPLETED" } });

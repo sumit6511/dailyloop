@@ -68,11 +68,19 @@ export async function completeAttempt(input: CompleteAttemptInput) {
 
     const completedAttemptsToday = await tx.gameAttempt.findMany({
       where: { userId: input.userId, status: "COMPLETED", dailyPuzzle: { date: puzzle.date } },
-      select: { score: true },
+      select: { score: true, dailyPuzzleId: true },
     });
-    const publishedGamesToday = await tx.dailyPuzzle.count({ where: { date: puzzle.date, status: "PUBLISHED" } });
+    // A Perfect Day means finishing every puzzle that counts today: one per *enabled* game, whether
+    // or not anyone has opened it yet (SCHEDULED rows are published lazily on first lookup, so a
+    // PUBLISHED-only count could be 1 for an early riser), and never a disabled game's puzzle, which
+    // nobody can play.
+    const requiredPuzzles = await tx.dailyPuzzle.findMany({
+      where: { date: puzzle.date, status: { in: ["SCHEDULED", "PUBLISHED"] }, game: { isEnabled: true } },
+      select: { id: true },
+    });
+    const completedPuzzleIds = new Set(completedAttemptsToday.map((a) => a.dailyPuzzleId));
     const gamesCompleted = completedAttemptsToday.length;
-    const isPerfectDay = publishedGamesToday > 0 && gamesCompleted >= publishedGamesToday;
+    const isPerfectDay = requiredPuzzles.length > 0 && requiredPuzzles.every((p) => completedPuzzleIds.has(p.id));
     const rawTotal = completedAttemptsToday.reduce((sum, a) => sum + a.score, 0);
     const totalScore = rawTotal + (isPerfectDay ? SCORE.PERFECT_DAY_BONUS : 0);
 
