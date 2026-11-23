@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { connectionsGame, type ConnectionsMove } from "./index.js";
-import { CATEGORY_BANK } from "./categories.js";
+import { addDaysToKey } from "@dailyloop/shared";
+import { connectionsGame, countGroupings, type ConnectionsMove } from "./index.js";
+import { CATEGORY_BANK, type ConnectionsBankEntry } from "./categories.js";
 
 const DATE = "2026-08-29";
 
@@ -24,12 +25,71 @@ describe("connections: generatePuzzle", () => {
   });
 
   it("prefers categories that haven't been used recently", () => {
-    const allTitles = CATEGORY_BANK.map((c) => c.title);
-    const neverUsed = new Set(allTitles.slice(0, 4));
-    const recentlyUsed = allTitles.slice(4); // every other category marked as recently used
+    // One never-used category per tier (avoiding ones that share a word with each other), with
+    // everything else marked as recently used — those four are the only fresh picks.
+    const neverUsed = new Set(["Planets", "Cheeses", "Knots", "Palindromes"]);
+    const recentlyUsed = CATEGORY_BANK.map((c) => c.title).filter((t) => !neverUsed.has(t));
 
     const content = connectionsGame.generatePuzzle("s", DATE, recentlyUsed);
     expect(new Set(content.categories.map((c) => c.title))).toEqual(neverUsed);
+  });
+
+  it("always has exactly one category of each difficulty, ordered yellow to purple", () => {
+    for (let day = 0; day < 60; day++) {
+      const content = connectionsGame.generatePuzzle("s", addDaysToKey(DATE, day));
+      expect(content.categories.map((c) => c.difficulty)).toEqual([1, 2, 3, 4]);
+    }
+  });
+
+  it("never builds a grid with a repeated word or more than one valid grouping", () => {
+    let history: string[] = [];
+    for (let day = 0; day < 365; day++) {
+      const content = connectionsGame.generatePuzzle("s", addDaysToKey(DATE, day), history);
+      history = [...history, ...connectionsGame.contentIdentity!(content)];
+      expect(new Set(content.words).size).toBe(16);
+      const entries = content.categories.map((c) => CATEGORY_BANK.find((b) => b.title === c.title)!);
+      expect(countGroupings(entries)).toBe(1);
+    }
+  });
+
+  it("doesn't repeat the same four-category grid within a year of rotation", () => {
+    let history: string[] = [];
+    const grids = new Set<string>();
+    for (let day = 0; day < 365; day++) {
+      const content = connectionsGame.generatePuzzle("s", addDaysToKey(DATE, day), history);
+      history = [...history, ...connectionsGame.contentIdentity!(content)];
+      grids.add(content.categories.map((c) => c.title).sort().join("|"));
+    }
+    expect(grids.size).toBe(365);
+  });
+
+  it("never stores generation-only bank metadata in puzzle content", () => {
+    const content = generate();
+    for (const category of content.categories) expect(Object.keys(category).sort()).toEqual(["difficulty", "title", "words"]);
+  });
+});
+
+describe("connections: CATEGORY_BANK", () => {
+  it("has unique titles, 4 distinct uppercase words per category, and plenty in every tier", () => {
+    expect(new Set(CATEGORY_BANK.map((c) => c.title)).size).toBe(CATEGORY_BANK.length);
+    for (const category of CATEGORY_BANK) {
+      expect(new Set(category.words).size).toBe(4);
+      for (const word of [...category.words, ...(category.herrings ?? [])]) expect(word).toMatch(/^[A-Z]+$/);
+      // A pattern category must actually describe its own words.
+      if (category.matches) for (const word of category.words) expect(category.matches(word)).toBe(true);
+    }
+    for (const tier of [1, 2, 3, 4]) {
+      expect(CATEGORY_BANK.filter((c) => c.difficulty === tier).length).toBeGreaterThanOrEqual(15);
+    }
+  });
+});
+
+describe("connections: countGroupings", () => {
+  it("detects a grid where a red herring makes the grouping ambiguous", () => {
+    const a: ConnectionsBankEntry = { title: "A", difficulty: 1, words: ["W", "X", "Y", "Z"], herrings: ["Q"] };
+    const b: ConnectionsBankEntry = { title: "B", difficulty: 2, words: ["Q", "R", "S", "T"], herrings: ["Z"] };
+    expect(countGroupings([a, b])).toBe(2); // Z and Q can swap
+    expect(countGroupings([a, { ...b, herrings: [] }])).toBe(1); // B must take Q, so A takes Z
   });
 });
 
