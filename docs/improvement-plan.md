@@ -145,5 +145,12 @@ Ordered by priority; each item is implemented and committed separately.
 24. **Installable app** — a web manifest so it can be added to a home screen.
 25. **More achievements** — e.g. a flawless (no mistakes, no hints) solve.
 
+**Status:** items 1–25 are all done, each in its own commit with tests; every bug fix's new
+tests were confirmed to fail against the code before the fix. Results worth noting: the main JS
+bundle went from 550 kB to 416 kB (Luxon removed — an Intl replacement matched it on 355,936
+checks), and the new CI workflow passed its first run on GitHub. Not changed on purpose: puzzle
+numbers are `max + 1` (unique) but not renumbered by date, and streaks aren't rewritten after an
+admin edit.
+
 Needs your input (not started): real password-reset email delivery needs a provider and API key;
 a past-puzzle archive and Word Guess hard mode are larger product decisions.
