@@ -5,6 +5,7 @@ import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
 import { getTodayLineup, getTodayEntryForSlug } from "../services/games-today.js";
+import { sharePattern } from "../services/share-patterns.js";
 import { startAttempt, submitMove, checkAttempt, undoLastMove, getHint, recordHeartbeat } from "../services/attempts.js";
 
 // Undo is only safe where reversing a move doesn't erase a genuine mistake's scoring impact —
@@ -12,15 +13,6 @@ import { startAttempt, submitMove, checkAttempt, undoLastMove, getHint, recordHe
 const UNDO_ENABLED_SLUGS = new Set(["number-puzzle"]);
 
 const submitBodySchema = z.object({ move: z.unknown() });
-
-const EMOJI_BY_STATUS: Record<string, string> = { correct: "🟩", present: "🟨", absent: "⬜" };
-
-/** Wordle-style emoji grid — colors only, never the actual letters or answer. */
-function wordGuessEmojiGrid(content: unknown): string | undefined {
-  const view = content as { guesses?: { feedback: { status: string }[] }[] } | null;
-  if (!view?.guesses?.length) return undefined;
-  return view.guesses.map((g) => g.feedback.map((f) => EMOJI_BY_STATUS[f.status] ?? "⬜").join("")).join("\n");
-}
 
 export const gameRoutes: FastifyPluginAsync = async (app) => {
   app.get("/", async (_request, reply) => {
@@ -66,7 +58,7 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
           icon: g.icon,
           name: g.name,
           score: g.score,
-          ...(g.slug === "word-guess" ? { pattern: wordGuessEmojiGrid(g.content) } : {}),
+          pattern: sharePattern(g.slug, g.content),
         })),
         totalScore: completed.reduce((sum, g) => sum + (g.score ?? 0), 0),
         currentStreak: streak?.currentStreak ?? 0,
