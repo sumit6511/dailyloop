@@ -1,9 +1,9 @@
 import type { Prisma } from "@prisma/client";
-import { SCORE } from "@dailyloop/shared";
 import { isConsecutiveDay, jsDateToDateKey } from "@dailyloop/shared";
 import type { ScoreBreakdown } from "@dailyloop/game-engine";
 import { prisma } from "../lib/prisma.js";
 import { evaluateAchievements } from "./achievements.js";
+import { recomputeDailyScore } from "./daily-score.js";
 
 /** The attempt changed (or was already completed) since the caller read it — nothing was written. */
 export class AttemptConflictError extends Error {
@@ -66,29 +66,8 @@ export async function completeAttempt(input: CompleteAttemptInput) {
       where: { userId_dailyPuzzleId: { userId: input.userId, dailyPuzzleId: input.dailyPuzzleId } },
     });
 
-    const completedAttemptsToday = await tx.gameAttempt.findMany({
-      where: { userId: input.userId, status: "COMPLETED", dailyPuzzle: { date: puzzle.date } },
-      select: { score: true, dailyPuzzleId: true },
-    });
-    // A Perfect Day means finishing every puzzle that counts today: one per *enabled* game, whether
-    // or not anyone has opened it yet (SCHEDULED rows are published lazily on first lookup, so a
-    // PUBLISHED-only count could be 1 for an early riser), and never a disabled game's puzzle, which
-    // nobody can play.
-    const requiredPuzzles = await tx.dailyPuzzle.findMany({
-      where: { date: puzzle.date, status: { in: ["SCHEDULED", "PUBLISHED"] }, game: { isEnabled: true } },
-      select: { id: true },
-    });
-    const completedPuzzleIds = new Set(completedAttemptsToday.map((a) => a.dailyPuzzleId));
-    const gamesCompleted = completedAttemptsToday.length;
-    const isPerfectDay = requiredPuzzles.length > 0 && requiredPuzzles.every((p) => completedPuzzleIds.has(p.id));
-    const rawTotal = completedAttemptsToday.reduce((sum, a) => sum + a.score, 0);
-    const totalScore = rawTotal + (isPerfectDay ? SCORE.PERFECT_DAY_BONUS : 0);
-
-    const dailyScore = await tx.dailyScore.upsert({
-      where: { userId_date: { userId: input.userId, date: puzzle.date } },
-      create: { userId: input.userId, date: puzzle.date, totalScore, gamesCompleted, isPerfectDay },
-      update: { totalScore, gamesCompleted, isPerfectDay },
-    });
+    const dailyScore = (await recomputeDailyScore(tx, input.userId, puzzle.date))!;
+    const { gamesCompleted, isPerfectDay } = dailyScore;
 
     // The streak only advances once per day, on that day's first completed game.
     let streak = await tx.streak.findUnique({ where: { userId: input.userId } });

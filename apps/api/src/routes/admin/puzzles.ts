@@ -6,6 +6,7 @@ import { getGameModule } from "@dailyloop/game-engine";
 import { prisma } from "../../lib/prisma.js";
 import { Errors } from "../../lib/errors.js";
 import { nextPuzzleNumber, generatePuzzleForGame } from "../../services/puzzle-generation.js";
+import { recomputeDailyScoresForDate } from "../../services/daily-score.js";
 
 const listQuerySchema = z.object({
   gameSlug: z.string().optional(),
@@ -119,14 +120,22 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
       }
     }
 
-    const updated = await prisma.dailyPuzzle.update({
-      where: { id: puzzle.id },
-      data: {
-        ...(body.content !== undefined ? { content: body.content as Prisma.InputJsonValue } : {}),
-        ...(body.status !== undefined ? { status: body.status } : {}),
-        ...(body.publishAt !== undefined ? { publishAt: body.publishAt ? new Date(body.publishAt) : null } : {}),
-        ...(body.date !== undefined ? { date: dateKeyToJSDate(body.date) } : {}),
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      const row = await tx.dailyPuzzle.update({
+        where: { id: puzzle.id },
+        data: {
+          ...(body.content !== undefined ? { content: body.content as Prisma.InputJsonValue } : {}),
+          ...(body.status !== undefined ? { status: body.status } : {}),
+          ...(body.publishAt !== undefined ? { publishAt: body.publishAt ? new Date(body.publishAt) : null } : {}),
+          ...(body.date !== undefined ? { date: dateKeyToJSDate(body.date) } : {}),
+        },
+      });
+      // Archiving/un-archiving or moving a puzzle changes which puzzles count on those days.
+      if (row.status !== puzzle.status || row.date.getTime() !== puzzle.date.getTime()) {
+        await recomputeDailyScoresForDate(tx, puzzle.date);
+        if (row.date.getTime() !== puzzle.date.getTime()) await recomputeDailyScoresForDate(tx, row.date);
+      }
+      return row;
     });
 
     return reply.send({ data: { ...updated, gameSlug: puzzle.game.slug, date: jsDateToDateKey(updated.date) } });
@@ -135,7 +144,12 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { id: string } }>("/puzzles/:id", async (request, reply) => {
     const puzzle = await prisma.dailyPuzzle.findUnique({ where: { id: request.params.id } });
     if (!puzzle) throw Errors.notFound("Puzzle not found");
-    await prisma.dailyPuzzle.delete({ where: { id: puzzle.id } });
+    // Deleting cascades to its attempts, so every score that day (including who has a Perfect Day)
+    // has to be recomputed — in the same transaction, so leaderboards never see a half-state.
+    await prisma.$transaction(async (tx) => {
+      await tx.dailyPuzzle.delete({ where: { id: puzzle.id } });
+      await recomputeDailyScoresForDate(tx, puzzle.date);
+    });
     return reply.send({ data: { ok: true } });
   });
 

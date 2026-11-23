@@ -1,5 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
-import { updateGameSchema } from "@dailyloop/shared";
+import { updateGameSchema, getTodayKey, dateKeyToJSDate } from "@dailyloop/shared";
+import { env } from "../../config/env.js";
+import { recomputeDailyScoresForDate } from "../../services/daily-score.js";
 import { prisma } from "../../lib/prisma.js";
 import { Errors } from "../../lib/errors.js";
 
@@ -13,7 +15,14 @@ export const adminGameRoutes: FastifyPluginAsync = async (app) => {
     const body = updateGameSchema.parse(request.body);
     const game = await prisma.game.findUnique({ where: { id: request.params.id } });
     if (!game) throw Errors.notFound("Game not found");
-    const updated = await prisma.game.update({ where: { id: game.id }, data: body });
+    const updated = await prisma.$transaction(async (tx) => {
+      const row = await tx.game.update({ where: { id: game.id }, data: body });
+      // Enabling or disabling a game changes which puzzles today's Perfect Day requires.
+      if (row.isEnabled !== game.isEnabled) {
+        await recomputeDailyScoresForDate(tx, dateKeyToJSDate(getTodayKey(env.DEFAULT_TIMEZONE)));
+      }
+      return row;
+    });
     return reply.send({ data: updated });
   });
 };

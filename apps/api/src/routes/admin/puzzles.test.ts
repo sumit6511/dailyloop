@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import { addDaysToKey, getTodayKey } from "@dailyloop/shared";
+import { addDaysToKey, dateKeyToJSDate, getTodayKey, SCORE } from "@dailyloop/shared";
 import { buildApp } from "../../app.js";
 import { prisma } from "../../lib/prisma.js";
 
@@ -182,5 +182,42 @@ describe("admin puzzle routes", () => {
 
     const second = await app.inject({ method: "POST", url: "/api/admin/puzzles/generate", cookies: adminCookies, payload });
     expect(second.statusCode).toBe(409);
+  });
+
+  it("recomputes that day's scores and Perfect Days when a puzzle is deleted", async () => {
+    const adminCookies = await registerAndGetCookies("admin4", "ADMIN");
+    const date = dateKeyToJSDate(getTodayKey("Asia/Kathmandu"));
+    const makeGame = (slug: string, sortOrder: number) =>
+      prisma.game.create({ data: { slug, name: slug, description: "d", icon: "🧪", sortOrder } });
+    const [gameA, gameB] = [await makeGame("game-a", 0), await makeGame("game-b", 1)];
+    const puzzleA = await prisma.dailyPuzzle.create({ data: { gameId: gameA.id, date, puzzleNumber: 1, status: "PUBLISHED", content: {} } });
+    const puzzleB = await prisma.dailyPuzzle.create({ data: { gameId: gameB.id, date, puzzleNumber: 1, status: "PUBLISHED", content: {} } });
+
+    const player = (name: string) =>
+      prisma.user.create({ data: { email: `${name}@example.com`, username: name, passwordHash: "x", displayName: name } });
+    const finish = (userId: string, dailyPuzzleId: string, score: number) =>
+      prisma.gameAttempt.create({ data: { userId, dailyPuzzleId, status: "COMPLETED", won: true, score } });
+    const both = await player("both"); // finished A and B: a Perfect Day
+    const onlyB = await player("onlyb"); // only finished the puzzle that gets deleted
+    const onlyA = await player("onlya"); // finished everything that will remain
+    await finish(both.id, puzzleA.id, 70);
+    await finish(both.id, puzzleB.id, 60);
+    await finish(onlyB.id, puzzleB.id, 60);
+    await finish(onlyA.id, puzzleA.id, 70);
+    await prisma.dailyScore.createMany({
+      data: [
+        { userId: both.id, date, totalScore: 180, gamesCompleted: 2, isPerfectDay: true },
+        { userId: onlyB.id, date, totalScore: 60, gamesCompleted: 1, isPerfectDay: false },
+        { userId: onlyA.id, date, totalScore: 70, gamesCompleted: 1, isPerfectDay: false },
+      ],
+    });
+
+    const res = await app.inject({ method: "DELETE", url: `/api/admin/puzzles/${puzzleB.id}`, cookies: adminCookies });
+    expect(res.statusCode).toBe(200);
+
+    const score = (userId: string) => prisma.dailyScore.findUnique({ where: { userId_date: { userId, date } } });
+    expect(await score(both.id)).toMatchObject({ totalScore: 70 + SCORE.PERFECT_DAY_BONUS, gamesCompleted: 1, isPerfectDay: true });
+    expect(await score(onlyB.id)).toBeNull();
+    expect(await score(onlyA.id)).toMatchObject({ totalScore: 70 + SCORE.PERFECT_DAY_BONUS, isPerfectDay: true });
   });
 });
