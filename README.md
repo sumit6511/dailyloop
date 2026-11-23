@@ -7,9 +7,23 @@ day, and can track streaks, compare scores, and climb a friends leaderboard. It'
 modular game platform — new games plug into a shared engine, scoring system, and daily-puzzle
 scheduler without touching core code.
 
-> **Status:** all 5 games, scoring/streaks/achievements, friends, and the admin panel are built
+> **Status:** all 6 games, scoring/streaks/achievements, friends, and the admin panel are built
 > and tested. See [docs/architecture.md](docs/architecture.md) for the full build log and the
 > architectural decisions behind it, and [docs/deployment.md](docs/deployment.md) to ship it.
+
+## Games
+
+| Game          | What you do                                                                   | Difficulty              |
+| ------------- | ----------------------------------------------------------------------------- | ----------------------- |
+| Connections   | Sort 16 words into four hidden groups (one per colour, yellow → purple)       | Fixed bank, 115 groups  |
+| Word Guess    | Guess the five-letter word in six tries                                       | Curated answers         |
+| Number Puzzle | Combine four numbers with + − × ÷ to hit the target                           | Ramps through the week  |
+| Logic Puzzle  | A 6×6 Sudoku — always uniquely solvable without guessing                      | Ramps through the week  |
+| Guess It      | Name the mystery answer from up to four clues                                 | Fixed bank, 94 entries  |
+| Pathway       | Draw one line through every cell, in number order — always one solution       | 5×5 → 7×7 through week  |
+
+Procedural games follow a weekly curve: Monday/Tuesday easy, Wednesday/Thursday medium,
+Friday–Sunday hard. Logic Puzzle and Pathway offer hints, which cost points.
 
 ## Tech stack
 
@@ -41,7 +55,7 @@ to rebuild when you change them.
 
 ## Prerequisites
 
-- Node.js 20+ (developed against Node 26)
+- Node.js 22 (see `.nvmrc`; Node 20 is end-of-life)
 - Docker (for local Postgres) — or point `DATABASE_URL` at your own Postgres 14+ instance
 
 ## Getting started
@@ -104,6 +118,9 @@ npm run db:up
 npm run db:test:migrate   # once, or after a schema change
 npm test
 ```
+
+Every push and pull request runs the same checks in GitHub Actions (`.github/workflows/ci.yml`):
+lint, typecheck, the full test suite against a Postgres service, and the production web build.
 
 ## Deployment
 

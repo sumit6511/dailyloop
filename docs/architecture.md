@@ -40,6 +40,16 @@
   the header's Friends/Profile/Admin links were `hidden sm:block` with no mobile alternative —
   replaced with a hamburger menu (see `AppShell.tsx`).
 
+- ✅ Phase 9 — Pathway (a 6th game), and an engine overhaul driven by generating a year of every
+  game and measuring it: a weekday difficulty curve; Logic Puzzle graded by a human-technique
+  solver (always unique and guess-free); Pathway always uniquely solvable; Number Puzzle targets
+  that need 3–4 numbers; Connections always one category per tier with exactly one valid
+  grouping; a 12.6k-word guess dictionary; a 3× larger Guess It bank. See
+  [improvement-plan.md](improvement-plan.md) for the audit and before/after numbers.
+- ✅ Phase 10 — integrity and hardening: charged hints, active-time scoring, compare-and-set
+  attempt writes, case-insensitive usernames, proxy-aware rate limiting, constant-time login,
+  day-score recomputation after admin edits, code-split web bundle, CI.
+
 Dev note: Playwright (Chromium) is installed as a devDependency purely as an ad hoc verification
 tool for this build — not part of the checked-in test suite (which stays Vitest/RTL/Fastify
 `.inject()` per the spec). Also: this environment's `tsx --watch` occasionally misses a file
@@ -82,7 +92,7 @@ single first-party frontend origin.
 ## Daily puzzles & timezone
 
 `getTodayKey()` in `packages/shared/src/date.ts` is the **only** place "today" is computed —
-always from the server clock via Luxon against a configurable IANA timezone (default
+always from the server clock via `Intl.DateTimeFormat` against a configurable IANA timezone (default
 `Asia/Kathmandu`), never from anything a client sends. `DailyPuzzle` rows are looked up by
 `(gameId, date)` and only ever served to clients when `status = PUBLISHED`, so a guessed ID for a
 future/scheduled puzzle 404s.
@@ -121,6 +131,26 @@ Puzzle content (including answers) lives server-side only, in `DailyPuzzle.conte
 `validateAttempt`/`calculateScore` always run on the server against that stored content — the
 client only ever sends its raw moves.
 
+### Difficulty, hints and timing
+
+- **Difficulty curve.** `tierForDate(dateKey)` (game-engine) maps the weekday to easy / medium /
+  hard; procedural generators scale with it and store it in `content.difficulty`.
+- **Hints are charged.** `POST /games/:slug/attempts/hint` asks the module's `hint()` and records
+  the charge on the attempt (`GameAttempt.hintsUsed`, once per *distinct* hint). The count reaches
+  `calculateScore` via `ScoreMeta.hintsUsed`; Logic Puzzle and Pathway deduct
+  `SCORE.HINT_PENALTY` per hint.
+- **Active time.** Modules with `timing: "active"` (Logic Puzzle) are scored on time actually
+  spent on the puzzle: every server-observed activity — moves, hints, and heartbeats the page sends
+  every 15 s while visible — credits the gap since the last one if it is ≤ 45 s
+  (`ACTIVE_TIME` in shared). The page's timer displays the same server-side count.
+
+### Attempt writes
+
+Every write to a `GameAttempt` (move, undo, hint charge, heartbeat, completion) is a
+compare-and-set on its `version` column; a request that loses a race re-reads and replays its
+move on top. Completion re-checks inside its transaction, so a winning move submitted twice can't
+finalize twice (which used to reset streaks).
+
 ## Scoring, streaks, perfect day
 
 Every game normalizes its own score to 0–100. A day's total is the sum of that day's completed
@@ -130,8 +160,9 @@ it naturally produces bigger numbers.
 Finishing an attempt runs one Prisma transaction that: rejects a re-submit of an already-completed
 attempt (backed by a `@@unique([userId, dailyPuzzleId])` constraint as a hard stop against
 race conditions), records the server-computed score, upserts that day's `DailyScore`
-(recomputing `isPerfectDay` against however many games were actually published that day, so
-disabling a game doesn't retroactively break Perfect Day), and updates the `Streak` row
+(Perfect Day requires every SCHEDULED/PUBLISHED puzzle of an *enabled* game that day — see
+`services/daily-score.ts`, which also recomputes a day's scores when an admin deletes, archives
+or moves a puzzle or toggles a game), and updates the `Streak` row
 (consecutive day → +1, same day again → no-op, any gap → reset to 1).
 
 ## Why some spec entities were merged or dropped

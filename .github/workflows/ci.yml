@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      # Same credentials and port as docker-compose's postgres_test, so `npm run db:test:migrate`
+      # and apps/api/.env.test work unchanged.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: dailyloop_test
+          POSTGRES_PASSWORD: dailyloop_test_password
+          POSTGRES_DB: dailyloop_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U dailyloop_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Migrate the test database
+        run: npm run db:test:migrate
+
+      - name: Test
+        run: npm test
+
+      - name: Build the web app
+        run: npm run build

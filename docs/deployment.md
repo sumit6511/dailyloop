@@ -19,7 +19,7 @@ pieces — the API, the static web app, and a free Postgres database — in one 
    ```bash
    npm run db:seed
    ```
-   This creates the 5 games, the achievement catalog, and 30 days of daily puzzles — without it
+   This creates the 6 games, the achievement catalog, and 30 days of daily puzzles — without it
    the site loads but shows no games. It also creates a dev admin account and demo users; trim
    `DEV_ADMIN`/`DEMO_USERS` in `prisma/seed.ts` first if you don't want those in a shared deploy.
 5. Open the web service's URL (shown on its Render dashboard page) and register an account.
@@ -52,6 +52,8 @@ Set these on the API host:
 | `WEB_APP_URL`          | `https://your-web-domain.com`                      | Used to build the password-reset link              |
 | `APP_SECRET`           | output of `openssl rand -hex 32`                   | Never reuse the dev value                         |
 | `DEFAULT_TIMEZONE`     | `Asia/Kathmandu`                                   | Optional — this is already the default            |
+| `CRON_SECRET`          | output of `openssl rand -hex 32`                   | Bearer token for `POST /api/cron/generate-tomorrow` (pre-generates puzzles, purges expired sessions). Unset disables the endpoint |
+| `TRUST_PROXY`          | `1`                                                | Number of proxies in front of the API, so rate limits see the real client IP. Default `1`; never `true` unless every hop strips client-supplied `X-Forwarded-For` |
 
 Set this on the web host (build-time):
 
@@ -93,7 +95,8 @@ npm run db:seed
 ## Docker
 
 Each app can be containerized independently if a platform prefers that over a native Node
-buildpack — `apps/api`'s runtime dependencies are plain Node + npm (no native build step), and
+buildpack — `apps/api` runs on plain Node + npm (`argon2` ships prebuilt binaries, so there's no
+compiler needed for common platforms), and
 `apps/web`'s build output is static files servable by any web server (nginx, Caddy, etc.).
 
 ## Checklist before going live
@@ -102,6 +105,9 @@ buildpack — `apps/api`'s runtime dependencies are plain Node + npm (no native 
 - [ ] Generate a fresh `APP_SECRET` — don't reuse the one from `.env.example`
 - [ ] Point `CORS_ORIGIN` / `WEB_APP_URL` at your real domains, not `localhost`
 - [ ] Confirm `DATABASE_URL` uses `sslmode=require` (most managed Postgres providers require this)
-- [ ] Wire up a real email provider for password resets (currently logs the reset link to the
-      server console — see the `EmailSender` note in `apps/api/src/routes/auth.ts`) if you need
-      that flow to work for real users
+- [ ] Wire up a real email provider for password resets if you need that flow to work for real
+      users. Until then, outside production the reset link is logged; in production it is not
+      logged (a warning is), so resets can't be completed — see `apps/api/src/routes/auth.ts`
+- [ ] Set `TRUST_PROXY` to the number of proxies/load balancers in front of the API on your host
+- [ ] Set `CRON_SECRET` on the API and `API_BASE_URL`/`CRON_SECRET` as GitHub Actions secrets so
+      `.github/workflows/pregenerate-puzzles.yml` pre-generates each day's puzzles
