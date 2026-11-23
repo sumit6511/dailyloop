@@ -16,9 +16,18 @@ interface SolvedGroup {
   words: string[];
 }
 
+interface ConnectionsGuess {
+  words: string[];
+  correct: boolean;
+  oneAway: boolean;
+}
+
 interface ConnectionsView {
   words: string[];
   solved: SolvedGroup[];
+  /** Absent from responses before this existed. */
+  guesses?: ConnectionsGuess[];
+  lastMoveRepeated?: boolean;
   mistakesRemaining: number;
   complete: boolean;
   categories?: SolvedGroup[];
@@ -61,6 +70,12 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 const MAX_MISTAKES = 4;
+const NOTICE_MS = 1800;
+
+/** Same identity the server uses: the four words, ignoring order and case. */
+function guessKey(words: string[]): string {
+  return words.map((w) => w.trim().toUpperCase()).sort().join("|");
+}
 
 const REVEAL_MS = 650;
 const SHAKE_MS = 450;
@@ -73,6 +88,8 @@ export function ConnectionsPage() {
   const [pendingSolve, setPendingSolve] = useState<{ words: string[]; categoryIndex: number } | null>(null);
   const [newAchievements, setNewAchievements] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // Transient, non-error feedback: "One away…" / "Already guessed!".
+  const [notice, setNotice] = useState<string | null>(null);
   const [shuffledOrder, setShuffledOrder] = useState<string[] | null>(null);
   const busy = !!pendingSolve || shake;
 
@@ -127,14 +144,29 @@ export function ConnectionsPage() {
     });
   };
 
+  const flashNotice = (message: string) => {
+    setNotice(message);
+    setTimeout(() => setNotice((prev) => (prev === message ? null : prev)), NOTICE_MS);
+  };
+
   const submitGuess = async () => {
     if (selected.length !== 4 || busy) return;
     setError(null);
+    // Repeats never cost a life (the server ignores them too) — just say so without sending.
+    if ((view.guesses ?? []).some((g) => guessKey(g.words) === guessKey(selected))) {
+      flashNotice("Already guessed!");
+      return;
+    }
     try {
       const solvedBefore = view.solved.length;
       const guessedWords = selected;
       const response = await submitMove.mutateAsync({ words: guessedWords });
-      const newSolved = (response.content as ConnectionsView).solved;
+      const newView = response.content as ConnectionsView;
+      const newSolved = newView.solved;
+      if (newView.lastMoveRepeated) {
+        flashNotice("Already guessed!");
+        return;
+      }
       if (response.newlyUnlockedAchievements?.length) {
         setNewAchievements(response.newlyUnlockedAchievements);
       }
@@ -144,6 +176,7 @@ export function ConnectionsPage() {
         setPendingSolve({ words: guessedWords, categoryIndex: newGroup.categoryIndex });
         setTimeout(() => setPendingSolve(null), REVEAL_MS);
       } else {
+        if (!newView.complete && newView.guesses?.at(-1)?.oneAway) flashNotice("One away…");
         setShake(true);
         setTimeout(() => {
           setShake(false);
@@ -232,6 +265,12 @@ export function ConnectionsPage() {
           })}
         </div>
       </div>
+
+      {notice ? (
+        <p role="status" className="animate-pop-in mt-3 text-center text-sm font-semibold text-amber-200">
+          {notice}
+        </p>
+      ) : null}
 
       {error ? (
         <p role="alert" className="animate-pop-in mt-3 text-center text-sm font-medium text-rose-400">

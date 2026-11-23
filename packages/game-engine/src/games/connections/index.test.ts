@@ -132,13 +132,38 @@ describe("connections: validateAttempt", () => {
     expect(result.complete).toBe(false);
   });
 
+  // Four different wrong guesses: the k-th word of every category.
+  const wrongGuesses: ConnectionsMove[] = [0, 1, 2, 3].map((k) => ({
+    words: [catA!.words[k]!, catB!.words[k]!, catC!.words[k]!, catD!.words[k]!],
+  }));
+
   it("ends the game (loss) once mistakes reach the limit without solving everything", () => {
-    const moves: ConnectionsMove[] = [oneFromEachCategory, oneFromEachCategory, oneFromEachCategory, oneFromEachCategory];
-    const result = connectionsGame.validateAttempt(content, moves);
+    const result = connectionsGame.validateAttempt(content, wrongGuesses);
     expect(result.mistakes).toBe(4);
     expect(result.won).toBe(false);
     expect(result.complete).toBe(true);
     expect(result.result.gaveUp).toBe(true);
+  });
+
+  it("ignores a repeated wrong guess (any order or case) instead of charging another mistake", () => {
+    const reordered = { words: [...oneFromEachCategory.words].reverse().map((w) => w.toLowerCase()) };
+    const result = connectionsGame.validateAttempt(content, [oneFromEachCategory, reordered]);
+    expect(result.mistakes).toBe(1);
+    expect(result.result.guesses).toHaveLength(1);
+    expect(result.result.lastMoveRepeated).toBe(true);
+  });
+
+  it("doesn't count double-submitting a group that was just solved as a mistake", () => {
+    const result = connectionsGame.validateAttempt(content, [{ words: catA!.words }, { words: catA!.words }]);
+    expect(result.mistakes).toBe(0);
+    expect(result.result.solved).toHaveLength(1);
+  });
+
+  it("flags a wrong guess as one away when three of its words share an unsolved category", () => {
+    const threeAndOne = { words: [catA!.words[0], catA!.words[1], catA!.words[2], catB!.words[0]] };
+    const result = connectionsGame.validateAttempt(content, [threeAndOne, oneFromEachCategory]);
+    expect(result.result.guesses.map((g) => g.oneAway)).toEqual([true, false]);
+    expect(result.result.lastMoveRepeated).toBe(false);
   });
 });
 

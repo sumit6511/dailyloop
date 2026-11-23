@@ -23,11 +23,22 @@ export interface SolvedGroup {
   words: string[];
 }
 
+/** One counted guess (repeats are dropped before they get here). */
+export interface ConnectionsGuess {
+  words: string[];
+  correct: boolean;
+  /** Wrong, but three of the four words do belong to one unsolved category. */
+  oneAway: boolean;
+}
+
 export interface ConnectionsResult {
   solved: SolvedGroup[];
+  guesses: ConnectionsGuess[];
   mistakes: number;
   won: boolean;
   gaveUp: boolean;
+  /** The most recent move repeated an earlier guess, so it was ignored (no mistake charged). */
+  lastMoveRepeated: boolean;
 }
 
 const MAX_MISTAKES_ALLOWED = MAX_MISTAKES.connections;
@@ -45,12 +56,27 @@ function sameWordSet(a: readonly string[], b: readonly string[]): boolean {
   return true;
 }
 
+/** Order- and case-insensitive identity of a guess, so the same four words always match. */
+function guessKey(words: readonly string[]): string {
+  return words.map(normalizeWord).sort().join("|");
+}
+
 function replay(content: ConnectionsContent, moves: ConnectionsMove[]): ValidationResult<ConnectionsResult> {
   const solved: SolvedGroup[] = [];
   const solvedIndices = new Set<number>();
+  const guesses: ConnectionsGuess[] = [];
+  const tried = new Set<string>();
   let mistakes = 0;
+  let lastMoveRepeated = false;
 
   for (const move of moves) {
+    // Re-submitting an earlier guess (a double-tap, or forgetting it was tried) tells the player
+    // nothing new, so it's ignored rather than costing a life — and never re-solves a group.
+    const key = guessKey(move.words);
+    lastMoveRepeated = tried.has(key);
+    if (lastMoveRepeated) continue;
+    tried.add(key);
+
     const matchIndex = content.categories.findIndex(
       (category, index) => !solvedIndices.has(index) && sameWordSet(category.words, move.words),
     );
@@ -58,15 +84,26 @@ function replay(content: ConnectionsContent, moves: ConnectionsMove[]): Validati
       solvedIndices.add(matchIndex);
       const category = content.categories[matchIndex]!;
       solved.push({ categoryIndex: matchIndex, title: category.title, difficulty: category.difficulty, words: [...category.words] });
+      guesses.push({ words: [...move.words], correct: true, oneAway: false });
     } else {
       mistakes++;
+      const guessed = new Set(move.words.map(normalizeWord));
+      const oneAway = content.categories.some(
+        (category, index) => !solvedIndices.has(index) && category.words.filter((w) => guessed.has(normalizeWord(w))).length === 3,
+      );
+      guesses.push({ words: [...move.words], correct: false, oneAway });
     }
   }
 
   const won = solvedIndices.size === content.categories.length;
   const gaveUp = !won && mistakes >= MAX_MISTAKES_ALLOWED;
 
-  return { won, complete: won || gaveUp, mistakes, result: { solved, mistakes, won, gaveUp } };
+  return {
+    won,
+    complete: won || gaveUp,
+    mistakes,
+    result: { solved, guesses, mistakes, won, gaveUp, lastMoveRepeated },
+  };
 }
 
 function fits(category: ConnectionsBankEntry, word: string): boolean {
@@ -197,13 +234,23 @@ export const connectionsGame: DailyGameModule<ConnectionsContent, ConnectionsMov
 
   sanitizeForClient(content, attempt) {
     if (!attempt) {
-      return { words: content.words, solved: [], mistakesRemaining: MAX_MISTAKES_ALLOWED, complete: false };
+      return {
+        words: content.words,
+        solved: [],
+        guesses: [],
+        lastMoveRepeated: false,
+        mistakesRemaining: MAX_MISTAKES_ALLOWED,
+        complete: false,
+      };
     }
     const { result, mistakes } = replay(content, attempt.moves);
     const complete = attempt.status === "COMPLETED";
     return {
       words: content.words,
       solved: result.solved,
+      // Safe to send: a "one away" flag only says what the player was just told anyway.
+      guesses: result.guesses,
+      lastMoveRepeated: result.lastMoveRepeated,
       mistakesRemaining: Math.max(0, MAX_MISTAKES_ALLOWED - mistakes),
       complete,
       ...(complete ? { categories: content.categories } : {}),

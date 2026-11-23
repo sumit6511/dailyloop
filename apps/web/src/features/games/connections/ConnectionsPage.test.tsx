@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createTestQueryClient, renderWithProviders } from "../../../test/render";
@@ -9,7 +9,7 @@ const WORDS = [
   "NINE", "TEN", "ELEVEN", "TWELVE", "RED", "BLUE", "GREEN", "PINK",
 ];
 
-function seedInProgressEntry() {
+function seedInProgressEntry(extraContent: Record<string, unknown> = {}) {
   const queryClient = createTestQueryClient();
   queryClient.setQueryData(["games", "connections", "today"], {
     slug: "connections",
@@ -24,7 +24,7 @@ function seedInProgressEntry() {
     mistakeCount: 0,
     hintsUsed: null,
     activeMs: null,
-    content: { words: WORDS, solved: [], mistakesRemaining: 4, complete: false },
+    content: { words: WORDS, solved: [], mistakesRemaining: 4, complete: false, ...extraContent },
   });
   return queryClient;
 }
@@ -67,5 +67,24 @@ describe("ConnectionsPage tile selection", () => {
     await user.click(screen.getByRole("button", { name: "Deselect all" }));
     expect(screen.getByRole("button", { name: "ONE" })).toHaveAttribute("aria-pressed", "false");
     expect(screen.getByRole("button", { name: "TWO" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("says 'Already guessed!' for a repeat, in any order, without sending it", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const user = userEvent.setup();
+    renderWithProviders(
+      <ConnectionsPage />,
+      seedInProgressEntry({ guesses: [{ words: ["ONE", "FIVE", "NINE", "RED"], correct: false, oneAway: false }] }),
+    );
+
+    for (const word of ["RED", "NINE", "FIVE", "ONE"]) {
+      await user.click(await screen.findByRole("button", { name: word }));
+    }
+    fetchSpy.mockClear();
+    await user.click(screen.getByRole("button", { name: "Submit" }));
+
+    expect(await screen.findByText("Already guessed!")).toBeInTheDocument();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    fetchSpy.mockRestore();
   });
 });
