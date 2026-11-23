@@ -8,6 +8,7 @@ import { Avatar } from "../../components/Avatar";
 import { Button } from "../../components/Button";
 import { Icon } from "../../components/Icon";
 import { RelationshipButton } from "./RelationshipButton";
+import { MyStatsCard } from "./MyStatsCard";
 import type { Relationship } from "./relationship";
 
 interface ProfileDTO {
@@ -99,6 +100,8 @@ export function ProfilePage() {
           <Stat label="Games Won" value={String(profile.stats.gamesWon)} />
         </div>
       </Card>
+
+      {profile.relationship === "self" ? <MyStatsCard /> : null}
 
       <Card>
         <h2 className="mb-4 font-display text-lg font-bold text-white">Achievements</h2>

@@ -40,3 +40,21 @@ export interface MeDTO extends PublicUserDTO {
   role: "USER" | "ADMIN";
   timezone: string;
 }
+
+export interface GameStatsDTO {
+  slug: string;
+  name: string;
+  icon: string;
+  played: number;
+  won: number;
+  /** 0–100, rounded; 0 when nothing has been played yet. */
+  winRate: number;
+  averageScore: number;
+  bestScore: number;
+}
+
+export interface MyStatsDTO {
+  games: GameStatsDTO[];
+  /** Word Guess wins by number of guesses: index 0 = solved in 1 guess … index 5 = in 6. */
+  wordGuessDistribution: number[];
+}

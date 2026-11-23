@@ -501,4 +501,27 @@ describe("attempt lifecycle", () => {
       expect(activity({ activeMs: 0, lastActiveAt: null }, last).activeMs).toBe(0);
     });
   });
+
+  it("reports per-game stats and the Word Guess distribution in /me/stats", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
+    await publishToday("number-puzzle", "Number Puzzle", "🔢", NUMBER_PUZZLE_CONTENT);
+    const play = (slug: string, move: unknown) =>
+      app.inject({ method: "POST", url: `/api/games/${slug}/attempts/submit`, cookies, payload: { move } });
+
+    await app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies });
+    await play("word-guess", { guess: "STORM" });
+    await play("word-guess", { guess: "CRANE" }); // won in 2
+    await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/start", cookies });
+    await play("number-puzzle", { type: "submit" }); // gave up: a loss
+
+    const res = await app.inject({ method: "GET", url: "/api/me/stats", cookies });
+    expect(res.statusCode).toBe(200);
+    const body = res.json().data;
+    const bySlug = Object.fromEntries(body.games.map((g: { slug: string }) => [g.slug, g]));
+    expect(bySlug["word-guess"]).toMatchObject({ played: 1, won: 1, winRate: 100 });
+    expect(bySlug["word-guess"].bestScore).toBeGreaterThan(0);
+    expect(bySlug["number-puzzle"]).toMatchObject({ played: 1, won: 0, winRate: 0, averageScore: 0 });
+    expect(body.wordGuessDistribution).toEqual([0, 1, 0, 0, 0, 0]);
+  });
 });
