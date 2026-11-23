@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { addDaysToKey } from "@dailyloop/shared";
 import { numberPuzzleGame, type NumberPuzzleMove } from "./index.js";
+import { analyzeNumbers } from "./solver.js";
 
 const DATE = "2026-08-29";
 
@@ -15,6 +17,26 @@ describe("number-puzzle: generatePuzzle", () => {
     expect(a.numbers).toHaveLength(4);
     expect(a.numbers.every((n) => Number.isInteger(n) && n > 0)).toBe(true);
     expect(Number.isInteger(a.target) && a.target > 0).toBe(true);
+  });
+
+  it("never sets a target reachable in a single operation, and needs all 4 numbers on harder days", () => {
+    for (let day = 0; day < 28; day++) {
+      const content = numberPuzzleGame.generatePuzzle("s", addDaysToKey("2026-08-24", day));
+      const info = analyzeNumbers(content.numbers).get(content.target)!;
+      expect(info).toBeDefined();
+      expect(info.minNumbers).toBeGreaterThanOrEqual(3);
+      if (content.difficulty !== "easy") expect(info.minNumbers).toBe(4);
+      if (content.difficulty === "hard") expect(info.ways).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it("stores a worked solution that is only revealed once the attempt is complete", () => {
+    const content = generate();
+    expect(content.solution).toBeTruthy();
+    const inProgress = numberPuzzleGame.sanitizeForClient(content, { status: "IN_PROGRESS", moves: [] }) as Record<string, unknown>;
+    expect(inProgress.solution).toBeUndefined();
+    const done = numberPuzzleGame.sanitizeForClient(content, { status: "COMPLETED", moves: [{ type: "submit" }] }) as Record<string, unknown>;
+    expect(done.solution).toBe(content.solution);
   });
 
   it("differs across dates", () => {

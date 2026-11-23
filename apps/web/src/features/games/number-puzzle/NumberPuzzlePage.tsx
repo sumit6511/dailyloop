@@ -24,6 +24,8 @@ interface NumberPuzzleView {
   steps: NumberPuzzleStep[];
   complete: boolean;
   won?: boolean;
+  /** One way to reach the target — only sent once the attempt is complete. */
+  solution?: string;
 }
 
 function BoardSkeleton() {
@@ -192,6 +194,12 @@ export function NumberPuzzlePage() {
           {!view.won ? (
             <p className="mb-6 text-sm text-white/60">
               Target was {view.target}. Final numbers: {view.pool.join(", ")}
+              {view.solution ? (
+                <>
+                  <br />
+                  One way to get there: <span className="font-semibold text-white/80">{view.solution} = {view.target}</span>
+                </>
+              ) : null}
             </p>
           ) : null}
         </ResultScreen>
