@@ -28,7 +28,7 @@ trivially-solvable targets, content repetition).
 
 ## Plan (engine work, in order)
 
-1. **Shared difficulty schedule** — `difficultyForDate(dateKey)`: Mon/Tue easy → Wed/Thu medium →
+1. **Shared difficulty schedule** — `tierForDate(dateKey)`: Mon/Tue easy → Wed/Thu medium →
    Fri–Sun hard, so every procedural game ramps through the week like NYT/LinkedIn puzzles.
 2. **Logic Puzzle** — a human-technique solver (naked/hidden singles → locked candidates → naked
    pairs) used to _grade_ puzzles; carve with 180° symmetry down to a tier-specific clue count,
@@ -48,3 +48,30 @@ trivially-solvable targets, content repetition).
 
 All content-shape changes are additive/optional so puzzles already stored in `DailyPuzzle.content`
 keep validating and replaying exactly as before.
+
+## Outcome
+
+Measured with the same audit (365 consecutive generated days) after the changes:
+
+| Game          | Before                                                   | After                                                                                                     |
+| ------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Logic Puzzle  | 20 givens every day; hints could be wrong                | 16 / 14 / 10 givens (easy/medium/hard); 100% unique and solvable without guessing; hints flag wrong cells |
+| Pathway       | 49% of puzzles had multiple solutions; always 5×5        | 100% unique (verified by the solver); 5×5 / 6×6 / 7×7 by tier; ≤60 ms to generate                         |
+| Number Puzzle | 12% solvable in one operation                            | 0%; medium/hard always need all 4 numbers; hard has ≤2 distinct solutions; solution revealed              |
+| Connections   | 48 categories, no purple tier, 1111 grids, 12-day repeat | 115 categories; always one per tier; exactly one valid grouping; 365 distinct grids per year              |
+| Word Guess    | 914 accepted guesses                                     | ~12.6k accepted guesses (answers still curated)                                                           |
+| Guess It      | 30 entries, exact matching only                          | 94 entries; typo-tolerant, accent/"the"-insensitive; repeat guesses are free                              |
+
+Also fixed along the way: a Guess It clue that spelled out an accepted answer ("Air Jordan"), and
+`.env.example`'s empty `CRON_SECRET` crashing API startup when the README setup steps were followed.
+
+## Follow-ups (not done here)
+
+- **Hints are free.** The hint endpoint is read-only, so a player can request unlimited Logic
+  Puzzle hints with no effect on score (`hintsUsed` is client-only). Recording a hint marker in the
+  attempt log and penalising it in `calculateScore` would close this.
+- **Speed bonus vs. paused timer.** The server measures `now - startedAt`, but the Logic Puzzle UI
+  timer pauses when you leave the page, so the shown time and the scored time can disagree.
+- **Concurrent move submits** are read-modify-write without a version check; an optimistic
+  `updateMany where: { id, updatedAt }` would make lost moves impossible rather than unlikely.
+- **Pathway hints** — the solver could power "next cell" hints the same way Logic Puzzle's does.

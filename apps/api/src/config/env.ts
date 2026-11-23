@@ -9,8 +9,9 @@ const envSchema = z.object({
   APP_SECRET: z.string().min(16, "APP_SECRET must be at least 16 characters"),
   DEFAULT_TIMEZONE: z.string().min(1).default("Asia/Kathmandu"),
   /** Bearer-token secret for the scheduled pre-warm cron endpoint (see routes/cron.ts). Optional
-   * — if unset, that endpoint rejects every request rather than accepting an unauthenticated one. */
-  CRON_SECRET: z.string().min(16).optional(),
+   * — if unset, that endpoint rejects every request rather than accepting an unauthenticated one.
+   * An empty value (as shipped in .env.example) counts as unset rather than failing startup. */
+  CRON_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(16).optional()),
 });
 
 const parsed = envSchema.safeParse(process.env);

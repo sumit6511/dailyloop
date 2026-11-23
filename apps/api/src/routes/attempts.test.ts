@@ -139,7 +139,7 @@ describe("attempt lifecycle", () => {
     const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
     expect(res.statusCode).toBe(200);
     const body = res.json().data;
-    expect(body).toEqual({ row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0] });
+    expect(body).toMatchObject({ row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0], kind: "place" });
     // The other blank's solved value shouldn't leak just because a hint was requested.
     expect(JSON.stringify(body)).not.toContain(String(LOGIC_PUZZLE_SOLUTION[5]![5]));
   });
