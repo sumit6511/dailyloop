@@ -38,6 +38,18 @@ function BoardSkeleton() {
 }
 
 const CELEBRATE_MS = 600;
+
+/** Mirrors the server's `normalizeGuess` (apps/web doesn't depend on the game engine) — only
+ * used to catch an exact repeat before it's sent; the server ignores repeats regardless. */
+function normalizeGuess(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/^the\s+/, "")
+    .replace(/[^a-z0-9]/g, "");
+}
 const SHAKE_MS = 400;
 const MAX_CLUES = 4;
 
@@ -83,6 +95,10 @@ export function GuessItPage() {
 
   const submitGuess = async () => {
     if (!guess.trim() || view.complete || submitMove.isPending || shake) return;
+    if (view.guesses.some((g) => normalizeGuess(g.guess) === normalizeGuess(guess))) {
+      setError("You already tried that — it won't cost you a clue.");
+      return;
+    }
     setError(null);
     try {
       const response = await submitMove.mutateAsync({ guess: guess.trim() });

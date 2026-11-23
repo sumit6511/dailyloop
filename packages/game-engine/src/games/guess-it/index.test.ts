@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { guessItGame, type GuessItContent, type GuessItMove } from "./index.js";
+import { guessItGame, normalizeGuess, type GuessItContent, type GuessItMove } from "./index.js";
 import { GUESS_IT_ENTRIES } from "./entries.js";
 
 const DATE = "2026-08-29";
@@ -60,6 +60,60 @@ describe("guess-it: validateAttempt", () => {
     expect(result.complete).toBe(true);
     expect(result.won).toBe(false);
     expect(result.result.gaveUp).toBe(true);
+  });
+
+  it("forgives a small typo in a longer answer, and ignores a leading 'the' and accents", () => {
+    expect(guessItGame.validateAttempt(content, [{ guess: "Facebok" }]).won).toBe(true); // 1 deletion
+    expect(guessItGame.validateAttempt(content, [{ guess: "Faecbook" }]).won).toBe(true); // swapped letters
+    expect(guessItGame.validateAttempt(content, [{ guess: "The Facebook" }]).won).toBe(true);
+    expect(guessItGame.validateAttempt(content, [{ guess: "Fácebook" }]).won).toBe(true);
+    expect(guessItGame.validateAttempt(content, [{ guess: "Fcebok" }]).won).toBe(false); // 2 edits is too many at 8 letters
+  });
+
+  it("requires an exact match for short answers, where one letter makes a different word", () => {
+    const mars: GuessItContent = { category: "Space", answer: "Mars", aliases: [], clues: ["1", "2", "3", "4"] };
+    expect(guessItGame.validateAttempt(mars, [{ guess: "mars" }]).won).toBe(true);
+    expect(guessItGame.validateAttempt(mars, [{ guess: "mary" }]).won).toBe(false);
+  });
+
+  it("ignores a repeated wrong guess instead of spending a clue on it", () => {
+    const moves: GuessItMove[] = [{ guess: "Google" }, { guess: "google " }, { guess: "GOOGLE" }];
+    const result = guessItGame.validateAttempt(content, moves);
+    expect(result.result.guesses).toHaveLength(1);
+    expect(result.result.cluesRevealed).toBe(2);
+    expect(result.mistakes).toBe(1);
+  });
+});
+
+describe("guess-it: GUESS_IT_ENTRIES", () => {
+  it("has unique answers with exactly 4 non-empty clues each", () => {
+    expect(new Set(GUESS_IT_ENTRIES.map((e) => normalizeGuess(e.answer))).size).toBe(GUESS_IT_ENTRIES.length);
+    for (const entry of GUESS_IT_ENTRIES) {
+      expect(entry.clues).toHaveLength(4);
+      for (const clue of entry.clues) expect(clue.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("never accepts one entry's answer (or alias) as a correct guess for a different entry", () => {
+    for (const entry of GUESS_IT_ENTRIES) {
+      for (const other of GUESS_IT_ENTRIES) {
+        if (other === entry) continue;
+        for (const guess of [other.answer, ...other.aliases]) {
+          const won = guessItGame.validateAttempt(entry, [{ guess }]).won;
+          expect(won, `"${guess}" would be accepted for "${entry.answer}"`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it("never names the answer in its own clues", () => {
+    for (const entry of GUESS_IT_ENTRIES) {
+      for (const clue of entry.clues) {
+        for (const name of [entry.answer, ...entry.aliases]) {
+          expect(normalizeGuess(clue).includes(normalizeGuess(name)), `${entry.answer}: "${clue}"`).toBe(false);
+        }
+      }
+    }
   });
 });
 
