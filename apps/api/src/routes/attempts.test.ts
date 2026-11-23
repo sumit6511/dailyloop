@@ -393,4 +393,54 @@ describe("attempt lifecycle", () => {
     expect(afterGap?.currentStreak).toBe(1);
     expect(afterGap?.longestStreak).toBe(5); // longest is untouched by a reset
   });
+  describe("concurrent requests", () => {
+    const submit = (cookies: Record<string, string>, guess: string) =>
+      app.inject({ method: "POST", url: "/api/games/word-guess/attempts/submit", cookies, payload: { move: { guess } } });
+
+    it("records every move when several are submitted at once", async () => {
+      const { cookies } = await registerUser("harry");
+      await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
+      await app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies });
+
+      const responses = await Promise.all(["STORM", "PLANT", "MOUSE", "BRICK"].map((g) => submit(cookies, g)));
+      for (const res of responses) expect(res.statusCode).toBe(200);
+
+      const attempt = await prisma.gameAttempt.findFirstOrThrow();
+      expect((attempt.attemptLog as unknown[]).length).toBe(4);
+      expect(attempt.mistakeCount).toBe(4);
+    });
+
+    it("completes the attempt exactly once when the winning move races itself, keeping the streak", async () => {
+      const { userId, cookies } = await registerUser("harry");
+      await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
+      const yesterday = dateKeyToJSDate(addDaysToKey(getTodayKey("Asia/Kathmandu"), -1));
+      await prisma.streak.upsert({
+        where: { userId },
+        create: { userId, currentStreak: 5, longestStreak: 5, lastCompletedDate: yesterday },
+        update: { currentStreak: 5, longestStreak: 5, lastCompletedDate: yesterday },
+      });
+      await app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies });
+
+      const responses = await Promise.all(Array.from({ length: 4 }, () => submit(cookies, "CRANE")));
+      for (const res of responses) expect(res.statusCode).toBe(200);
+      expect(responses.filter((r) => r.json().data.score != null && !r.json().data.alreadyCompleted)).toHaveLength(1);
+
+      const attempt = await prisma.gameAttempt.findFirstOrThrow();
+      expect(attempt.status).toBe("COMPLETED");
+      expect(attempt.attemptLog).toEqual([{ guess: "CRANE" }]);
+      expect((await prisma.streak.findUniqueOrThrow({ where: { userId } })).currentStreak).toBe(6);
+      expect((await prisma.dailyScore.findFirstOrThrow({ where: { userId } })).gamesCompleted).toBe(1);
+    });
+
+    it("creates a single attempt when start is called several times at once", async () => {
+      const { cookies } = await registerUser("harry");
+      await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
+
+      const responses = await Promise.all(
+        Array.from({ length: 4 }, () => app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies })),
+      );
+      for (const res of responses) expect(res.statusCode).toBe(200);
+      expect(await prisma.gameAttempt.count()).toBe(1);
+    });
+  });
 });

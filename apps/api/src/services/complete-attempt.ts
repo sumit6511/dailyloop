@@ -5,9 +5,18 @@ import type { ScoreBreakdown } from "@dailyloop/game-engine";
 import { prisma } from "../lib/prisma.js";
 import { evaluateAchievements } from "./achievements.js";
 
+/** The attempt changed (or was already completed) since the caller read it — nothing was written. */
+export class AttemptConflictError extends Error {
+  constructor() {
+    super("The attempt was modified concurrently");
+  }
+}
+
 interface CompleteAttemptInput {
   userId: string;
   dailyPuzzleId: string;
+  /** The `version` the caller computed the result from; completion only happens if it's unchanged. */
+  expectedVersion: number;
   won: boolean;
   mistakeCount: number;
   durationMs: number;
@@ -26,9 +35,18 @@ export async function completeAttempt(input: CompleteAttemptInput) {
     const puzzle = await tx.dailyPuzzle.findUniqueOrThrow({ where: { id: input.dailyPuzzleId } });
     const dateKey = jsDateToDateKey(puzzle.date);
 
-    const attempt = await tx.gameAttempt.update({
-      where: { userId_dailyPuzzleId: { userId: input.userId, dailyPuzzleId: input.dailyPuzzleId } },
+    // Compare-and-set inside the transaction: if another request already moved or completed this
+    // attempt, write nothing and let the caller re-read. Without this, two racing final moves would
+    // both run the streak logic below, and the second would reset the streak to 1.
+    const { count } = await tx.gameAttempt.updateMany({
+      where: {
+        userId: input.userId,
+        dailyPuzzleId: input.dailyPuzzleId,
+        status: "IN_PROGRESS",
+        version: input.expectedVersion,
+      },
       data: {
+        version: { increment: 1 },
         status: "COMPLETED",
         attemptLog: input.moves as Prisma.InputJsonValue,
         mistakeCount: input.mistakeCount,
@@ -38,6 +56,10 @@ export async function completeAttempt(input: CompleteAttemptInput) {
         scoreBreakdown: input.scoreBreakdown as unknown as Prisma.InputJsonValue,
         completedAt: new Date(),
       },
+    });
+    if (count !== 1) throw new AttemptConflictError();
+    const attempt = await tx.gameAttempt.findUniqueOrThrow({
+      where: { userId_dailyPuzzleId: { userId: input.userId, dailyPuzzleId: input.dailyPuzzleId } },
     });
 
     const completedAttemptsToday = await tx.gameAttempt.findMany({

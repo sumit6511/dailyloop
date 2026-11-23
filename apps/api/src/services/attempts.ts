@@ -1,12 +1,40 @@
 import { isDeepStrictEqual } from "node:util";
-import type { Prisma, AttemptStatus } from "@prisma/client";
+import { Prisma, type AttemptStatus, type GameAttempt } from "@prisma/client";
 import { getGameModule } from "@dailyloop/game-engine";
 import { prisma } from "../lib/prisma.js";
-import { completeAttempt } from "./complete-attempt.js";
+import { AttemptConflictError, completeAttempt } from "./complete-attempt.js";
 import { findTodaysPuzzle } from "./puzzle-lookup.js";
 
 function movesOf(attemptLog: Prisma.JsonValue | null): unknown[] {
   return Array.isArray(attemptLog) ? attemptLog : [];
+}
+
+/**
+ * Every write to an attempt is a compare-and-set on `version`: read, compute, then update only
+ * if nobody else wrote in between. A writer that loses re-reads and recomputes from the fresh
+ * row — correct here because moves only ever append, so a concurrent move is simply replayed
+ * first. Each round lets at least one writer through, so a handful of retries covers any burst
+ * of requests a single player can produce.
+ */
+const MAX_WRITE_ATTEMPTS = 10;
+
+function loadAttempt(userId: string, dailyPuzzleId: string) {
+  return prisma.gameAttempt.findUnique({ where: { userId_dailyPuzzleId: { userId, dailyPuzzleId } } });
+}
+
+/** Applies `data` only if the attempt is still in progress at the version we read. */
+async function compareAndSet(attempt: GameAttempt, data: Prisma.GameAttemptUpdateManyMutationInput): Promise<boolean> {
+  const { count } = await prisma.gameAttempt.updateMany({
+    where: { id: attempt.id, status: "IN_PROGRESS", version: attempt.version },
+    data: { ...data, version: { increment: 1 } },
+  });
+  return count === 1;
+}
+
+class TooMuchContentionError extends Error {
+  constructor() {
+    super("Couldn't update the attempt after repeated concurrent writes");
+  }
 }
 
 export type StartAttemptResult =
@@ -22,12 +50,18 @@ export async function startAttempt(userId: string, gameSlug: string): Promise<St
   const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
-  let attempt = await prisma.gameAttempt.findUnique({
-    where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
-  });
-  attempt ??= await prisma.gameAttempt.create({
-    data: { userId, dailyPuzzleId: puzzle.id, status: "IN_PROGRESS", attemptLog: [] },
-  });
+  let attempt = await loadAttempt(userId, puzzle.id);
+  if (!attempt) {
+    try {
+      attempt = await prisma.gameAttempt.create({
+        data: { userId, dailyPuzzleId: puzzle.id, status: "IN_PROGRESS", attemptLog: [] },
+      });
+    } catch (err) {
+      // Two starts raced (e.g. a double-mounted page) and the other one created the row first.
+      if (!(err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002")) throw err;
+      attempt = (await loadAttempt(userId, puzzle.id))!;
+    }
+  }
 
   const moves = movesOf(attempt.attemptLog);
   const content = module.sanitizeForClient(puzzle.content, { status: attempt.status, moves });
@@ -68,14 +102,12 @@ export type HintResult =
   | { kind: "already_completed" }
   | { kind: "ok"; hint: unknown; hintsUsed: number };
 
-const MAX_HINT_CHARGE_ATTEMPTS = 5;
-
 /**
  * Asks a game for its next-step suggestion and charges the attempt for it. Never touches the
  * move log, but a hint is not free: `hintsUsed` feeds into scoring. Charging is per *distinct*
  * hint — asking again for exactly the suggestion last paid for (e.g. after dismissing it) costs
- * nothing — and is a compare-and-set on the current count, so two simultaneous requests can
- * neither double-charge nor both slip through uncharged.
+ * nothing — and the charge is a compare-and-set like every attempt write, so two simultaneous
+ * requests can neither double-charge nor both slip through uncharged.
  */
 export async function getHint(userId: string, gameSlug: string): Promise<HintResult> {
   const module = getGameModule(gameSlug);
@@ -86,10 +118,8 @@ export async function getHint(userId: string, gameSlug: string): Promise<HintRes
   const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
-  for (let tries = 0; tries < MAX_HINT_CHARGE_ATTEMPTS; tries++) {
-    const attempt = await prisma.gameAttempt.findUnique({
-      where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
-    });
+  for (let tries = 0; tries < MAX_WRITE_ATTEMPTS; tries++) {
+    const attempt = await loadAttempt(userId, puzzle.id);
     if (!attempt) return { kind: "not_started" };
     if (attempt.status === "COMPLETED") return { kind: "already_completed" };
 
@@ -101,14 +131,12 @@ export async function getHint(userId: string, gameSlug: string): Promise<HintRes
     const hint = JSON.parse(JSON.stringify(suggestion)) as Prisma.InputJsonValue;
     if (isDeepStrictEqual(attempt.lastHint, hint)) return { kind: "ok", hint, hintsUsed: attempt.hintsUsed };
 
-    const { count } = await prisma.gameAttempt.updateMany({
-      where: { id: attempt.id, status: "IN_PROGRESS", hintsUsed: attempt.hintsUsed },
-      data: { hintsUsed: { increment: 1 }, lastHint: hint },
-    });
-    if (count === 1) return { kind: "ok", hint, hintsUsed: attempt.hintsUsed + 1 };
-    // Lost a race with another hint or the final move — re-read and decide again.
+    if (await compareAndSet(attempt, { hintsUsed: { increment: 1 }, lastHint: hint })) {
+      return { kind: "ok", hint, hintsUsed: attempt.hintsUsed + 1 };
+    }
+    // Lost a race with another hint or a move — re-read and decide again.
   }
-  throw new Error("Couldn't record a hint after repeated concurrent updates");
+  throw new TooMuchContentionError();
 }
 
 export type UndoMoveResult =
@@ -133,23 +161,28 @@ export async function undoLastMove(userId: string, gameSlug: string): Promise<Un
   const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
-  const attempt = await prisma.gameAttempt.findUnique({
-    where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
-  });
-  if (!attempt) return { kind: "not_started" };
-  if (attempt.status === "COMPLETED") return { kind: "already_completed" };
+  for (let tries = 0; tries < MAX_WRITE_ATTEMPTS; tries++) {
+    const attempt = await loadAttempt(userId, puzzle.id);
+    if (!attempt) return { kind: "not_started" };
+    if (attempt.status === "COMPLETED") return { kind: "already_completed" };
 
-  const moves = movesOf(attempt.attemptLog);
-  if (moves.length === 0) return { kind: "nothing_to_undo" };
+    const moves = movesOf(attempt.attemptLog);
+    if (moves.length === 0) return { kind: "nothing_to_undo" };
 
-  const newMoves = moves.slice(0, -1);
-  const validation = module.validateAttempt(puzzle.content, newMoves);
-  await prisma.gameAttempt.update({
-    where: { id: attempt.id },
-    data: { attemptLog: newMoves as Prisma.InputJsonValue, mistakeCount: validation.mistakes },
-  });
-
-  return { kind: "ok", content: module.sanitizeForClient(puzzle.content, { status: "IN_PROGRESS", moves: newMoves }) };
+    const newMoves = moves.slice(0, -1);
+    const validation = module.validateAttempt(puzzle.content, newMoves);
+    const written = await compareAndSet(attempt, {
+      attemptLog: newMoves as Prisma.InputJsonValue,
+      mistakeCount: validation.mistakes,
+    });
+    if (written) {
+      return {
+        kind: "ok",
+        content: module.sanitizeForClient(puzzle.content, { status: "IN_PROGRESS", moves: newMoves }),
+      };
+    }
+  }
+  throw new TooMuchContentionError();
 }
 
 export type SubmitMoveResult =
@@ -175,62 +208,72 @@ export async function submitMove(userId: string, gameSlug: string, rawMove: unkn
   const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
-  const attempt = await prisma.gameAttempt.findUnique({
-    where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
-  });
-  if (!attempt) return { kind: "not_started" };
-
-  if (attempt.status === "COMPLETED") {
-    const moves = movesOf(attempt.attemptLog);
-    return {
-      kind: "already_completed",
-      content: module.sanitizeForClient(puzzle.content, { status: "COMPLETED", moves }),
-    };
-  }
-
   const parsedMove = module.moveSchema.safeParse(rawMove);
-  if (!parsedMove.success) return { kind: "invalid_move", details: parsedMove.error.flatten() };
 
-  const moves = [...movesOf(attempt.attemptLog), parsedMove.data];
-  const validation = module.validateAttempt(puzzle.content, moves);
+  for (let tries = 0; tries < MAX_WRITE_ATTEMPTS; tries++) {
+    const attempt = await loadAttempt(userId, puzzle.id);
+    if (!attempt) return { kind: "not_started" };
 
-  if (!validation.complete) {
-    await prisma.gameAttempt.update({
-      where: { id: attempt.id },
-      data: { attemptLog: moves as Prisma.InputJsonValue, mistakeCount: validation.mistakes },
+    if (attempt.status === "COMPLETED") {
+      const moves = movesOf(attempt.attemptLog);
+      return {
+        kind: "already_completed",
+        content: module.sanitizeForClient(puzzle.content, { status: "COMPLETED", moves }),
+      };
+    }
+
+    if (!parsedMove.success) return { kind: "invalid_move", details: parsedMove.error.flatten() };
+
+    const moves = [...movesOf(attempt.attemptLog), parsedMove.data];
+    const validation = module.validateAttempt(puzzle.content, moves);
+
+    if (!validation.complete) {
+      const written = await compareAndSet(attempt, {
+        attemptLog: moves as Prisma.InputJsonValue,
+        mistakeCount: validation.mistakes,
+      });
+      if (!written) continue;
+      return {
+        kind: "ok",
+        complete: false,
+        won: false,
+        content: module.sanitizeForClient(puzzle.content, { status: "IN_PROGRESS", moves }),
+        score: null,
+        newlyUnlockedAchievements: [],
+      };
+    }
+
+    const durationMs = Date.now() - attempt.startedAt.getTime();
+    const scoreBreakdown = module.calculateScore(puzzle.content, validation.result, {
+      durationMs,
+      hintsUsed: attempt.hintsUsed,
     });
+
+    let newlyUnlockedAchievements: string[];
+    try {
+      ({ newlyUnlockedAchievements } = await completeAttempt({
+        userId,
+        dailyPuzzleId: puzzle.id,
+        expectedVersion: attempt.version,
+        won: validation.won,
+        mistakeCount: validation.mistakes,
+        durationMs,
+        moves,
+        scoreBreakdown,
+      }));
+    } catch (err) {
+      if (err instanceof AttemptConflictError) continue; // someone else wrote first — replay on top
+      throw err;
+    }
+
     return {
       kind: "ok",
-      complete: false,
-      won: false,
-      content: module.sanitizeForClient(puzzle.content, { status: "IN_PROGRESS", moves }),
-      score: null,
-      newlyUnlockedAchievements: [],
+      complete: true,
+      won: validation.won,
+      content: module.sanitizeForClient(puzzle.content, { status: "COMPLETED", moves }),
+      score: scoreBreakdown.total,
+      newlyUnlockedAchievements,
     };
   }
-
-  const durationMs = Date.now() - attempt.startedAt.getTime();
-  const scoreBreakdown = module.calculateScore(puzzle.content, validation.result, {
-    durationMs,
-    hintsUsed: attempt.hintsUsed,
-  });
-
-  const { newlyUnlockedAchievements } = await completeAttempt({
-    userId,
-    dailyPuzzleId: puzzle.id,
-    won: validation.won,
-    mistakeCount: validation.mistakes,
-    durationMs,
-    moves,
-    scoreBreakdown,
-  });
-
-  return {
-    kind: "ok",
-    complete: true,
-    won: validation.won,
-    content: module.sanitizeForClient(puzzle.content, { status: "COMPLETED", moves }),
-    score: scoreBreakdown.total,
-    newlyUnlockedAchievements,
-  };
+  throw new TooMuchContentionError();
 }

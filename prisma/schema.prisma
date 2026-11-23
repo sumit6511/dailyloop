@@ -165,6 +165,9 @@ model GameAttempt {
   hintsUsed      Int           @default(0)
   /// The most recently charged hint, so re-requesting the same suggestion isn't charged again.
   lastHint       Json?
+  /// Bumped on every write; writes are compare-and-set on it so concurrent requests can't
+  /// overwrite each other's moves (the loser re-reads and retries).
+  version        Int           @default(0)
   startedAt      DateTime      @default(now())
   completedAt    DateTime?
   createdAt      DateTime      @default(now())
