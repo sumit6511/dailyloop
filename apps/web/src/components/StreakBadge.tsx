@@ -4,6 +4,8 @@ import { Icon } from "./Icon";
 interface StreakBadgeProps {
   currentStreak: number;
   lastCompletedDate: string | null;
+  /** The server's "today"; falls back to the client's calendar in the default puzzle timezone. */
+  todayKey?: DateKey;
   className?: string;
 }
 
@@ -13,8 +15,8 @@ function isDayInStreak(day: DateKey, lastCompletedDate: DateKey | null, currentS
   return compareDateKeys(day, streakStart) >= 0 && compareDateKeys(day, lastCompletedDate) <= 0;
 }
 
-export function StreakBadge({ currentStreak, lastCompletedDate, className = "" }: StreakBadgeProps) {
-  const today = getTodayKey();
+export function StreakBadge({ currentStreak, lastCompletedDate, todayKey, className = "" }: StreakBadgeProps) {
+  const today = todayKey ?? getTodayKey();
   const days = Array.from({ length: 7 }, (_, i) => addDaysToKey(today, i - 6));
 
   return (

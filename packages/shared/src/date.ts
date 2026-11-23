@@ -76,3 +76,37 @@ export function getWeekRangeKeys(dateKey: DateKey): { start: DateKey; end: DateK
   const start = addDaysToKey(dateKey, -daysSinceMonday);
   return { start, end: addDaysToKey(start, 6) };
 }
+
+const offsetFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/** The zone's UTC offset at instant `t`, in ms (e.g. +5:45 → 20_700_000). */
+function zoneOffsetMs(timezone: string, t: number): number {
+  let formatter = offsetFormatters.get(timezone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    offsetFormatters.set(timezone, formatter);
+  }
+  const p = Object.fromEntries(formatter.formatToParts(new Date(t)).map((part) => [part.type, Number(part.value)]));
+  const wallClockAsUTC = Date.UTC(p.year!, p.month! - 1, p.day!, p.hour!, p.minute!, p.second!);
+  return wallClockAsUTC - Math.floor(t / 1000) * 1000;
+}
+
+/**
+ * The instant the next day's puzzles go live — local midnight starting tomorrow in `timezone`.
+ * (Correct across DST changes: the offset is re-read at the resulting instant.)
+ */
+export function getNextRolloverAt(timezone: string = DEFAULT_TIMEZONE, now: Date = new Date()): Date {
+  const tomorrowMidnightAsUTC = dateKeyToJSDate(addDaysToKey(getTodayKey(timezone, now), 1)).getTime();
+  let instant = tomorrowMidnightAsUTC - zoneOffsetMs(timezone, tomorrowMidnightAsUTC);
+  instant = tomorrowMidnightAsUTC - zoneOffsetMs(timezone, instant);
+  return new Date(instant);
+}

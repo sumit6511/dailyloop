@@ -59,6 +59,18 @@ describe("game routes", () => {
     expect(res.json().data.map((g: { slug: string }) => g.slug)).toEqual(["connections", "word-guess"]);
   });
 
+  it("GET /games/schedule reports today and the next rollover in the puzzle timezone", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/games/schedule" });
+    expect(res.statusCode).toBe(200);
+    const body = res.json().data;
+    expect(body.timezone).toBe("Asia/Kathmandu");
+    expect(body.today).toBe(getTodayKey("Asia/Kathmandu"));
+    const rollover = Date.parse(body.nextRolloverAt);
+    expect(rollover).toBeGreaterThan(Date.now());
+    expect(rollover - Date.now()).toBeLessThanOrEqual(24 * 3_600_000);
+    expect(getTodayKey("Asia/Kathmandu", new Date(rollover))).toBe(addDaysToKey(body.today, 1));
+  });
+
   it("GET /games/today requires auth", async () => {
     const res = await app.inject({ method: "GET", url: "/api/games/today" });
     expect(res.statusCode).toBe(401);

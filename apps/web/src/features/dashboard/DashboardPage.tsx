@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../lib/use-auth";
-import { useTodayLineup } from "../../lib/games-api";
+import { useTodayLineup, useSchedule } from "../../lib/games-api";
+import { NextPuzzleCountdown } from "../../components/NextPuzzleCountdown";
 import { api } from "../../lib/api-client";
 import { Card } from "../../components/Card";
 import { Skeleton } from "../../components/Skeleton";
@@ -48,6 +49,7 @@ function getHeroSubtitle(completedCount: number, availableCount: number): string
 export function DashboardPage() {
   const { user } = useAuth();
   const { data: games, isLoading } = useTodayLineup();
+  const { data: schedule } = useSchedule();
   const { data: streak } = useQuery({
     queryKey: ["me", "streak"],
     queryFn: () => api.get<StreakDTO>("/me/streak"),
@@ -71,8 +73,13 @@ export function DashboardPage() {
           <p className="mt-2 max-w-md text-white/70">
             {isLoading || !games ? "Today's puzzles are waiting." : getHeroSubtitle(completedCount, availableCount)}
           </p>
+          <NextPuzzleCountdown className="mt-1" />
           <div className="mt-6 flex flex-wrap items-start gap-6">
-            <StreakBadge currentStreak={streak?.currentStreak ?? 0} lastCompletedDate={streak?.lastCompletedDate ?? null} />
+            <StreakBadge
+              currentStreak={streak?.currentStreak ?? 0}
+              lastCompletedDate={streak?.lastCompletedDate ?? null}
+              todayKey={schedule?.today}
+            />
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1 text-lg font-bold text-white">
                 <Icon name="star" className="text-lg text-yellow-300" filled /> {todayScore}

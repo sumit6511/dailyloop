@@ -4,6 +4,7 @@ import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
 import { useAchievementCatalog } from "../../lib/achievements-api";
 import { ShareButton } from "./ShareButton";
+import { NextPuzzleCountdown } from "../../components/NextPuzzleCountdown";
 import { Icon } from "../../components/Icon";
 
 interface ResultStat {
@@ -54,6 +55,10 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
 
       <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-brand-400/30 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-200">
         <Icon name="star" className="text-base text-yellow-300" filled /> Score: {score}
+      </div>
+
+      <div className="-mt-3 mb-6">
+        <NextPuzzleCountdown />
       </div>
 
       {newAchievements.length > 0 ? (

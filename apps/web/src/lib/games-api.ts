@@ -3,6 +3,27 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { TodayGameEntryDTO } from "@dailyloop/shared";
 import { api } from "./api-client";
 
+export interface ScheduleDTO {
+  /** The server's "today" (YYYY-MM-DD) in the puzzle timezone. */
+  today: string;
+  timezone: string;
+  /** When tomorrow's puzzles go live (ISO instant). */
+  nextRolloverAt: string;
+  /** Server clock at response time — lets the client correct for its own clock skew. */
+  serverTime: string;
+}
+
+export function useSchedule() {
+  return useQuery({
+    queryKey: ["games", "schedule"],
+    queryFn: async () => {
+      const data = await api.get<ScheduleDTO>("/games/schedule");
+      return { ...data, clockSkewMs: Date.parse(data.serverTime) - Date.now() };
+    },
+    staleTime: 5 * 60_000,
+  });
+}
+
 export function useTodayLineup() {
   return useQuery({
     queryKey: ["games", "today"],

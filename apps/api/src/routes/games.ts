@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { getTodayKey, type GameDTO } from "@dailyloop/shared";
+import { getTodayKey, getNextRolloverAt, type GameDTO } from "@dailyloop/shared";
 import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
@@ -33,6 +33,19 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
       difficulty: g.difficulty,
     }));
     return reply.send({ data });
+  });
+
+  /** The puzzle calendar as the server sees it — clients never decide what "today" is themselves. */
+  app.get("/schedule", async (_request, reply) => {
+    const now = new Date();
+    return reply.send({
+      data: {
+        today: getTodayKey(env.DEFAULT_TIMEZONE, now),
+        timezone: env.DEFAULT_TIMEZONE,
+        nextRolloverAt: getNextRolloverAt(env.DEFAULT_TIMEZONE, now).toISOString(),
+        serverTime: now.toISOString(),
+      },
+    });
   });
 
   app.get("/today", { preHandler: app.requireAuth }, async (request, reply) => {
