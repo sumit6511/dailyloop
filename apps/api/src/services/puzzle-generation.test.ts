@@ -3,6 +3,7 @@ import { getTodayKey, dateKeyToJSDate, addDaysToKey } from "@dailyloop/shared";
 import { registerAllGames } from "@dailyloop/game-engine";
 import { prisma } from "../lib/prisma.js";
 import { generatePuzzleForGame, nextPuzzleNumber } from "./puzzle-generation.js";
+import { findTodaysPuzzle } from "./puzzle-lookup.js";
 
 describe("generatePuzzleForGame", () => {
   beforeAll(() => {
@@ -120,5 +121,31 @@ describe("nextPuzzleNumber", () => {
       data: { gameId: game.id, date: new Date(), puzzleNumber: 1, status: "PUBLISHED", content: {} },
     });
     expect(await nextPuzzleNumber(game.id)).toBe(2);
+  });
+
+  it("never reuses a puzzle number after an earlier puzzle was deleted", async () => {
+    registerAllGames();
+    const todayKey = getTodayKey("Asia/Kathmandu");
+    await prisma.game.create({
+      data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 0 },
+    });
+    const made = [];
+    for (let i = 0; i < 3; i++) {
+      const result = await generatePuzzleForGame("word-guess", addDaysToKey(todayKey, i), { status: "SCHEDULED" });
+      if (result.kind === "created") made.push(result.puzzle);
+    }
+    await prisma.dailyPuzzle.delete({ where: { id: made[1]!.id } }); // #2 gone; #1 and #3 remain
+
+    const next = await generatePuzzleForGame("word-guess", addDaysToKey(todayKey, 3), { status: "SCHEDULED" });
+    expect(next.kind === "created" && next.puzzle.puzzleNumber).toBe(4);
+  });
+
+  it("serves every simultaneous first lookup the same freshly generated puzzle", async () => {
+    const game = await prisma.game.create({
+      data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 0 },
+    });
+    const results = await Promise.all(Array.from({ length: 6 }, () => findTodaysPuzzle(game.id, game.slug)));
+    for (const puzzle of results) expect(puzzle?.id).toBeDefined();
+    expect(new Set(results.map((p) => p!.id)).size).toBe(1);
   });
 });

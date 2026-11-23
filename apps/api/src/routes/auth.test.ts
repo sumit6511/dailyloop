@@ -86,6 +86,20 @@ describe("auth routes", () => {
     }
   });
 
+  it("answers simultaneous registrations for the same username with one 201 and 409s, never a 500", async () => {
+    const responses = await Promise.all(
+      Array.from({ length: 5 }, (_, i) =>
+        app.inject({
+          method: "POST",
+          url: "/api/auth/register",
+          payload: { ...registerPayload, email: `harry${i}@example.com` },
+        }),
+      ),
+    );
+    const codes = responses.map((r) => r.statusCode).sort();
+    expect(codes).toEqual([201, 409, 409, 409, 409]);
+  });
+
   it("rejects a reserved username", async () => {
     const response = await app.inject({
       method: "POST",

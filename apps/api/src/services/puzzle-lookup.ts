@@ -26,8 +26,17 @@ export async function findTodaysPuzzle(gameId: string, gameSlug: string) {
   // the caller — e.g. one broken game shouldn't 500 the whole dashboard's today-lineup fetch.
   try {
     const result = await generatePuzzleForGame(gameSlug, dateKey, { status: "PUBLISHED" });
-    return result.kind === "created" ? result.puzzle : null;
+    if (result.kind === "created") return result.puzzle;
+    if (result.kind !== "already_exists") return null;
   } catch {
     return null;
   }
+  // Another request generated today's puzzle between our lookup and our insert (the first few
+  // seconds after midnight when the cron didn't pre-generate it) — use theirs rather than telling
+  // this player nothing is available. An ARCHIVED row in the slot still correctly yields null.
+  const theirs = await prisma.dailyPuzzle.findFirst({ where: { gameId, date, status: { in: ["PUBLISHED", "SCHEDULED"] } } });
+  if (theirs?.status === "SCHEDULED") {
+    return prisma.dailyPuzzle.update({ where: { id: theirs.id }, data: { status: "PUBLISHED" } });
+  }
+  return theirs;
 }

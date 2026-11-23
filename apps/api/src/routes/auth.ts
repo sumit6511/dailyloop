@@ -1,5 +1,6 @@
 import { randomBytes, createHash } from "node:crypto";
 import type { FastifyPluginAsync } from "fastify";
+import { Prisma } from "@prisma/client";
 import {
   registerSchema,
   loginSchema,
@@ -49,18 +50,27 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       }
 
       const passwordHash = await hashPassword(body.password);
-      const user = await prisma.$transaction(async (tx) => {
-        const created = await tx.user.create({
-          data: {
-            email: body.email,
-            username: body.username,
-            passwordHash,
-            displayName: body.displayName,
-          },
+      const user = await prisma
+        .$transaction(async (tx) => {
+          const created = await tx.user.create({
+            data: {
+              email: body.email,
+              username: body.username,
+              passwordHash,
+              displayName: body.displayName,
+            },
+          });
+          await tx.streak.create({ data: { userId: created.id } });
+          return created;
+        })
+        .catch((err: unknown) => {
+          // Lost a race with a simultaneous registration that passed the same check above.
+          if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+            const target = String((err.meta as { target?: unknown } | undefined)?.target ?? "");
+            throw Errors.conflict(target.includes("email") ? "Email is already registered" : "Username is already taken");
+          }
+          throw err;
         });
-        await tx.streak.create({ data: { userId: created.id } });
-        return created;
-      });
 
       const { token, expiresAt } = await createSession(user.id, {
         userAgent: request.headers["user-agent"],

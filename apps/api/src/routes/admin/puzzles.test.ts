@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import { getTodayKey } from "@dailyloop/shared";
+import { addDaysToKey, getTodayKey } from "@dailyloop/shared";
 import { buildApp } from "../../app.js";
 import { prisma } from "../../lib/prisma.js";
 
@@ -112,6 +112,31 @@ describe("admin puzzle routes", () => {
 
     const second = await app.inject({ method: "POST", url: "/api/admin/puzzles", cookies: adminCookies, payload });
     expect(second.statusCode).toBe(409);
+  });
+
+  it("409s (not 500s) moving a puzzle onto a date that already has one", async () => {
+    const adminCookies = await registerAndGetCookies("admin3", "ADMIN");
+    await prisma.game.create({
+      data: { slug: "mock-game", name: "Mock Game", description: "d", icon: "🧪", sortOrder: 0 },
+    });
+    const today = getTodayKey("Asia/Kathmandu");
+    const create = (date: string) =>
+      app.inject({
+        method: "POST",
+        url: "/api/admin/puzzles",
+        cookies: adminCookies,
+        payload: { gameSlug: "mock-game", date, content: {}, status: "SCHEDULED" },
+      });
+    await create(today);
+    const tomorrow = (await create(addDaysToKey(today, 1))).json().data;
+
+    const moved = await app.inject({
+      method: "PUT",
+      url: `/api/admin/puzzles/${tomorrow.id}`,
+      cookies: adminCookies,
+      payload: { date: today },
+    });
+    expect(moved.statusCode).toBe(409);
   });
 
   it("refuses to generate a puzzle for a game with no engine module yet", async () => {

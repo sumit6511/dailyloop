@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
 import { ZodError } from "zod";
+import { Prisma } from "@prisma/client";
 import { registerAllGames } from "@dailyloop/game-engine";
 import { env, corsOrigins } from "./config/env.js";
 import { ApiError, hasStatusCode } from "./lib/errors.js";
@@ -52,6 +53,14 @@ export async function buildApp() {
       return reply.status(400).send({
         error: { code: "VALIDATION_ERROR", message: "Invalid request", details: error.flatten() },
       });
+    }
+    // A unique-constraint race (two requests creating the same thing at once) or a write to a row
+    // that was deleted in between is the client's conflict, not a server fault.
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return reply.status(409).send({ error: { code: "CONFLICT", message: "That already exists" } });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Not found" } });
     }
     if (hasStatusCode(error, 429)) {
       return reply

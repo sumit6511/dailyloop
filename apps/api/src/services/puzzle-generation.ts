@@ -3,8 +3,11 @@ import { dateKeyToJSDate } from "@dailyloop/shared";
 import { getGameModule } from "@dailyloop/game-engine";
 import { prisma } from "../lib/prisma.js";
 
+/** One past the highest number used so far — `count + 1` would hand out a number that's already
+ * taken as soon as any earlier puzzle had been deleted. */
 export async function nextPuzzleNumber(gameId: string): Promise<number> {
-  return (await prisma.dailyPuzzle.count({ where: { gameId } })) + 1;
+  const { _max } = await prisma.dailyPuzzle.aggregate({ where: { gameId }, _max: { puzzleNumber: true } });
+  return (_max.puzzleNumber ?? 0) + 1;
 }
 
 export type GeneratePuzzleForGameResult =
