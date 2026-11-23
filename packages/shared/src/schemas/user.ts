@@ -3,7 +3,18 @@ import { z } from "zod";
 export const updateProfileSchema = z.object({
   displayName: z.string().trim().min(1).max(40).optional(),
   bio: z.string().trim().max(200).optional(),
-  avatarUrl: z.string().max(500).optional(),
+  /** An https image URL, or "" to clear it — never javascript:/data:/plain-http URLs. */
+  avatarUrl: z
+    .union([
+      z.literal(""),
+      z
+        .string()
+        .trim()
+        .max(500)
+        .url()
+        .refine((url) => url.startsWith("https://"), "Avatar URL must start with https://"),
+    ])
+    .optional(),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 

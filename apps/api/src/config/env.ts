@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseTrustProxy } from "../lib/trust-proxy.js";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -12,6 +13,12 @@ const envSchema = z.object({
    * — if unset, that endpoint rejects every request rather than accepting an unauthenticated one.
    * An empty value (as shipped in .env.example) counts as unset rather than failing startup. */
   CRON_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(16).optional()),
+  /** How many proxies sit in front of the API (see lib/trust-proxy.ts). */
+  TRUST_PROXY: z
+    .string()
+    .regex(/^\s*(true|false|\d+)?\s*$/i, 'TRUST_PROXY must be "true", "false" or a number of hops')
+    .optional()
+    .transform(parseTrustProxy),
 });
 
 const parsed = envSchema.safeParse(process.env);

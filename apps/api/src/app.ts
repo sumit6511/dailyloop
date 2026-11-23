@@ -30,7 +30,9 @@ export async function buildApp() {
         : env.NODE_ENV === "development"
           ? { transport: { target: "pino-pretty", options: { colorize: true, translateTime: "HH:MM:ss" } } }
           : true,
-    trustProxy: true,
+    // Never `true` by default: that trusts a client-supplied X-Forwarded-For outright, so anyone
+    // could claim a fresh IP per request and walk straight past the login/register rate limits.
+    trustProxy: env.TRUST_PROXY,
   });
 
   await app.register(cors, { origin: corsOrigins, credentials: true });

@@ -1,7 +1,9 @@
+import { createHash } from "node:crypto";
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
+import { parseTrustProxy } from "../lib/trust-proxy.js";
 
 describe("auth routes", () => {
   let app: FastifyInstance;
@@ -17,6 +19,7 @@ describe("auth routes", () => {
   });
 
   afterEach(async () => {
+    await prisma.passwordResetToken.deleteMany();
     await prisma.session.deleteMany();
     await prisma.streak.deleteMany();
     await prisma.user.deleteMany();
@@ -173,5 +176,102 @@ describe("auth routes", () => {
       payload: { emailOrUsername: "harry", password: "whatever" },
     });
     expect(allowed.statusCode).not.toBe(403);
+  });
+
+  describe("client IP behind a proxy", () => {
+    it("ignores X-Forwarded-For entries a client prepends itself (one trusted hop by default)", async () => {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/auth/register",
+        payload: registerPayload,
+        headers: { "x-forwarded-for": "6.6.6.6, 203.0.113.9" }, // spoofed, then what the proxy saw
+      });
+      const session = await prisma.session.findFirstOrThrow({ where: { userId: res.json().data.id } });
+      expect(session.ip).toBe("203.0.113.9");
+    });
+
+    it("parses TRUST_PROXY", () => {
+      expect(parseTrustProxy("true")).toBe(true);
+      expect(parseTrustProxy("false")).toBe(false);
+      expect(parseTrustProxy("0")).toBe(false);
+      const twoHops = parseTrustProxy("2") as (addr: string, hop: number) => boolean;
+      expect([0, 1, 2].map((hop) => twoHops("10.0.0.1", hop))).toEqual([true, true, false]);
+      const byDefault = parseTrustProxy(undefined) as (addr: string, hop: number) => boolean;
+      expect([0, 1].map((hop) => byDefault("10.0.0.1", hop))).toEqual([true, false]);
+      expect(() => parseTrustProxy("lots")).toThrow();
+    });
+  });
+
+  it("takes about as long to reject an unknown account as a wrong password", async () => {
+    await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const timeLogin = async (emailOrUsername: string) => {
+      const start = performance.now();
+      const res = await app.inject({ method: "POST", url: "/api/auth/login", payload: { emailOrUsername, password: "wrong-password-123" } });
+      expect(res.statusCode).toBe(400);
+      return performance.now() - start;
+    };
+    await timeLogin("nobody-warmup"); // first unknown-user login also builds the throwaway hash
+    const known = Math.min(await timeLogin("harry"), await timeLogin("harry"));
+    const unknown = Math.min(await timeLogin("nobody"), await timeLogin("nobody"));
+    // Without the dummy verification an unknown user returns in ~1ms vs ~50ms+ for Argon2.
+    expect(unknown).toBeGreaterThan(known * 0.5);
+  });
+
+  describe("password reset", () => {
+    const RAW = "a".repeat(64);
+    const hashOf = (raw: string) => createHash("sha256").update(raw).digest("hex");
+    const seedToken = async (userId: string, raw = RAW) =>
+      prisma.passwordResetToken.create({ data: { userId, tokenHash: hashOf(raw), expiresAt: new Date(Date.now() + 3_600_000) } });
+    const confirm = (token: string) =>
+      app.inject({ method: "POST", url: "/api/auth/password-reset/confirm", payload: { token, newPassword: "brand-new-password" } });
+    const register = async () => (await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload })).json().data.id as string;
+
+    it("resets the password once with a valid link, then refuses to reuse it", async () => {
+      await seedToken(await register());
+      expect((await confirm(RAW)).statusCode).toBe(200);
+      expect((await confirm(RAW)).statusCode).toBe(400);
+      const login = await app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: { emailOrUsername: "harry", password: "brand-new-password" },
+      });
+      expect(login.statusCode).toBe(200);
+    });
+
+    it("revokes an earlier link when a new one is requested", async () => {
+      await seedToken(await register());
+      await app.inject({ method: "POST", url: "/api/auth/password-reset/request", payload: { email: registerPayload.email } });
+      expect((await confirm(RAW)).statusCode).toBe(400);
+    });
+
+    it("revokes outstanding links when the password is changed from settings", async () => {
+      const userId = await register();
+      await seedToken(userId);
+      const login = await app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: { emailOrUsername: "harry", password: registerPayload.password },
+      });
+      const cookie = login.cookies.find((c) => c.name === "dp_session")!;
+      const change = await app.inject({
+        method: "PATCH",
+        url: "/api/users/me/password",
+        cookies: { [cookie.name]: cookie.value },
+        payload: { currentPassword: registerPayload.password, newPassword: "another-new-password" },
+      });
+      expect(change.statusCode).toBe(200);
+      expect((await confirm(RAW)).statusCode).toBe(400);
+    });
+  });
+
+  it("only accepts an https avatar URL (or empty to clear it)", async () => {
+    const res = await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const cookie = res.cookies.find((c) => c.name === "dp_session")!;
+    const update = (avatarUrl: string) =>
+      app.inject({ method: "PATCH", url: "/api/users/me", cookies: { [cookie.name]: cookie.value }, payload: { avatarUrl } });
+    expect((await update("javascript:alert(1)")).statusCode).toBe(400);
+    expect((await update("http://example.com/a.png")).statusCode).toBe(400);
+    expect((await update("https://example.com/a.png")).statusCode).toBe(200);
+    expect((await update("")).statusCode).toBe(200);
   });
 });

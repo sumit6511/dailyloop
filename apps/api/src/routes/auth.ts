@@ -10,7 +10,7 @@ import {
   RESERVED_USERNAMES,
 } from "@dailyloop/shared";
 import { prisma } from "../lib/prisma.js";
-import { hashPassword, verifyPassword } from "../lib/password.js";
+import { hashPassword, verifyPasswordForUser } from "../lib/password.js";
 import { createSession, destroySessionByToken } from "../lib/session.js";
 import { Errors } from "../lib/errors.js";
 import { env, webAppUrl } from "../config/env.js";
@@ -92,7 +92,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         where: { OR: [{ email: body.emailOrUsername.toLowerCase() }, { username: body.emailOrUsername }] },
       });
       // Deliberately generic message — don't reveal whether the account exists.
-      if (!user || !(await verifyPassword(user.passwordHash, body.password))) {
+      // Runs Argon2 even for an unknown user so timing doesn't reveal whether the account exists.
+      if (!(await verifyPasswordForUser(user?.passwordHash, body.password)) || !user) {
         throw Errors.badRequest("Invalid email/username or password");
       }
       const { token, expiresAt } = await createSession(user.id, {
@@ -127,13 +128,21 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       if (user) {
         const token = randomBytes(32).toString("hex");
         const tokenHash = createHash("sha256").update(token).digest("hex");
-        await prisma.passwordResetToken.create({
-          data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
-        });
+        // Only the newest link works: requesting another revokes any earlier, unused ones.
+        await prisma.$transaction([
+          prisma.passwordResetToken.deleteMany({ where: { userId: user.id } }),
+          prisma.passwordResetToken.create({
+            data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 60 * 60 * 1000) },
+          }),
+        ]);
         const resetLink = `${webAppUrl}/reset-password?token=${token}`;
-        // No email provider is wired up yet — logging is the dev-mode "transport".
-        // Swap this for a real EmailSender implementation before shipping to prod.
-        request.log.info({ email: user.email, resetLink }, "Password reset requested");
+        // No email provider is wired up yet. In development the link is logged as a stand-in for
+        // sending it; in production a live reset link must never reach the logs.
+        if (isProduction) {
+          request.log.warn({ userId: user.id }, "Password reset requested but no email delivery is configured");
+        } else {
+          request.log.info({ email: user.email, resetLink }, "Password reset requested (dev: link logged, not emailed)");
+        }
       }
 
       return reply.send({ data: { ok: true } });
@@ -155,7 +164,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       const passwordHash = await hashPassword(body.newPassword);
       await prisma.$transaction([
         prisma.user.update({ where: { id: resetToken.userId }, data: { passwordHash } }),
-        prisma.passwordResetToken.update({ where: { id: resetToken.id }, data: { usedAt: new Date() } }),
+        // Consumes this link and any other outstanding ones.
+        prisma.passwordResetToken.deleteMany({ where: { userId: resetToken.userId } }),
         prisma.session.deleteMany({ where: { userId: resetToken.userId } }),
       ]);
 

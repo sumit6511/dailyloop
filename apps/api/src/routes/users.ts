@@ -30,6 +30,8 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
     await prisma.$transaction([
       prisma.user.update({ where: { id: user.id }, data: { passwordHash } }),
       prisma.session.deleteMany({ where: { userId: user.id } }),
+      // A reset link requested before the change shouldn't still be able to override it.
+      prisma.passwordResetToken.deleteMany({ where: { userId: user.id } }),
     ]);
 
     reply.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
