@@ -7,6 +7,7 @@ import {
   getWeeklyLeaderboard,
   getAllTimeLeaderboard,
   getFriendsLeaderboard,
+  getMyRank,
   type LeaderboardRange,
 } from "../services/leaderboard.js";
 
@@ -38,6 +39,14 @@ export const leaderboardRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/all-time", async (_request, reply) => {
     return reply.send({ data: await getAllTimeLeaderboard() });
+  });
+
+  /** Your own global rank for a range — even when it's outside the top of the list. */
+  app.get("/me", async (request, reply) => {
+    const query = friendsQuerySchema.parse(request.query);
+    const dateKey = query.date ?? getTodayKey(env.DEFAULT_TIMEZONE);
+    const data = await getMyRank(request.currentUser!.id, query.range as LeaderboardRange, dateKey);
+    return reply.send({ data });
   });
 
   app.get("/friends", async (request, reply) => {

@@ -25,3 +25,17 @@ export function useFriendsLeaderboard(range: LeaderboardRange) {
     queryFn: () => api.get<LeaderboardEntryDTO[]>(`/leaderboard/friends?range=${range}`),
   });
 }
+
+export interface MyRankDTO {
+  rank: number;
+  score: number;
+  players: number;
+}
+
+/** Your own global rank for a range (null until you have a score in it). */
+export function useMyRank(range: LeaderboardRange) {
+  return useQuery({
+    queryKey: ["leaderboard", "me", range],
+    queryFn: () => api.get<MyRankDTO | null>(`/leaderboard/me?range=${range}`),
+  });
+}

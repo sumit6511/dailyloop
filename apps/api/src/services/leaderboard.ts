@@ -20,17 +20,22 @@ async function toEntries(rows: { userId: string; score: number }[]): Promise<Lea
   const users = await prisma.user.findMany({ where: { id: { in: rows.map((r) => r.userId) } } });
   const byId = new Map(users.map((u) => [u.id, u]));
 
+  // Standard competition ranking: equal scores share a rank and the next rank skips (1, 2, 2, 4).
+  // Rows arrive sorted by score, highest first.
+  let previous: { score: number; rank: number } | null = null;
   return rows
     .filter((row) => byId.has(row.userId))
     .map((row, index) => {
       const user = byId.get(row.userId)!;
+      const rank = previous && previous.score === row.score ? previous.rank : index + 1;
+      previous = { score: row.score, rank };
       return {
         userId: row.userId,
         username: user.username,
         displayName: user.displayName,
         avatarUrl: user.avatarUrl,
         score: row.score,
-        rank: index + 1,
+        rank,
       };
     });
 }
@@ -87,4 +92,49 @@ export async function getFriendsLeaderboard(
   if (range === "daily") return getDailyLeaderboard(dateKey, { userIds });
   if (range === "weekly") return getWeeklyLeaderboard(dateKey, { userIds });
   return getAllTimeLeaderboard({ userIds });
+}
+
+export interface MyRank {
+  rank: number;
+  score: number;
+  /** How many players have a score in this range. */
+  players: number;
+}
+
+/**
+ * The caller's own position on the global leaderboard for a range, whether or not they made the
+ * top-N list: 1 + the number of players with a strictly higher score (so ties share a rank,
+ * matching the lists). Null when they have no score in that range yet.
+ */
+export async function getMyRank(userId: string, range: LeaderboardRange, dateKey: string): Promise<MyRank | null> {
+  if (range === "daily") {
+    const date = dateKeyToJSDate(dateKey);
+    const mine = await prisma.dailyScore.findUnique({ where: { userId_date: { userId, date } } });
+    if (!mine) return null;
+    const [higher, players] = await Promise.all([
+      prisma.dailyScore.count({ where: { date, totalScore: { gt: mine.totalScore } } }),
+      prisma.dailyScore.count({ where: { date } }),
+    ]);
+    return { rank: higher + 1, score: mine.totalScore, players };
+  }
+
+  const where =
+    range === "weekly"
+      ? (() => {
+          const { start, end } = getWeekRangeKeys(dateKey);
+          return { date: { gte: dateKeyToJSDate(start), lte: dateKeyToJSDate(end) } };
+        })()
+      : {};
+  const mine = await prisma.dailyScore.aggregate({ where: { ...where, userId }, _sum: { totalScore: true }, _count: true });
+  if (mine._count === 0) return null;
+  const myScore = mine._sum.totalScore ?? 0;
+  const [higher, all] = await Promise.all([
+    prisma.dailyScore.groupBy({
+      by: ["userId"],
+      where,
+      having: { totalScore: { _sum: { gt: myScore } } },
+    }),
+    prisma.dailyScore.groupBy({ by: ["userId"], where }),
+  ]);
+  return { rank: higher.length + 1, score: myScore, players: all.length };
 }

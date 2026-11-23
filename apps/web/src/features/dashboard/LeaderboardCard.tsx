@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLeaderboard, useFriendsLeaderboard, type LeaderboardRange } from "../../lib/leaderboard-api";
+import { useLeaderboard, useFriendsLeaderboard, useMyRank, type LeaderboardRange } from "../../lib/leaderboard-api";
 import { useAuth } from "../../lib/use-auth";
 import { Card } from "../../components/Card";
 import { Avatar } from "../../components/Avatar";
@@ -14,6 +14,7 @@ const RANGE_TABS: { key: LeaderboardRange; label: string }[] = [
 ];
 
 const RANK_COLORS = ["text-yellow-400", "text-slate-300", "text-orange-400"];
+const VISIBLE_ROWS = 10;
 
 export function LeaderboardCard() {
   const [scope, setScope] = useState<"friends" | "global">("friends");
@@ -22,6 +23,21 @@ export function LeaderboardCard() {
   const globalQuery = useLeaderboard(range);
   const { data: entries, isLoading } = scope === "friends" ? friendsQuery : globalQuery;
   const { user } = useAuth();
+  const myGlobalRank = useMyRank(range);
+
+  // When you're not among the visible rows, show your own position underneath. Friends lists
+  // already contain you (if you've scored), so it's just further down; globally it comes from
+  // /leaderboard/me, which ranks you against everyone, not just the top of the list.
+  const visible = entries?.slice(0, VISIBLE_ROWS) ?? [];
+  const isMe = (username: string) => username === user?.username;
+  const myRow = (() => {
+    if (!user || visible.some((e) => isMe(e.username))) return null;
+    if (scope === "friends") {
+      const mine = entries?.find((e) => isMe(e.username));
+      return mine ? { rank: mine.rank, score: mine.score } : null;
+    }
+    return myGlobalRank.data ? { rank: myGlobalRank.data.rank, score: myGlobalRank.data.score } : null;
+  })();
 
   return (
     <Card>
@@ -80,7 +96,7 @@ export function LeaderboardCard() {
         />
       ) : (
         <ol className="flex flex-col gap-1">
-          {entries.slice(0, 10).map((entry) => (
+          {visible.map((entry) => (
             <li
               key={entry.userId}
               className={`flex items-center gap-3 rounded-lg px-2 py-2 ${
@@ -99,6 +115,21 @@ export function LeaderboardCard() {
               <span className="text-sm font-bold text-brand-300">{entry.score}</span>
             </li>
           ))}
+          {myRow && user ? (
+            <>
+              <li aria-hidden="true" className="px-2 text-center text-xs leading-3 text-white/30">
+                ⋯
+              </li>
+              <li className="flex items-center gap-3 rounded-lg bg-brand-500/15 px-2 py-2 ring-1 ring-brand-400/30">
+                <span className="flex min-w-6 shrink-0 items-center justify-center text-sm font-semibold text-white/60">
+                  {myRow.rank}
+                </span>
+                <Avatar name={user.displayName} size="sm" />
+                <span className="flex-1 truncate text-sm font-medium text-white/85">{user.displayName} (you)</span>
+                <span className="text-sm font-bold text-brand-300">{myRow.score}</span>
+              </li>
+            </>
+          ) : null}
         </ol>
       )}
     </Card>
