@@ -110,7 +110,8 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
         throw Errors.badRequest("No puzzle is available for this game today");
       }
       if (result.kind === "not_started") throw Errors.badRequest("Start the game before asking for a hint");
-      return reply.send({ data: result.suggestion });
+      if (result.kind === "already_completed") throw Errors.badRequest("This puzzle is already complete");
+      return reply.send({ data: { hint: result.hint, hintsUsed: result.hintsUsed } });
     },
   );
 

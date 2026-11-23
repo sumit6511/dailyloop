@@ -22,6 +22,7 @@ function seedInProgressEntry() {
     status: "in_progress",
     score: null,
     mistakeCount: 0,
+    hintsUsed: null,
     content: { words: WORDS, solved: [], mistakesRemaining: 4, complete: false },
   });
   return queryClient;

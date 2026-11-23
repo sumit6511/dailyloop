@@ -7,6 +7,8 @@ export interface ScoreBreakdown {
   speedBonus: number;
   accuracyBonus: number;
   mistakePenalty: number;
+  /** Deducted for hints revealed during the attempt (0 for games without hints). */
+  hintPenalty: number;
   /** Final per-game score, clamped to [0, SCORE.PER_GAME_MAX]. */
   total: number;
 }
@@ -17,6 +19,8 @@ export interface ScoreBreakdown {
  */
 export interface ScoreMeta {
   durationMs: number;
+  /** Hints the server revealed during this attempt (each distinct hint counted once). */
+  hintsUsed?: number;
 }
 
 export interface ValidationResult<TResult> {

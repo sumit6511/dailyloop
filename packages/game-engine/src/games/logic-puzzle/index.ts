@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SCORE } from "@dailyloop/shared";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { createRng } from "../../rng.js";
@@ -13,6 +14,9 @@ export interface LogicPuzzleContent {
   /** The day's tier (absent on puzzles generated before tiers existed). */
   difficulty?: PuzzleTier;
 }
+
+/** Points deducted per hint revealed — a hint hands over one cell (of ~20–26 blanks). */
+export const HINT_PENALTY = SCORE.HINT_PENALTY;
 
 export interface LogicPuzzleMove {
   row: number;
@@ -97,10 +101,13 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
 
   calculateScore(_content, result, meta) {
     if (!result.won) return buildScoreBreakdown({ base: 0 });
+    const hintsUsed = meta.hintsUsed ?? 0;
     return buildScoreBreakdown({
       base: 60,
-      accuracyBonus: result.mistakes === 0 ? 20 : 0,
+      // "Flawless" means no mistakes *and* no help.
+      accuracyBonus: result.mistakes === 0 && hintsUsed === 0 ? 20 : 0,
       mistakePenalty: result.mistakes * 8,
+      hintPenalty: hintsUsed * HINT_PENALTY,
       speedBonus: speedBonus(meta.durationMs, 60_000, 480_000, 20),
     });
   },

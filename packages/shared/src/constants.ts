@@ -5,6 +5,8 @@ export type GameSlug = string;
 export const SCORE = {
   PER_GAME_MAX: 100,
   PERFECT_DAY_BONUS: 50,
+  /** Deducted from a game's score per distinct hint revealed (games that offer hints). */
+  HINT_PENALTY: 10,
 } as const;
 
 export const SESSION_COOKIE_NAME = "dp_session";

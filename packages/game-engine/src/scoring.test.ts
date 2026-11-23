@@ -16,6 +16,11 @@ describe("buildScoreBreakdown", () => {
     expect(breakdown.total).toBe(85);
   });
 
+  it("subtracts the hint penalty, defaulting it to 0", () => {
+    expect(buildScoreBreakdown({ base: 60, hintPenalty: 20 }).total).toBe(40);
+    expect(buildScoreBreakdown({ base: 60 }).hintPenalty).toBe(0);
+  });
+
   it("never scores below 0 even with a large mistake penalty", () => {
     const breakdown = buildScoreBreakdown({ base: 20, mistakePenalty: 100 });
     expect(breakdown.total).toBe(0);

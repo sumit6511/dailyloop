@@ -70,10 +70,22 @@ export function useCheckProgress<T>(slug: string) {
   });
 }
 
-/** Read-only "what's a legal next move?" suggestion — not every game supports this (see getHint). */
+export interface HintResponse<T> {
+  /** null when the game has nothing to suggest right now (nothing is charged then). */
+  hint: T | null;
+  /** Hints charged to this attempt so far — each lowers the score (see SCORE.HINT_PENALTY). */
+  hintsUsed: number;
+}
+
+/** A "what's a good next move?" suggestion. Not free: the server charges each distinct hint to
+ * the attempt's score. Not every game supports this — the API responds 400 for ones that don't. */
 export function useHint<T>(slug: string) {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => api.post<T>(`/games/${slug}/attempts/hint`),
+    mutationFn: () => api.post<HintResponse<T>>(`/games/${slug}/attempts/hint`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["games", slug, "today"] });
+    },
   });
 }
 

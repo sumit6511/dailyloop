@@ -10,12 +10,14 @@ export function buildScoreBreakdown(parts: {
   speedBonus?: number;
   accuracyBonus?: number;
   mistakePenalty?: number;
+  hintPenalty?: number;
 }): ScoreBreakdown {
   const speedBonus = parts.speedBonus ?? 0;
   const accuracyBonus = parts.accuracyBonus ?? 0;
   const mistakePenalty = parts.mistakePenalty ?? 0;
-  const total = clampScore(parts.base + speedBonus + accuracyBonus - mistakePenalty);
-  return { base: parts.base, speedBonus, accuracyBonus, mistakePenalty, total };
+  const hintPenalty = parts.hintPenalty ?? 0;
+  const total = clampScore(parts.base + speedBonus + accuracyBonus - mistakePenalty - hintPenalty);
+  return { base: parts.base, speedBonus, accuracyBonus, mistakePenalty, hintPenalty, total };
 }
 
 /** Linear falloff from `maxBonus` at/before `bestMs` down to 0 at/after `worstMs`. */

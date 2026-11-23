@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import type { Prisma, AttemptStatus } from "@prisma/client";
 import { getGameModule } from "@dailyloop/game-engine";
 import { prisma } from "../lib/prisma.js";
@@ -64,9 +65,18 @@ export type HintResult =
   | { kind: "not_available" }
   | { kind: "not_started" }
   | { kind: "not_supported" }
-  | { kind: "ok"; suggestion: unknown };
+  | { kind: "already_completed" }
+  | { kind: "ok"; hint: unknown; hintsUsed: number };
 
-/** Read-only — asks a game "what's a legal next move?" without recording anything. */
+const MAX_HINT_CHARGE_ATTEMPTS = 5;
+
+/**
+ * Asks a game for its next-step suggestion and charges the attempt for it. Never touches the
+ * move log, but a hint is not free: `hintsUsed` feeds into scoring. Charging is per *distinct*
+ * hint — asking again for exactly the suggestion last paid for (e.g. after dismissing it) costs
+ * nothing — and is a compare-and-set on the current count, so two simultaneous requests can
+ * neither double-charge nor both slip through uncharged.
+ */
 export async function getHint(userId: string, gameSlug: string): Promise<HintResult> {
   const module = getGameModule(gameSlug);
   const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
@@ -76,13 +86,29 @@ export async function getHint(userId: string, gameSlug: string): Promise<HintRes
   const puzzle = await findTodaysPuzzle(game.id, game.slug);
   if (!puzzle) return { kind: "not_available" };
 
-  const attempt = await prisma.gameAttempt.findUnique({
-    where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
-  });
-  if (!attempt) return { kind: "not_started" };
+  for (let tries = 0; tries < MAX_HINT_CHARGE_ATTEMPTS; tries++) {
+    const attempt = await prisma.gameAttempt.findUnique({
+      where: { userId_dailyPuzzleId: { userId, dailyPuzzleId: puzzle.id } },
+    });
+    if (!attempt) return { kind: "not_started" };
+    if (attempt.status === "COMPLETED") return { kind: "already_completed" };
 
-  const moves = movesOf(attempt.attemptLog);
-  return { kind: "ok", suggestion: module.hint(puzzle.content, moves) };
+    const suggestion = module.hint(puzzle.content, movesOf(attempt.attemptLog));
+    if (suggestion === null || suggestion === undefined) {
+      return { kind: "ok", hint: null, hintsUsed: attempt.hintsUsed }; // nothing revealed, nothing charged
+    }
+    // Normalise through JSON so it compares equal to what comes back out of the jsonb column.
+    const hint = JSON.parse(JSON.stringify(suggestion)) as Prisma.InputJsonValue;
+    if (isDeepStrictEqual(attempt.lastHint, hint)) return { kind: "ok", hint, hintsUsed: attempt.hintsUsed };
+
+    const { count } = await prisma.gameAttempt.updateMany({
+      where: { id: attempt.id, status: "IN_PROGRESS", hintsUsed: attempt.hintsUsed },
+      data: { hintsUsed: { increment: 1 }, lastHint: hint },
+    });
+    if (count === 1) return { kind: "ok", hint, hintsUsed: attempt.hintsUsed + 1 };
+    // Lost a race with another hint or the final move — re-read and decide again.
+  }
+  throw new Error("Couldn't record a hint after repeated concurrent updates");
 }
 
 export type UndoMoveResult =
@@ -184,7 +210,10 @@ export async function submitMove(userId: string, gameSlug: string, rawMove: unkn
   }
 
   const durationMs = Date.now() - attempt.startedAt.getTime();
-  const scoreBreakdown = module.calculateScore(puzzle.content, validation.result, { durationMs });
+  const scoreBreakdown = module.calculateScore(puzzle.content, validation.result, {
+    durationMs,
+    hintsUsed: attempt.hintsUsed,
+  });
 
   const { newlyUnlockedAchievements } = await completeAttempt({
     userId,

@@ -161,6 +161,10 @@ model GameAttempt {
   won            Boolean       @default(false)
   score          Int           @default(0)
   scoreBreakdown Json?
+  /// Hints revealed during this attempt — charged once per distinct hint, fed into scoring.
+  hintsUsed      Int           @default(0)
+  /// The most recently charged hint, so re-requesting the same suggestion isn't charged again.
+  lastHint       Json?
   startedAt      DateTime      @default(now())
   completedAt    DateTime?
   createdAt      DateTime      @default(now())

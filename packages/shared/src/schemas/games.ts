@@ -58,6 +58,8 @@ export interface TodayGameEntryDTO {
   status: TodayGameStatus;
   score: number | null;
   mistakeCount: number | null;
+  /** Hints charged to the current attempt (they lower its score); null before an attempt exists. */
+  hintsUsed: number | null;
   /** Sanitized puzzle content, or null when unavailable or the game has no engine module yet. */
   content: unknown | null;
   /** When the current attempt began — ISO string, null before an attempt exists. Lets a client

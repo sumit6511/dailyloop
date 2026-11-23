@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { SCORE } from "@dailyloop/shared";
 import { useGameToday, useAutoStartAttempt, useSubmitMove, useHint } from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
@@ -270,12 +271,15 @@ export function LogicPuzzlePage() {
   const [notes, setNotes] = useState<Record<string, Set<number>>>({});
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [hintSuggestion, setHintSuggestion] = useState<HintSuggestion | null>(null);
-  const [hintsUsed, setHintsUsed] = useState(0);
+  // Hints are charged server-side; this just mirrors the latest count from a hint response until
+  // the refetched entry catches up.
+  const [latestHintsUsed, setLatestHintsUsed] = useState<number | null>(null);
   const [resetting, setResetting] = useState(false);
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useAutoStartAttempt("logic-puzzle", entry?.status);
+  const hintsUsed = latestHintsUsed ?? entry?.hintsUsed ?? 0;
 
   const view = (entry?.content ?? null) as LogicPuzzleView | null;
 
@@ -423,7 +427,8 @@ export function LogicPuzzlePage() {
   const requestHint = useCallback(async () => {
     if (!view || view.complete || hint.isPending) return;
     try {
-      const suggestion = await hint.mutateAsync();
+      const { hint: suggestion, hintsUsed: charged } = await hint.mutateAsync();
+      setLatestHintsUsed(charged);
       if (suggestion) {
         setHintSuggestion(suggestion);
         setSelected({ row: suggestion.row, col: suggestion.col });
@@ -438,7 +443,6 @@ export function LogicPuzzlePage() {
   const acceptHint = useCallback(() => {
     if (!hintSuggestion) return;
     const { row, col, value } = hintSuggestion;
-    setHintsUsed((n) => n + 1);
     setHintSuggestion(null);
     setSelected({ row, col });
     void fillCell({ row, col }, value);
@@ -541,7 +545,6 @@ export function LogicPuzzlePage() {
     setNotes({});
     setHistory([]);
     setHintSuggestion(null);
-    setHintsUsed(0);
     try {
       // Erasing (value 0) never counts toward the mistake tally in replay() — same guarantee
       // the single-cell Erase button already relies on — so resetting the whole board this way
@@ -752,8 +755,11 @@ export function LogicPuzzlePage() {
           isLoading={hint.isPending}
           disabled={resetting || !!hintSuggestion}
           onClick={() => void requestHint()}
+          title={`Each new hint costs ${SCORE.HINT_PENALTY} points`}
+          aria-label={`Hint (costs ${SCORE.HINT_PENALTY} points)`}
         >
           <Icon name="lightbulb" className="text-lg" /> Hint
+          <span className="text-xs font-medium text-amber-300/80">−{SCORE.HINT_PENALTY}</span>
         </Button>
         <Button
           variant="ghost"

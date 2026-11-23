@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { addDaysToKey } from "@dailyloop/shared";
-import { logicPuzzleGame, type LogicPuzzleContent, type LogicPuzzleMove } from "./index.js";
+import { HINT_PENALTY, logicPuzzleGame, type LogicPuzzleContent, type LogicPuzzleMove } from "./index.js";
 import { countSolutions, gradePuzzle } from "./sudoku.js";
 import { tierForDate } from "../../difficulty.js";
 
@@ -183,5 +183,14 @@ describe("logic-puzzle: calculateScore", () => {
     expect(flawed.total).toBeLessThan(perfect.total);
     expect(flawed.mistakePenalty).toBe(24);
     expect(flawed.accuracyBonus).toBe(0);
+  });
+
+  it("deducts for each hint and withholds the flawless bonus when any hint was used", () => {
+    const meta = { durationMs: 10_000 };
+    const unaided = logicPuzzleGame.calculateScore(content, { grid: VALID_GRID, mistakes: 0, won: true }, meta);
+    const twoHints = logicPuzzleGame.calculateScore(content, { grid: VALID_GRID, mistakes: 0, won: true }, { ...meta, hintsUsed: 2 });
+    expect(twoHints.hintPenalty).toBe(2 * HINT_PENALTY);
+    expect(twoHints.accuracyBonus).toBe(0);
+    expect(twoHints.total).toBe(unaided.total - unaided.accuracyBonus - 2 * HINT_PENALTY);
   });
 });

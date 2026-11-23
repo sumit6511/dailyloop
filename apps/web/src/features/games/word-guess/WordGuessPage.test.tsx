@@ -17,6 +17,7 @@ function seedInProgressEntry() {
     status: "in_progress",
     score: null,
     mistakeCount: 0,
+    hintsUsed: null,
     content: { guesses: [], guessesRemaining: 6, complete: false },
   });
   return queryClient;

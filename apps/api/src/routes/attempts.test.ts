@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
 import type { Prisma } from "@prisma/client";
-import { getTodayKey, dateKeyToJSDate, addDaysToKey } from "@dailyloop/shared";
+import { getTodayKey, dateKeyToJSDate, addDaysToKey, SCORE } from "@dailyloop/shared";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
 
@@ -139,9 +139,55 @@ describe("attempt lifecycle", () => {
     const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
     expect(res.statusCode).toBe(200);
     const body = res.json().data;
-    expect(body).toMatchObject({ row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0], kind: "place" });
+    expect(body.hint).toMatchObject({ row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0], kind: "place" });
+    expect(body.hintsUsed).toBe(1);
     // The other blank's solved value shouldn't leak just because a hint was requested.
-    expect(JSON.stringify(body)).not.toContain(String(LOGIC_PUZZLE_SOLUTION[5]![5]));
+    expect(JSON.stringify(body.hint)).not.toContain(String(LOGIC_PUZZLE_SOLUTION[5]![5]));
+  });
+
+  it("charges each distinct hint once, and the charges lower the final score", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
+    const askForHint = async () =>
+      (await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies })).json().data;
+    const play = (move: { row: number; col: number; value: number }) =>
+      app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/submit", cookies, payload: { move } });
+
+    const first = await askForHint();
+    expect(first.hintsUsed).toBe(1);
+    expect((await askForHint()).hintsUsed).toBe(1); // same suggestion again (e.g. after dismissing it) is free
+
+    await play(first.hint);
+    const second = await askForHint();
+    expect(second.hint).toMatchObject({ row: 5, col: 5 });
+    expect(second.hintsUsed).toBe(2);
+
+    const today = await app.inject({ method: "GET", url: "/api/games/logic-puzzle/today", cookies });
+    expect(today.json().data.hintsUsed).toBe(2);
+
+    const done = (await play(second.hint)).json().data;
+    expect(done.complete).toBe(true);
+    const attempt = await prisma.gameAttempt.findFirstOrThrow({ where: { status: "COMPLETED" } });
+    const breakdown = attempt.scoreBreakdown as { hintPenalty: number; accuracyBonus: number };
+    expect(breakdown.hintPenalty).toBe(2 * SCORE.HINT_PENALTY);
+    expect(breakdown.accuracyBonus).toBe(0);
+
+    const afterwards = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
+    expect(afterwards.statusCode).toBe(400);
+  });
+
+  it("charges only once when the same hint is requested concurrently", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
+    await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
+
+    const responses = await Promise.all(
+      Array.from({ length: 5 }, () => app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies })),
+    );
+    for (const res of responses) expect(res.statusCode).toBe(200);
+    const attempt = await prisma.gameAttempt.findFirstOrThrow();
+    expect(attempt.hintsUsed).toBe(1);
   });
 
   it("rejects checking progress for a game that doesn't support it", async () => {

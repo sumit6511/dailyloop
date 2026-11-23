@@ -198,7 +198,7 @@ describe("game routes", () => {
         throw new Error("boom");
       },
       validateAttempt: () => ({ won: false, complete: false, mistakes: 0, result: {} }),
-      calculateScore: () => ({ base: 0, speedBonus: 0, accuracyBonus: 0, mistakePenalty: 0, total: 0 }),
+      calculateScore: () => ({ base: 0, speedBonus: 0, accuracyBonus: 0, mistakePenalty: 0, hintPenalty: 0, total: 0 }),
       sanitizeForClient: () => null,
     });
     const { cookies } = await registerUser("harry");
