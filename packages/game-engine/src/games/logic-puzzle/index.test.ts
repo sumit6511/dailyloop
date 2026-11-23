@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
+import { addDaysToKey } from "@dailyloop/shared";
 import { logicPuzzleGame, type LogicPuzzleContent, type LogicPuzzleMove } from "./index.js";
+import { countSolutions, gradePuzzle } from "./sudoku.js";
+import { tierForDate } from "../../difficulty.js";
 
 // A fully valid 6x6 Sudoku, reused across tests as either a solution or a plain move sequence —
 // since validateAttempt's constraint-rejection logic no longer reads `content.solution` at all
@@ -16,6 +19,28 @@ const VALID_GRID = [
 const BLANK_PUZZLE = Array.from({ length: 6 }, () => Array(6).fill(0));
 
 describe("logic-puzzle: generatePuzzle", () => {
+  // One week of consecutive dates covers every weekday, and with it every difficulty tier.
+  const week = Array.from({ length: 7 }, (_, i) => addDaysToKey("2026-08-24", i));
+
+  it("produces a unique, guess-free puzzle for every day of the week", () => {
+    for (const dateKey of week) {
+      const content = logicPuzzleGame.generatePuzzle("s", dateKey);
+      expect(countSolutions(content.puzzle, 2)).toBe(1);
+      expect(gradePuzzle(content.puzzle).solved).toBe(true);
+      expect(content.difficulty).toBe(tierForDate(dateKey));
+    }
+  });
+
+  it("gives fewer clues on harder days", () => {
+    const givensByTier: Record<string, number[]> = {};
+    for (const dateKey of week) {
+      const content = logicPuzzleGame.generatePuzzle("s", dateKey);
+      (givensByTier[content.difficulty!] ??= []).push(content.puzzle.flat().filter((v) => v !== 0).length);
+    }
+    expect(Math.min(...givensByTier.easy!)).toBeGreaterThan(Math.max(...givensByTier.medium!));
+    expect(Math.min(...givensByTier.medium!)).toBeGreaterThan(Math.max(...givensByTier.hard!));
+  });
+
   it("is deterministic and produces a puzzle consistent with its own solution", () => {
     const a = logicPuzzleGame.generatePuzzle("s", "2026-08-29");
     const b = logicPuzzleGame.generatePuzzle("s", "2026-08-29");
@@ -110,7 +135,27 @@ describe("logic-puzzle: hint", () => {
     const puzzle = VALID_GRID.map((row, r) => row.map((v, c) => (r === 2 && c === 2 ? 0 : v)));
     const content: LogicPuzzleContent = { solution: VALID_GRID, puzzle };
     const suggestion = logicPuzzleGame.hint!(content, []) as { row: number; col: number; value: number } | null;
-    expect(suggestion).toEqual({ row: 2, col: 2, value: VALID_GRID[2]![2] });
+    expect(suggestion).toMatchObject({ row: 2, col: 2, value: VALID_GRID[2]![2], kind: "place", technique: "naked-single" });
+  });
+
+  it("points out a legal-but-wrong placement before suggesting anything built on top of it", () => {
+    const content: LogicPuzzleContent = { solution: VALID_GRID, puzzle: BLANK_PUZZLE };
+    // 2 at (0,0) duplicates nothing on an empty board, so replay accepts it — but the solution has 1.
+    const moves: LogicPuzzleMove[] = [{ row: 0, col: 0, value: 2 }];
+    expect(logicPuzzleGame.validateAttempt(content, moves).result.grid[0]![0]).toBe(2);
+    expect(logicPuzzleGame.hint!(content, moves)).toEqual({ row: 0, col: 0, value: 0, kind: "fix" });
+  });
+
+  it("only ever suggests placements that agree with the solution", () => {
+    const content = logicPuzzleGame.generatePuzzle("s", "2026-08-29");
+    const moves: LogicPuzzleMove[] = [];
+    for (let step = 0; step < 36; step++) {
+      const hint = logicPuzzleGame.hint!(content, moves) as { row: number; col: number; value: number } | null;
+      if (!hint) break;
+      expect(hint.value).toBe(content.solution[hint.row]![hint.col]);
+      moves.push(hint);
+    }
+    expect(logicPuzzleGame.validateAttempt(content, moves).won).toBe(true);
   });
 
   it("returns null once the grid is already complete", () => {

@@ -2,13 +2,16 @@ import { z } from "zod";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { createRng } from "../../rng.js";
-import { SIZE, generateSolvedGrid, carvePuzzle, isValidPlacement, isValidCompleteGrid, findHint, type Grid } from "./sudoku.js";
+import { tierForDate, type PuzzleTier } from "../../difficulty.js";
+import { SIZE, generateGradedPuzzle, isValidPlacement, isValidCompleteGrid, findHint, type Grid } from "./sudoku.js";
 
 export interface LogicPuzzleContent {
   /** Server-only — never sent to the client except via the read-only hint endpoint's fallback. */
   solution: Grid;
   /** 0 = blank — the given clues, safe to send to the client immediately. */
   puzzle: Grid;
+  /** The day's tier (absent on puzzles generated before tiers existed). */
+  difficulty?: PuzzleTier;
 }
 
 export interface LogicPuzzleMove {
@@ -23,8 +26,6 @@ export interface LogicPuzzleResult {
   mistakes: number;
   won: boolean;
 }
-
-const MAX_REMOVALS = 16;
 
 /**
  * A non-zero move is only ever committed if it doesn't duplicate a value already in its row,
@@ -73,6 +74,7 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
   contentSchema: z.object({
     solution: z.array(z.array(z.number().int().min(1).max(SIZE)).length(SIZE)).length(SIZE),
     puzzle: z.array(z.array(z.number().int().min(0).max(SIZE)).length(SIZE)).length(SIZE),
+    difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   }),
 
   moveSchema: z.object({
@@ -82,10 +84,11 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
   }),
 
   generatePuzzle(_seed, dateKey) {
-    const rng = createRng(`logic-puzzle-${dateKey}`);
-    const solution = generateSolvedGrid(rng);
-    const puzzle = carvePuzzle(solution, rng, MAX_REMOVALS);
-    return { solution, puzzle };
+    // Easy days keep ~16 givens and need only singles; hard days drop to ~10 givens and may
+    // need locked candidates or pairs — always unique, and always solvable without guessing.
+    const difficulty = tierForDate(dateKey);
+    const { solution, puzzle } = generateGradedPuzzle(createRng(`logic-puzzle-${dateKey}`), difficulty);
+    return { solution, puzzle, difficulty };
   },
 
   validateAttempt(content, moves) {
@@ -104,21 +107,22 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
 
   sanitizeForClient(content, attempt) {
     if (!attempt) {
-      return { puzzle: content.puzzle, grid: content.puzzle, complete: false };
+      return { puzzle: content.puzzle, grid: content.puzzle, difficulty: content.difficulty, complete: false };
     }
     const { result } = replay(content, attempt.moves);
     const complete = attempt.status === "COMPLETED";
     return {
       puzzle: content.puzzle,
       grid: result.grid,
+      difficulty: content.difficulty,
       complete,
       ...(complete ? { mistakes: result.mistakes, won: result.won } : {}),
     };
   },
 
-  /** Read-only — never touches the move log. Every committed cell is already guaranteed legal
-   * under the constraint-rejection model above, so `findHint` can deduce purely from the current
-   * grid; `content.solution` is only a defensive fallback (see sudoku.ts). */
+  /** Read-only — never touches the move log. A committed cell is only guaranteed not to
+   * duplicate a peer, not to be *correct*, so `findHint` first points out any cell that
+   * disagrees with the solution (suggesting it be cleared) before deducing a next placement. */
   hint(content, moves) {
     const { result } = replay(content, moves);
     return findHint(result.grid, content.solution);

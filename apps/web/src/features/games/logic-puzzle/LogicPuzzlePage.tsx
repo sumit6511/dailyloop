@@ -24,7 +24,10 @@ interface LogicPuzzleView {
 interface HintSuggestion {
   row: number;
   col: number;
+  /** 0 when `kind` is "fix" — clearing the cell is the suggestion. */
   value: number;
+  /** "fix" = a filled cell that's wrong. Absent from older API responses, which mean "place". */
+  kind?: "place" | "fix";
 }
 
 type HistoryEntry =
@@ -676,10 +679,21 @@ export function LogicPuzzlePage() {
       {hintSuggestion ? (
         <div className="animate-pop-in mt-4 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-100">
           <Icon name="lightbulb" className="text-lg" filled />
-          Row {hintSuggestion.row + 1}, column {hintSuggestion.col + 1} can be {hintSuggestion.value}.
-          <Button size="sm" variant="secondary" onClick={acceptHint}>
-            Place {hintSuggestion.value}
-          </Button>
+          {hintSuggestion.kind === "fix" ? (
+            <>
+              Row {hintSuggestion.row + 1}, column {hintSuggestion.col + 1} isn&apos;t right.
+              <Button size="sm" variant="secondary" onClick={acceptHint}>
+                Clear it
+              </Button>
+            </>
+          ) : (
+            <>
+              Row {hintSuggestion.row + 1}, column {hintSuggestion.col + 1} can be {hintSuggestion.value}.
+              <Button size="sm" variant="secondary" onClick={acceptHint}>
+                Place {hintSuggestion.value}
+              </Button>
+            </>
+          )}
           <Button size="sm" variant="ghost" aria-label="Dismiss hint" onClick={() => setHintSuggestion(null)}>
             <Icon name="close" className="text-base" />
           </Button>

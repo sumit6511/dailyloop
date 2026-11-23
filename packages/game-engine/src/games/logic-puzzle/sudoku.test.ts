@@ -1,6 +1,16 @@
 import { describe, it, expect } from "vitest";
 import { createRng } from "../../rng.js";
-import { SIZE, generateSolvedGrid, carvePuzzle, isValidCompleteGrid, findHint, type Grid } from "./sudoku.js";
+import {
+  SIZE,
+  generateSolvedGrid,
+  carvePuzzle,
+  isValidCompleteGrid,
+  findHint,
+  countSolutions,
+  gradePuzzle,
+  generateGradedPuzzle,
+  type Grid,
+} from "./sudoku.js";
 
 describe("generateSolvedGrid", () => {
   it("produces a valid complete 6x6 Sudoku (unique per row, column, and 2x3 box)", () => {
@@ -60,7 +70,7 @@ describe("findHint", () => {
     grid[target.row]![target.col] = 0; // every other cell stays filled, so only one value can fit here
 
     const hint = findHint(grid);
-    expect(hint).toEqual({ row: target.row, col: target.col, value: solution[target.row]![target.col] });
+    expect(hint).toMatchObject({ row: target.row, col: target.col, value: solution[target.row]![target.col] });
   });
 
   it("finds a hidden single — a value that only fits one empty cell in a row, even with other candidates open", () => {
@@ -98,4 +108,49 @@ describe("findHint", () => {
   function solutionCopy(): Grid {
     return generateSolvedGrid(createRng("already-complete-seed")).map((row) => [...row]);
   }
+});
+
+describe("countSolutions", () => {
+  it("finds exactly one solution for a complete grid and several for an empty one", () => {
+    const solution = generateSolvedGrid(createRng("count-seed"));
+    expect(countSolutions(solution, 2)).toBe(1);
+    expect(countSolutions(Array.from({ length: SIZE }, () => Array(SIZE).fill(0)), 5)).toBe(5);
+  });
+
+  it("reports zero solutions when the givens already conflict", () => {
+    const grid: Grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+    grid[0]![0] = 3;
+    grid[0]![5] = 3;
+    expect(countSolutions(grid, 2)).toBe(0);
+  });
+});
+
+describe("gradePuzzle", () => {
+  it("solves a singles-only puzzle at level 1", () => {
+    const solution = generateSolvedGrid(createRng("grade-seed"));
+    const puzzle = solution.map((row) => [...row]);
+    puzzle[0]![0] = 0;
+    puzzle[3]![4] = 0;
+    const grade = gradePuzzle(puzzle);
+    expect(grade.solved).toBe(true);
+    expect(grade.level).toBe(1);
+  });
+
+  it("refuses to guess — an empty grid is not logically solvable", () => {
+    expect(gradePuzzle(Array.from({ length: SIZE }, () => Array(SIZE).fill(0))).solved).toBe(false);
+  });
+});
+
+describe("generateGradedPuzzle", () => {
+  it.each(["easy", "medium", "hard"] as const)("builds a unique, logic-solvable, 180°-symmetric %s puzzle", (tier) => {
+    const { puzzle, solution, grade } = generateGradedPuzzle(createRng(`graded-${tier}`), tier);
+    expect(countSolutions(puzzle, 2)).toBe(1);
+    expect(grade.solved).toBe(true);
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (puzzle[r]![c] !== 0) expect(puzzle[r]![c]).toBe(solution[r]![c]);
+        expect(puzzle[r]![c] === 0).toBe(puzzle[SIZE - 1 - r]![SIZE - 1 - c] === 0);
+      }
+    }
+  });
 });
