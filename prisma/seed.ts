@@ -104,6 +104,14 @@ const GAMES = [
     difficulty: "hard",
     sortOrder: 5,
   },
+  {
+    slug: "detour",
+    name: "Detour",
+    description: "Race the bot across the board — drop walls to send it the long way round.",
+    icon: "🧱",
+    difficulty: "medium",
+    sortOrder: 6,
+  },
 ];
 
 async function seedGames() {

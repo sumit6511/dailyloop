@@ -5,6 +5,7 @@ import { NumberPuzzlePage } from "./number-puzzle/NumberPuzzlePage";
 import { LogicPuzzlePage } from "./logic-puzzle/LogicPuzzlePage";
 import { GuessItPage } from "./guess-it/GuessItPage";
 import { PathwayPage } from "./pathway/PathwayPage";
+import { DetourPage } from "./detour/DetourPage";
 
 /** Frontend mirror of the backend game-engine registry — add a game here once its page exists. */
 export const GAME_PAGES: Record<string, ComponentType> = {
@@ -14,4 +15,5 @@ export const GAME_PAGES: Record<string, ComponentType> = {
   "logic-puzzle": LogicPuzzlePage,
   "guess-it": GuessItPage,
   pathway: PathwayPage,
+  detour: DetourPage,
 };

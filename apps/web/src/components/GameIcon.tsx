@@ -9,6 +9,7 @@ const GAME_ICONS: Record<string, { icon: string; className: string }> = {
   "logic-puzzle": { icon: "psychology", className: "bg-teal-500/20 text-teal-300" },
   "guess-it": { icon: "adjust", className: "bg-fuchsia-500/20 text-fuchsia-300" },
   pathway: { icon: "route", className: "bg-indigo-500/20 text-indigo-300" },
+  detour: { icon: "fence", className: "bg-lime-500/20 text-lime-300" },
 };
 
 const SIZE_CLASSES: Record<"sm" | "md" | "lg", string> = {
