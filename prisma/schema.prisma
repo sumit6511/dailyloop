@@ -34,7 +34,9 @@ enum FriendRequestStatus {
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
-  username     String   @unique
+  /// citext: unique, and every lookup (login, profile URL, friend request) is case-insensitive,
+  /// so "Harry" and "harry" can't both exist.
+  username     String   @unique @db.Citext
   passwordHash String
   role         Role     @default(USER)
   displayName  String

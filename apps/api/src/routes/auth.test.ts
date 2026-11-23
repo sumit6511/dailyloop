@@ -59,6 +59,33 @@ describe("auth routes", () => {
     expect(dupeUsername.statusCode).toBe(409);
   });
 
+  it("treats usernames as case-insensitive: no case-variant duplicates, any case resolves", async () => {
+    await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+
+    const variant = await app.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      payload: { ...registerPayload, username: "HaRRy", email: "other@example.com" },
+    });
+    expect(variant.statusCode).toBe(409);
+
+    const profile = await app.inject({ method: "GET", url: "/api/users/HARRY" });
+    expect(profile.statusCode).toBe(200);
+    expect(profile.json().data.username).toBe("harry"); // stored casing is preserved
+  });
+
+  it("logs in regardless of the casing of the email or username", async () => {
+    await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    for (const emailOrUsername of ["Harry@Example.COM", "HARRY", "harry"]) {
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: { emailOrUsername, password: registerPayload.password },
+      });
+      expect(res.statusCode, emailOrUsername).toBe(200);
+    }
+  });
+
   it("rejects a reserved username", async () => {
     const response = await app.inject({
       method: "POST",

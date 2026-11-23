@@ -76,8 +76,10 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     { config: { rateLimit: { max: 20, timeWindow: "10 minutes" } } },
     async (request, reply) => {
       const body = loginSchema.parse(request.body);
+      // Emails are stored lowercased (registerSchema); usernames are citext, so both halves of
+      // this lookup are case-insensitive.
       const user = await prisma.user.findFirst({
-        where: { OR: [{ email: body.emailOrUsername }, { username: body.emailOrUsername }] },
+        where: { OR: [{ email: body.emailOrUsername.toLowerCase() }, { username: body.emailOrUsername }] },
       });
       // Deliberately generic message — don't reveal whether the account exists.
       if (!user || !(await verifyPassword(user.passwordHash, body.password))) {

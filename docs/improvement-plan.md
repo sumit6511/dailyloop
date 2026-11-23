@@ -86,3 +86,64 @@ Also fixed along the way: a Guess It clue that spelled out an accepted answer ("
 Remaining note: a pausable timer is inherently client-influenced — a player who deliberately
 blocks heartbeats can avoid being timed for any gap over 45 s between moves. That is the trade-off
 of letting the clock pause at all; moves and hints still count every shorter gap.
+
+## Backlog — whole-app audit (round 3)
+
+A second audit, this time of the API, web app, schema and tooling rather than just the engines.
+Ordered by priority; each item is implemented and committed separately.
+
+### Bugs
+
+1. **Mixed-case email can't log in; usernames are case-sensitive.** Emails are stored lowercased
+   but the login lookup isn't, so `Harry@x.com` fails. `Harry` and `harry` can both register
+   (impersonation risk) and `/u/Harry` 404s for `harry`.
+2. **Speed Demon unlocks on a loss** — e.g. submitting Number Puzzle immediately.
+3. **Perfect Day miscounted** — it counts disabled games' puzzles (making it impossible) and only
+   puzzles that happen to have been published lazily (so deep-linking early can award it after a
+   single game).
+4. **Midnight race** — when two requests generate today's puzzle at once, the loser gets "No puzzle
+   is available today" instead of the puzzle the winner just created.
+5. **500s on unique-constraint races** — concurrent registration with the same name, or an admin
+   moving a puzzle onto an occupied date, return 500 instead of 409.
+6. **Connections repeats cost mistakes** — re-submitting the same wrong four words costs another
+   life; there's also no "one away…" feedback.
+7. **Puzzle numbers can collide** — `count + 1` reuses a number after a deletion and isn't ordered
+   by date.
+8. **Deleting a puzzle leaves stale scores** — its attempts cascade away but DailyScore, leaderboards
+   and Perfect Day aren't recomputed.
+
+### Security
+
+9. **Rate limits can be bypassed** — `trustProxy: true` trusts any client-supplied
+   `X-Forwarded-For`, so a brute-forcer can rotate fake IPs past the login/register limits.
+10. **Login timing reveals which accounts exist** — the Argon2 check is skipped for unknown users.
+11. **Live password-reset links are written to production logs.**
+12. **Reset tokens outlive their purpose** — earlier links stay valid after a new one is requested
+    or the password is changed. Cron secret uses a non-constant-time compare.
+13. **`avatarUrl` accepts any string** (it isn't rendered anywhere yet).
+
+### Performance & reliability
+
+14. **Every authenticated request writes to `Session`** (sliding expiry) — throttle it.
+15. **Expired sessions and reset tokens are never deleted.**
+16. **N+1 queries** in user search (3 per result) and the admin user list; the admin puzzle list is
+    unbounded and ships every puzzle's full content.
+17. **One 550 kB JS bundle** — admin pages and each game should be lazy-loaded.
+
+### Tooling & docs
+
+18. **No CI** — nothing runs lint, typecheck, tests or the build on a push or PR.
+19. **Docs are stale** — "5 games" (there are 6), `CRON_SECRET` missing from the deploy env table,
+    hint/timing changes undocumented in the architecture doc.
+
+### Features
+
+20. **Countdown to the next puzzles** on the dashboard and result screens.
+21. **Leaderboard shows your own rank** even outside the top 50; ties share a rank.
+22. **Richer share text** — a Connections colour grid, plus result lines for every game.
+23. **Personal stats** — per-game played / win rate / average score, Word Guess guess distribution.
+24. **Installable app** — a web manifest so it can be added to a home screen.
+25. **More achievements** — e.g. a flawless (no mistakes, no hints) solve.
+
+Needs your input (not started): real password-reset email delivery needs a provider and API key;
+a past-puzzle archive and Word Guess hard mode are larger product decisions.
