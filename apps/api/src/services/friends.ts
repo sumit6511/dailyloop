@@ -62,6 +62,38 @@ export async function getRelationship(viewerId: string, targetId: string): Promi
   return "none";
 }
 
+/** getRelationship for many targets at once — three queries total instead of three per target. */
+export async function getRelationships(viewerId: string, targetIds: string[]): Promise<Map<string, Relationship>> {
+  const [friendIds, sent, received] = await Promise.all([
+    getFriendIds(viewerId),
+    prisma.friendRequest.findMany({
+      where: { senderId: viewerId, receiverId: { in: targetIds }, status: "PENDING" },
+      select: { receiverId: true },
+    }),
+    prisma.friendRequest.findMany({
+      where: { receiverId: viewerId, senderId: { in: targetIds }, status: "PENDING" },
+      select: { senderId: true },
+    }),
+  ]);
+  const friends = new Set(friendIds);
+  const sentTo = new Set(sent.map((r) => r.receiverId));
+  const receivedFrom = new Set(received.map((r) => r.senderId));
+  return new Map(
+    targetIds.map((id): [string, Relationship] => [
+      id,
+      id === viewerId
+        ? "self"
+        : friends.has(id)
+          ? "friends"
+          : sentTo.has(id)
+            ? "request_sent"
+            : receivedFrom.has(id)
+              ? "request_received"
+              : "none",
+    ]),
+  );
+}
+
 export async function sendFriendRequest(senderId: string, targetUsername: string) {
   const target = await prisma.user.findUnique({ where: { username: targetUsername } });
   if (!target) throw Errors.notFound("User not found");

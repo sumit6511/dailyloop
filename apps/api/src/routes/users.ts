@@ -4,7 +4,7 @@ import { updateProfileSchema, changePasswordSchema, SESSION_COOKIE_NAME, type Us
 import { prisma } from "../lib/prisma.js";
 import { toMeDTO, toPublicUserDTO } from "../lib/dto.js";
 import { Errors } from "../lib/errors.js";
-import { getRelationship } from "../services/friends.js";
+import { getRelationship, getRelationships } from "../services/friends.js";
 import { hashPassword, verifyPassword } from "../lib/password.js";
 
 const searchQuerySchema = z.object({ q: z.string().optional() });
@@ -55,12 +55,11 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       orderBy: { username: "asc" },
     });
 
-    const data = await Promise.all(
-      users.map(async (user) => ({
-        ...toPublicUserDTO(user),
-        relationship: await getRelationship(request.currentUser!.id, user.id),
-      })),
+    const relationships = await getRelationships(
+      request.currentUser!.id,
+      users.map((u) => u.id),
     );
+    const data = users.map((user) => ({ ...toPublicUserDTO(user), relationship: relationships.get(user.id)! }));
     return reply.send({ data });
   });
 

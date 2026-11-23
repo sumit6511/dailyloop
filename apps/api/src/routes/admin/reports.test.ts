@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import type { FastifyInstance } from "fastify";
-import { getTodayKey, dateKeyToJSDate } from "@dailyloop/shared";
+import { getTodayKey, dateKeyToJSDate, addDaysToKey } from "@dailyloop/shared";
 import { buildApp } from "../../app.js";
 import { prisma } from "../../lib/prisma.js";
 
@@ -61,6 +61,31 @@ describe("admin reporting routes", () => {
     expect(res.statusCode).toBe(200);
     const usernames = res.json().data.map((u: { username: string }) => u.username);
     expect(usernames).toEqual(expect.arrayContaining(["admin1", "harry"]));
+  });
+
+  it("totals each user's completed games and points", async () => {
+    const admin = await registerAndGetCookies("admin1", "ADMIN");
+    const harry = await registerAndGetCookies("harry", "USER");
+    const today = dateKeyToJSDate(getTodayKey("Asia/Kathmandu"));
+    const yesterday = dateKeyToJSDate(addDaysToKey(getTodayKey("Asia/Kathmandu"), -1));
+    await prisma.dailyScore.createMany({
+      data: [
+        { userId: harry.userId, date: today, totalScore: 120, gamesCompleted: 2 },
+        { userId: harry.userId, date: yesterday, totalScore: 30, gamesCompleted: 1 },
+      ],
+    });
+    const game = await prisma.game.create({ data: { slug: "g", name: "G", description: "d", icon: "🧪", sortOrder: 0 } });
+    for (const [i, status] of (["COMPLETED", "COMPLETED", "IN_PROGRESS"] as const).entries()) {
+      const puzzle = await prisma.dailyPuzzle.create({
+        data: { gameId: game.id, date: dateKeyToJSDate(addDaysToKey(getTodayKey("Asia/Kathmandu"), -i)), puzzleNumber: i + 1, content: {} },
+      });
+      await prisma.gameAttempt.create({ data: { userId: harry.userId, dailyPuzzleId: puzzle.id, status } });
+    }
+
+    const res = await app.inject({ method: "GET", url: "/api/admin/users", cookies: admin.cookies });
+    const rows = res.json().data as { username: string; gamesPlayed: number; totalPoints: number }[];
+    expect(rows.find((u) => u.username === "harry")).toMatchObject({ gamesPlayed: 2, totalPoints: 150 });
+    expect(rows.find((u) => u.username === "admin1")).toMatchObject({ gamesPlayed: 0, totalPoints: 0 });
   });
 
   it("summarizes per-game stats in the overview", async () => {

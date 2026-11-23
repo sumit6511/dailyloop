@@ -220,4 +220,15 @@ describe("admin puzzle routes", () => {
     expect(await score(onlyB.id)).toBeNull();
     expect(await score(onlyA.id)).toMatchObject({ totalScore: 70 + SCORE.PERFECT_DAY_BONUS, isPerfectDay: true });
   });
+
+  it("lists puzzles newest first, bounded by ?limit", async () => {
+    const adminCookies = await registerAndGetCookies("admin5", "ADMIN");
+    const game = await prisma.game.create({ data: { slug: "mock-game", name: "M", description: "d", icon: "🧪", sortOrder: 0 } });
+    const today = getTodayKey("Asia/Kathmandu");
+    for (let i = 0; i < 3; i++) {
+      await prisma.dailyPuzzle.create({ data: { gameId: game.id, date: dateKeyToJSDate(addDaysToKey(today, -i)), puzzleNumber: i + 1, content: {} } });
+    }
+    const res = await app.inject({ method: "GET", url: "/api/admin/puzzles?limit=2", cookies: adminCookies });
+    expect(res.json().data.map((p: { date: string }) => p.date)).toEqual([today, addDaysToKey(today, -1)]);
+  });
 });

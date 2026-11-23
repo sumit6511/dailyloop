@@ -5,6 +5,7 @@ import { env } from "../config/env.js";
 import { Errors } from "../lib/errors.js";
 import { isAuthorizedCronRequest } from "../lib/cron-auth.js";
 import { generatePuzzleForGame } from "../services/puzzle-generation.js";
+import { purgeExpiredCredentials } from "../lib/session.js";
 
 /**
  * Bearer-token-guarded, not cookie-session-guarded (see isAuthorizedCronRequest) — meant to be
@@ -30,6 +31,9 @@ export const cronRoutes: FastifyPluginAsync = async (app) => {
       })),
     );
 
-    return reply.send({ data: { dateKey, results } });
+    // The same daily trigger also clears out expired sessions and reset links.
+    const purged = await purgeExpiredCredentials();
+
+    return reply.send({ data: { dateKey, results, purged } });
   });
 };

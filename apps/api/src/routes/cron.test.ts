@@ -78,4 +78,34 @@ describe("POST /api/cron/generate-tomorrow", () => {
     expect(puzzle?.status).toBe("SCHEDULED");
     expect(puzzle?.date).toEqual(dateKeyToJSDate(tomorrowKey));
   });
+
+  it("also deletes expired sessions and reset links, keeping live ones", async () => {
+    const user = await prisma.user.create({
+      data: { email: "purge@example.com", username: "purge", passwordHash: "x", displayName: "P" },
+    });
+    const past = new Date(Date.now() - 60_000);
+    const future = new Date(Date.now() + 3_600_000);
+    await prisma.session.createMany({
+      data: [
+        { userId: user.id, tokenHash: "expired-session", expiresAt: past },
+        { userId: user.id, tokenHash: "live-session", expiresAt: future },
+      ],
+    });
+    await prisma.passwordResetToken.createMany({
+      data: [
+        { userId: user.id, tokenHash: "expired-reset", expiresAt: past },
+        { userId: user.id, tokenHash: "live-reset", expiresAt: future },
+      ],
+    });
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/cron/generate-tomorrow",
+      headers: { authorization: "Bearer test-only-cron-secret-00000000000000000000000000000000" },
+    });
+    expect(res.json().data.purged).toEqual({ sessions: 1, resetTokens: 1 });
+    expect((await prisma.session.findMany()).map((s) => s.tokenHash)).toEqual(["live-session"]);
+    expect((await prisma.passwordResetToken.findMany()).map((t) => t.tokenHash)).toEqual(["live-reset"]);
+    await prisma.user.delete({ where: { id: user.id } });
+  });
 });

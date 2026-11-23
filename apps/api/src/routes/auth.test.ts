@@ -4,6 +4,7 @@ import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
 import { parseTrustProxy } from "../lib/trust-proxy.js";
+import { SESSION_TOUCH_INTERVAL_MS } from "../lib/session.js";
 
 describe("auth routes", () => {
   let app: FastifyInstance;
@@ -273,5 +274,24 @@ describe("auth routes", () => {
     expect((await update("http://example.com/a.png")).statusCode).toBe(400);
     expect((await update("https://example.com/a.png")).statusCode).toBe(200);
     expect((await update("")).statusCode).toBe(200);
+  });
+
+  it("slides a session's expiry at most every few minutes, not on every request", async () => {
+    const res = await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const cookie = res.cookies.find((c) => c.name === "dp_session")!;
+    const me = () => app.inject({ method: "GET", url: "/api/auth/me", cookies: { [cookie.name]: cookie.value } });
+    const session = () => prisma.session.findFirstOrThrow({ where: { userId: res.json().data.id } });
+
+    const before = await session();
+    await me();
+    await me();
+    await new Promise((r) => setTimeout(r, 50)); // let any fire-and-forget write land
+    expect((await session()).lastUsedAt).toEqual(before.lastUsedAt);
+
+    const stale = new Date(Date.now() - SESSION_TOUCH_INTERVAL_MS - 1_000);
+    await prisma.session.update({ where: { id: before.id }, data: { lastUsedAt: stale } });
+    await me();
+    await new Promise((r) => setTimeout(r, 50));
+    expect((await session()).lastUsedAt.getTime()).toBeGreaterThan(stale.getTime());
   });
 });

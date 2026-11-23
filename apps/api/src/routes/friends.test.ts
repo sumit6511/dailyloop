@@ -219,6 +219,31 @@ describe("friends", () => {
     expect(self.json().data).toHaveLength(0);
   });
 
+  it("labels every search result with the right relationship", async () => {
+    const harry = await registerUser("harry");
+    const friend = await registerUser("sam_friend");
+    await registerUser("sam_asked");
+    const asker = await registerUser("sam_asker");
+    await registerUser("sam_none");
+    const request = (from: typeof harry, to: string) =>
+      app.inject({ method: "POST", url: "/api/friends/requests", cookies: from.cookies, payload: { username: to } });
+    await request(harry, "sam_friend");
+    await request(friend, "harry"); // mutual request = accepted
+    await request(harry, "sam_asked");
+    await request(asker, "harry");
+
+    const res = await app.inject({ method: "GET", url: "/api/users/search?q=sam_", cookies: harry.cookies });
+    const byName = Object.fromEntries(
+      res.json().data.map((u: { username: string; relationship: string }) => [u.username, u.relationship]),
+    );
+    expect(byName).toEqual({
+      sam_friend: "friends",
+      sam_asked: "request_sent",
+      sam_asker: "request_received",
+      sam_none: "none",
+    });
+  });
+
   it("scopes the friends leaderboard to the caller plus their friends only", async () => {
     const harry = await registerUser("harry");
     const sumit = await registerUser("sumit");

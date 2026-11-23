@@ -15,6 +15,8 @@ const listQuerySchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional(),
   status: z.enum(["SCHEDULED", "PUBLISHED", "ARCHIVED"]).optional(),
+  /** Newest first; the list carries full content, so it's bounded rather than every puzzle ever. */
+  limit: z.coerce.number().int().min(1).max(500).default(200),
 });
 
 export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
@@ -34,6 +36,7 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
       where,
       include: { game: true },
       orderBy: [{ date: "desc" }, { game: { sortOrder: "asc" } }],
+      take: query.limit,
     });
 
     return reply.send({
