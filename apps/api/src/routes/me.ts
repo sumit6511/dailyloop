@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
-import { jsDateToDateKey, type MyStatsDTO } from "@dailyloop/shared";
+import { activeStreak, getTodayKey, jsDateToDateKey, type MyStatsDTO } from "@dailyloop/shared";
+import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
 
 export const meRoutes: FastifyPluginAsync = async (app) => {
@@ -7,7 +8,11 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
     const streak = await prisma.streak.findUnique({ where: { userId: request.currentUser!.id } });
     return reply.send({
       data: {
-        currentStreak: streak?.currentStreak ?? 0,
+        currentStreak: activeStreak(
+          streak?.currentStreak ?? 0,
+          streak?.lastCompletedDate ? jsDateToDateKey(streak.lastCompletedDate) : null,
+          getTodayKey(env.DEFAULT_TIMEZONE),
+        ),
         longestStreak: streak?.longestStreak ?? 0,
         lastCompletedDate: streak?.lastCompletedDate
           ? jsDateToDateKey(streak.lastCompletedDate)

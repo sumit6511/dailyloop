@@ -1,5 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
+import { activeStreak, getTodayKey, jsDateToDateKey } from "@dailyloop/shared";
 import { prisma } from "../../lib/prisma.js";
+import { env } from "../../config/env.js";
 
 export const adminUserRoutes: FastifyPluginAsync = async (app) => {
   app.get("/users", async (_request, reply) => {
@@ -20,6 +22,7 @@ export const adminUserRoutes: FastifyPluginAsync = async (app) => {
     const gamesPlayedBy = new Map(played.map((p) => [p.userId, p._count._all]));
     const pointsBy = new Map(points.map((p) => [p.userId, p._sum.totalScore ?? 0]));
 
+    const today = getTodayKey(env.DEFAULT_TIMEZONE);
     const data = users.map((user) => ({
       id: user.id,
       username: user.username,
@@ -27,7 +30,11 @@ export const adminUserRoutes: FastifyPluginAsync = async (app) => {
       email: user.email,
       role: user.role,
       createdAt: user.createdAt,
-      currentStreak: user.streak?.currentStreak ?? 0,
+      currentStreak: activeStreak(
+        user.streak?.currentStreak ?? 0,
+        user.streak?.lastCompletedDate ? jsDateToDateKey(user.streak.lastCompletedDate) : null,
+        today,
+      ),
       gamesPlayed: gamesPlayedBy.get(user.id) ?? 0,
       totalPoints: pointsBy.get(user.id) ?? 0,
     }));

@@ -124,3 +124,18 @@ export function getNextRolloverAt(
   instant = tomorrowMidnightAsUTC - zoneOffsetMs(timezone, instant);
   return new Date(instant);
 }
+
+/**
+ * The streak as it stands today. The stored streak only changes when a game is completed, so a
+ * streak whose last completed day is before yesterday has already lapsed even though the stored
+ * number hasn't been reset yet. It's still alive (just not extended) if the last day was yesterday.
+ */
+export function activeStreak(
+  storedStreak: number,
+  lastCompletedDate: DateKey | null | undefined,
+  todayKey: DateKey,
+): number {
+  if (!lastCompletedDate || storedStreak <= 0) return 0;
+  const alive = lastCompletedDate === todayKey || addDaysToKey(lastCompletedDate, 1) === todayKey;
+  return alive ? storedStreak : 0;
+}

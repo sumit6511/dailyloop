@@ -8,6 +8,7 @@ import {
   isConsecutiveDay,
   getWeekRangeKeys,
   getNextRolloverAt,
+  activeStreak,
   DEFAULT_TIMEZONE,
 } from "./date.js";
 
@@ -138,5 +139,23 @@ describe("getNextRolloverAt", () => {
         );
       }
     }
+  });
+});
+
+describe("activeStreak", () => {
+  const today = "2026-11-24";
+  it("keeps the streak when the last completed day is today or yesterday", () => {
+    expect(activeStreak(5, today, today)).toBe(5);
+    expect(activeStreak(5, "2026-11-23", today)).toBe(5); // not extended yet today, still alive
+  });
+
+  it("drops to 0 once a whole day has been missed", () => {
+    expect(activeStreak(5, "2026-11-22", today)).toBe(0);
+    expect(activeStreak(12, "2026-10-01", today)).toBe(0);
+  });
+
+  it("is 0 with no history", () => {
+    expect(activeStreak(0, null, today)).toBe(0);
+    expect(activeStreak(3, undefined, today)).toBe(0);
   });
 });

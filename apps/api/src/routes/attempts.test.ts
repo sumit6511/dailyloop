@@ -640,4 +640,36 @@ describe("attempt lifecycle", () => {
     });
     expect(body.wordGuessDistribution).toEqual([0, 1, 0, 0, 0, 0]);
   });
+
+  it("shows a lapsed streak as 0 everywhere it's displayed, and a streak from yesterday as alive", async () => {
+    const { userId, cookies } = await registerUser("harry");
+    const todayKey = getTodayKey("Asia/Kathmandu");
+    const setStreak = (daysAgo: number) =>
+      prisma.streak.update({
+        where: { userId },
+        data: {
+          currentStreak: 9,
+          longestStreak: 9,
+          lastCompletedDate: dateKeyToJSDate(addDaysToKey(todayKey, -daysAgo)),
+        },
+      });
+    const shown = async () => ({
+      dashboard: (await app.inject({ method: "GET", url: "/api/me/streak", cookies })).json().data
+        .currentStreak,
+      profile: (await app.inject({ method: "GET", url: "/api/users/harry", cookies })).json().data
+        .stats.currentStreak,
+      share: (await app.inject({ method: "GET", url: "/api/games/share/today", cookies })).json()
+        .data.currentStreak,
+    });
+
+    await setStreak(3); // missed two whole days
+    expect(await shown()).toEqual({ dashboard: 0, profile: 0, share: 0 });
+    expect(
+      (await app.inject({ method: "GET", url: "/api/me/streak", cookies })).json().data
+        .longestStreak,
+    ).toBe(9);
+
+    await setStreak(1); // played yesterday, not yet today: still alive
+    expect(await shown()).toEqual({ dashboard: 9, profile: 9, share: 9 });
+  });
 });

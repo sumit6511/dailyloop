@@ -1,6 +1,12 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { getTodayKey, getNextRolloverAt, type GameDTO } from "@dailyloop/shared";
+import {
+  activeStreak,
+  getTodayKey,
+  getNextRolloverAt,
+  jsDateToDateKey,
+  type GameDTO,
+} from "@dailyloop/shared";
 import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
@@ -71,7 +77,11 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
           pattern: sharePattern(g.slug, g.content),
         })),
         totalScore: completed.reduce((sum, g) => sum + (g.score ?? 0), 0),
-        currentStreak: streak?.currentStreak ?? 0,
+        currentStreak: activeStreak(
+          streak?.currentStreak ?? 0,
+          streak?.lastCompletedDate ? jsDateToDateKey(streak.lastCompletedDate) : null,
+          getTodayKey(env.DEFAULT_TIMEZONE),
+        ),
       },
     });
   });

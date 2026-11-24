@@ -5,8 +5,12 @@ import {
   changePasswordSchema,
   SESSION_COOKIE_NAME,
   type UserStatsDTO,
+  activeStreak,
+  getTodayKey,
+  jsDateToDateKey,
 } from "@dailyloop/shared";
 import { prisma } from "../lib/prisma.js";
+import { env } from "../config/env.js";
 import { toMeDTO, toPublicUserDTO } from "../lib/dto.js";
 import { Errors } from "../lib/errors.js";
 import { getRelationship, getRelationships } from "../services/friends.js";
@@ -85,7 +89,11 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
     ]);
 
     const stats: UserStatsDTO = {
-      currentStreak: user.streak?.currentStreak ?? 0,
+      currentStreak: activeStreak(
+        user.streak?.currentStreak ?? 0,
+        user.streak?.lastCompletedDate ? jsDateToDateKey(user.streak.lastCompletedDate) : null,
+        getTodayKey(env.DEFAULT_TIMEZONE),
+      ),
       longestStreak: user.streak?.longestStreak ?? 0,
       totalPoints: totalPointsAgg._sum.totalScore ?? 0,
       gamesPlayed,
