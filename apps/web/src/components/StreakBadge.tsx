@@ -42,7 +42,7 @@ export function StreakBadge({
         <span className="tabular font-mono text-3xl font-semibold leading-none text-white">
           {currentStreak}
         </span>
-        <span className="text-sm text-white/55">day streak</span>
+        <span className="text-sm text-white/55">{currentStreak === 1 ? "day" : "days"}</span>
       </div>
       <div
         className="grid grid-cols-7 gap-1.5"

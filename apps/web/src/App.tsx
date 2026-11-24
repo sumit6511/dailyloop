@@ -15,6 +15,7 @@ import { AdminRoute } from "./features/admin/AdminRoute";
 import { AdminLayout } from "./features/admin/AdminLayout";
 import { PageLoading } from "./features/layout/PageLoading";
 import { lazyPage } from "./lib/lazy-page";
+import { ThemeSync } from "./components/ThemeToggle";
 
 // Admin pages are a separate chunk: most players never open them.
 const OverviewPage = lazyPage(() => import("./features/admin/OverviewPage"), "OverviewPage");
@@ -35,60 +36,63 @@ import { NotFoundPage } from "./features/layout/NotFoundPage";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route
-        path="/*"
-        element={
-          <ProtectedRoute>
-            <AppShell>
-              <Routes>
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/play/:slug" element={<PlayGamePage />} />
-                <Route path="/friends" element={<FriendsPage />} />
-                <Route path="/u/:username" element={<ProfilePage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route
-                  path="/admin"
-                  element={
-                    <AdminPage>
-                      <OverviewPage />
-                    </AdminPage>
-                  }
-                />
-                <Route
-                  path="/admin/puzzles"
-                  element={
-                    <AdminPage>
-                      <PuzzlesPage />
-                    </AdminPage>
-                  }
-                />
-                <Route
-                  path="/admin/games"
-                  element={
-                    <AdminPage>
-                      <GamesPage />
-                    </AdminPage>
-                  }
-                />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <AdminPage>
-                      <UsersPage />
-                    </AdminPage>
-                  }
-                />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </AppShell>
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
+    <>
+      <ThemeSync />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <AppShell>
+                <Routes>
+                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/play/:slug" element={<PlayGamePage />} />
+                  <Route path="/friends" element={<FriendsPage />} />
+                  <Route path="/u/:username" element={<ProfilePage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <AdminPage>
+                        <OverviewPage />
+                      </AdminPage>
+                    }
+                  />
+                  <Route
+                    path="/admin/puzzles"
+                    element={
+                      <AdminPage>
+                        <PuzzlesPage />
+                      </AdminPage>
+                    }
+                  />
+                  <Route
+                    path="/admin/games"
+                    element={
+                      <AdminPage>
+                        <GamesPage />
+                      </AdminPage>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <AdminPage>
+                        <UsersPage />
+                      </AdminPage>
+                    }
+                  />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </AppShell>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 }

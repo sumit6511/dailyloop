@@ -22,6 +22,8 @@ import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Page } from "../../components/Page";
 import { PageHeader } from "../../components/PageHeader";
 import { SectionHeader } from "../../components/SectionHeader";
+import { SegmentedControl } from "../../components/SegmentedControl";
+import { useTheme } from "../../lib/use-theme";
 
 const changePasswordFormSchema = z
   .extend(changePasswordSchema, { confirmPassword: z.string().check(z.minLength(1)) })
@@ -82,6 +84,32 @@ function ProfileSection() {
           <Icon name="save" className="text-lg" /> Save changes
         </Button>
       </form>
+    </Card>
+  );
+}
+
+const THEME_OPTIONS = [
+  { value: "system", label: "System" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+] as const;
+
+function AppearanceSection() {
+  const { preference, setPreference } = useTheme();
+  return (
+    <Card>
+      <SectionHeader
+        title="Appearance"
+        icon="contrast"
+        description="System follows your device's light or dark setting."
+      />
+      <SegmentedControl
+        aria-label="Theme"
+        options={THEME_OPTIONS}
+        value={preference}
+        onChange={setPreference}
+        className="max-w-sm"
+      />
     </Card>
   );
 }
@@ -231,6 +259,7 @@ export function SettingsPage() {
         description="Your profile, password and account."
       />
       <ProfileSection />
+      <AppearanceSection />
       <PasswordSection />
       <DeleteAccountSection />
     </Page>

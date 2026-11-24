@@ -48,7 +48,7 @@ export function GamesPage() {
                 onChange={(e) =>
                   updateGame.mutate({ id: game.id, data: { isEnabled: e.target.checked } })
                 }
-                className="relative h-6 w-11 cursor-pointer appearance-none rounded-full border border-white/[0.1] bg-white/[0.08] outline-none transition-colors checked:border-accent-400/50 checked:bg-accent-500/70 focus-visible:ring-2 focus-visible:ring-accent-400/60 before:absolute before:left-0.5 before:top-0.5 before:h-[18px] before:w-[18px] before:rounded-full before:bg-white before:shadow before:transition-transform checked:before:translate-x-5"
+                className="relative h-6 w-11 cursor-pointer appearance-none rounded-full border border-white/[0.1] bg-white/[0.08] outline-none transition-colors checked:border-accent-400/50 checked:bg-accent-500/70 focus-visible:ring-2 focus-visible:ring-accent-400/60 before:absolute before:left-0.5 before:top-0.5 before:h-[18px] before:w-[18px] before:rounded-full before:bg-on-accent before:shadow before:transition-transform checked:before:translate-x-5"
               />
             </label>
           </li>

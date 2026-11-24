@@ -44,7 +44,7 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
     <Card
       className={`group relative flex h-full flex-col gap-4 overflow-hidden transition-[border-color,transform,box-shadow] duration-200 ${
         game.available
-          ? "hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-[0_24px_48px_-24px_rgb(0_0_0/0.8),0_0_0_1px_rgb(34_211_238/0.08)]"
+          ? "hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-[0_24px_48px_-24px_var(--shadow-deep),0_0_0_1px_rgb(34_211_238/0.08)]"
           : "opacity-55"
       }`}
     >

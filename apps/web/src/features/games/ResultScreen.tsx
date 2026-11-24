@@ -126,8 +126,9 @@ function ScoreRing({ score, won }: { score: number; won: boolean }) {
           cy="60"
           r={RING_RADIUS}
           fill="none"
-          stroke="rgb(255 255 255 / 0.08)"
+          stroke="currentColor"
           strokeWidth="8"
+          className="text-white/[0.08]"
         />
         <circle
           cx="60"

@@ -357,7 +357,7 @@ export function PathwayPage() {
         className="relative mx-auto aspect-square w-full max-w-[26rem] touch-none select-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-4 focus-visible:ring-offset-ink-950"
       >
         <div
-          className="absolute inset-0 grid overflow-hidden rounded-2xl border border-white/[0.12] bg-ink-900/90 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.9)]"
+          className="absolute inset-0 grid overflow-hidden rounded-2xl border border-white/[0.12] bg-ink-900/90 shadow-[0_24px_48px_-24px_var(--shadow-deep)]"
           // Both axes: with rows left to size themselves, the last row came out shorter.
           style={{
             gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
@@ -388,8 +388,8 @@ export function PathwayPage() {
                     ? "bg-rose-500/30 text-rose-100"
                     : onPath
                       ? isHead
-                        ? "bg-brand-500 text-white"
-                        : "bg-brand-600/45 text-white"
+                        ? "bg-brand-500 text-on-accent"
+                        : "bg-brand-600/45 text-on-accent"
                       : "text-white/70"
                 } ${wallTop ? "border-t-4 border-t-white/85" : ""} ${wallRight ? "border-r-4 border-r-white/85" : ""} ${
                   wallBottom ? "border-b-4 border-b-white/85" : ""
@@ -399,7 +399,7 @@ export function PathwayPage() {
                   <span
                     className={`flex h-2/3 w-2/3 items-center justify-center rounded-full font-mono text-base font-semibold ${
                       onPath
-                        ? "bg-white text-brand-700 shadow-[0_0_14px_rgb(255_255_255/0.45)]"
+                        ? "bg-on-accent text-brand-700 shadow-[0_0_14px_rgb(255_255_255/0.45)]"
                         : "border border-accent-400/50 bg-accent-400/10 text-accent-100 shadow-[0_0_12px_-2px_rgb(34_211_238/0.6)]"
                     }`}
                   >
@@ -417,7 +417,8 @@ export function PathwayPage() {
           <polyline
             points={localPath.map((c) => `${c.col + 0.5},${c.row + 0.5}`).join(" ")}
             fill="none"
-            stroke="rgba(255,255,255,0.9)"
+            stroke="currentColor"
+            className="text-white/90"
             strokeWidth="0.08"
             strokeLinecap="round"
             strokeLinejoin="round"

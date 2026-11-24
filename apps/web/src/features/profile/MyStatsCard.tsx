@@ -71,7 +71,7 @@ export function MyStatsCard() {
                   <li key={i} className="flex items-center gap-2 text-xs">
                     <span className="w-3 text-right text-white/50">{i + 1}</span>
                     <span
-                      className="flex h-5 min-w-6 items-center justify-end rounded bg-brand-500/60 px-1.5 font-semibold text-white"
+                      className="flex h-5 min-w-6 items-center justify-end rounded bg-brand-500/60 px-1.5 font-semibold text-on-accent"
                       style={{ width: `${(count / maxBar) * 100}%` }}
                     >
                       {count}

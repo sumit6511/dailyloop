@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Card } from "../../components/Card";
 import { GameIcon } from "../../components/GameIcon";
 import { LogoFull, LogoMark } from "../../components/Logo";
+import { ThemeToggle } from "../../components/ThemeToggle";
 
 const GAMES = [
   { slug: "connections", name: "Connections" },
@@ -22,7 +23,8 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
+    <div className="relative mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
+      <ThemeToggle className="absolute right-3 top-3 sm:right-6 sm:top-5" />
       {/* The pitch, on wide screens only — phones go straight to the form. */}
       <section className="hidden lg:block" aria-hidden="true">
         <LogoFull markClassName="h-9 w-9" className="[&>span:last-child]:text-2xl" />

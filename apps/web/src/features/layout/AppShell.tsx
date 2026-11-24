@@ -8,6 +8,7 @@ import { Avatar } from "../../components/Avatar";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 import { Icon } from "../../components/Icon";
 import { LogoFull } from "../../components/Logo";
+import { ThemeToggle } from "../../components/ThemeToggle";
 
 /** Header and page content share this, so their edges line up at every width. */
 const CONTAINER = "mx-auto w-full max-w-6xl px-3 sm:px-6";
@@ -71,7 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item.label}
           {item.badge ? (
             <span
-              className="tabular flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-flame-500 px-1 font-mono text-[10px] font-bold text-white"
+              className="tabular flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-flame-500 px-1 font-mono text-[10px] font-bold text-on-accent"
               aria-label={`${item.badge} new`}
             >
               {item.badge}
@@ -115,6 +116,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </span>
                 ) : null}
                 <span className="h-6 w-px bg-white/[0.1]" aria-hidden="true" />
+                <ThemeToggle className="!h-9 !w-9" />
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -124,18 +126,21 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setMenuOpen((open) => !open)}
-                aria-expanded={menuOpen}
-                aria-label="Toggle menu"
-                className="relative flex h-10 w-10 items-center justify-center rounded-lg text-white/70 outline-none transition-colors hover:bg-white/[0.08] hover:text-white focus-visible:ring-2 focus-visible:ring-accent-400/60 md:hidden"
-              >
-                <Icon name={menuOpen ? "close" : "menu"} className="text-2xl" />
-                {incomingCount > 0 && !menuOpen ? (
-                  <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-flame-500" />
-                ) : null}
-              </button>
+              <div className="flex items-center gap-1 md:hidden">
+                <ThemeToggle />
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  aria-expanded={menuOpen}
+                  aria-label="Toggle menu"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-lg text-white/70 outline-none transition-colors hover:bg-white/[0.08] hover:text-white focus-visible:ring-2 focus-visible:ring-accent-400/60"
+                >
+                  <Icon name={menuOpen ? "close" : "menu"} className="text-2xl" />
+                  {incomingCount > 0 && !menuOpen ? (
+                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-flame-500" />
+                  ) : null}
+                </button>
+              </div>
             </div>
 
             <div

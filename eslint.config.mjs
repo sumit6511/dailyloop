@@ -20,6 +20,13 @@ export default [
     },
   },
   {
+    // Plain browser scripts served as-is from public/.
+    files: ["apps/web/public/**/*.js"],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
+  {
     files: ["apps/web/**/*.{ts,tsx}"],
     languageOptions: {
       globals: globals.browser,

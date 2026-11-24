@@ -41,8 +41,8 @@ const STATUS_TO_TILE_STATE: Record<LetterStatus, GameTileState> = {
 
 const GRID_FEEDBACK_CLASSES: Record<LetterStatus, string> = {
   correct:
-    "border-emerald-300/60 bg-emerald-500 text-white shadow-[0_8px_24px_-10px_rgb(16_185_129/0.9)]",
-  present: "border-amber-200/60 bg-amber-400 text-ink-950",
+    "border-emerald-300/60 bg-emerald-500 text-on-accent shadow-[0_8px_24px_-10px_rgb(16_185_129/0.9)]",
+  present: "border-amber-200/60 bg-amber-400 text-amber-950",
   absent: "border-white/[0.04] bg-white/[0.06] text-white/45",
 };
 
@@ -303,7 +303,7 @@ export function WordGuessPage() {
                 type="button"
                 onClick={() => void submitGuess()}
                 disabled={submitMove.isPending || current.length !== WORD_LENGTH}
-                className={`${WIDE_KEY_CLASSES} bg-gradient-to-b from-brand-500 to-brand-600 text-white disabled:from-white/[0.08] disabled:to-white/[0.08] disabled:text-white/40`}
+                className={`${WIDE_KEY_CLASSES} bg-gradient-to-b from-brand-500 to-brand-600 text-on-accent disabled:from-white/[0.08] disabled:to-white/[0.08] disabled:text-white/40`}
               >
                 Enter
               </button>

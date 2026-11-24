@@ -25,6 +25,9 @@
   --color-accent-500: #06b6d4;
   --color-accent-600: #0891b2;
 
+  /* Text and marks on a saturated fill (buttons, selected tiles) — white in both themes. */
+  --color-on-accent: #ffffff;
+
   /* Streaks. */
   --color-flame-400: #ff9a52;
   --color-flame-500: #ff7a1a;
@@ -46,6 +49,116 @@ html {
   background-color: var(--color-ink-950);
 }
 
+/* ---- Theme variables ----
+   Surfaces, edges, shadows and glows that the utilities below draw with. Dark is the default;
+   the light block further down redefines them (and remaps the palette). */
+:root {
+  --surface-subtle: rgb(255 255 255 / 0.03);
+  --surface-medium: rgb(12 16 32 / 0.55);
+  --surface-sheen-from: rgb(255 255 255 / 0.055);
+  --surface-sheen-to: rgb(255 255 255 / 0.02);
+  --surface-strong-from: rgb(22 27 48 / 0.94);
+  --surface-strong-to: rgb(11 14 28 / 0.94);
+  --edge-from: rgb(155 123 255 / 0.55);
+  --edge-mid: rgb(255 255 255 / 0.08);
+  --edge-mid-2: rgb(255 255 255 / 0.05);
+  --edge-to: rgb(34 211 238 / 0.45);
+  --highlight: rgb(255 255 255 / 0.06);
+  --shadow-elev: rgb(0 0 0 / 0.7);
+  --shadow-deep: rgb(0 0 0 / 0.85);
+  --inset-bg: rgb(0 0 0 / 0.28);
+  --inset-shadow: rgb(0 0 0 / 0.35);
+  --grid-line: rgb(255 255 255 / 0.035);
+  --glow-violet: rgb(124 77 255 / 0.32);
+  --glow-violet-2: rgb(124 77 255 / 0.12);
+  --glow-cyan: rgb(34 211 238 / 0.13);
+  --glow-cyan-2: rgb(34 211 238 / 0.1);
+  --scrollbar: rgb(255 255 255 / 0.18);
+  --scrollbar-hover: rgb(255 255 255 / 0.3);
+  /* Logic Puzzle cells, which must be opaque (the gaps between them are the grid lines). */
+  --cell-peer: rgb(24 20 56);
+  --cell-win: rgb(8 58 48);
+}
+
+/* ---- Light theme ----
+   Set by data-theme="light" on <html> (see public/theme-init.js and lib/theme.ts). The UI is
+   drawn almost entirely with white-at-some-opacity for text, borders and tints, so swapping
+   --color-white for a dark ink (and --color-black for white) turns the whole interface over;
+   tint shades used as text (100–400) move to darker shades of the same hue so they stay
+   readable on a light page. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-white: #0d1226;
+  --color-black: #ffffff;
+
+  --color-ink-950: #f3f5fa;
+  --color-ink-900: #ffffff;
+  --color-ink-850: #f8f9fc;
+  --color-ink-800: #eef1f6;
+  --color-ink-700: #e2e7f0;
+
+  --color-brand-100: #3d1990;
+  --color-brand-200: #4a1ab4;
+  --color-brand-300: #5b1fe0;
+
+  --color-accent-100: oklch(39% 0.07 225);
+  --color-accent-200: oklch(45% 0.085 224.283);
+  --color-accent-300: oklch(52% 0.105 223.128);
+  --color-accent-400: oklch(60.9% 0.126 221.723);
+
+  --color-flame-400: oklch(55.3% 0.195 38.402);
+
+  --color-emerald-100: oklch(43.2% 0.095 166.913);
+  --color-emerald-200: oklch(43.2% 0.095 166.913);
+  --color-emerald-300: oklch(50.8% 0.118 165.612);
+  --color-emerald-400: oklch(59.6% 0.145 163.225);
+  --color-rose-100: oklch(45.5% 0.188 13.697);
+  --color-rose-200: oklch(45.5% 0.188 13.697);
+  --color-rose-300: oklch(51.4% 0.222 16.935);
+  --color-rose-400: oklch(58.6% 0.253 17.585);
+  --color-amber-100: oklch(47.3% 0.137 46.201);
+  --color-amber-200: oklch(47.3% 0.137 46.201);
+  --color-amber-300: oklch(55.5% 0.163 48.998);
+  --color-yellow-200: oklch(47.6% 0.114 61.907);
+  --color-yellow-300: oklch(55.4% 0.135 66.442);
+  --color-yellow-400: oklch(68.1% 0.162 75.834);
+  --color-orange-400: oklch(64.6% 0.222 41.116);
+  --color-teal-300: oklch(51.1% 0.096 186.391);
+  --color-sky-300: oklch(50% 0.134 242.749);
+  --color-fuchsia-300: oklch(51.8% 0.253 323.949);
+  --color-indigo-300: oklch(45.7% 0.24 277.023);
+  --color-purple-200: oklch(43.8% 0.218 303.724);
+  --color-blue-200: oklch(42.4% 0.199 265.638);
+  --color-green-200: oklch(44.8% 0.119 151.328);
+  --color-slate-300: oklch(55.4% 0.046 257.417);
+
+  --surface-subtle: rgb(255 255 255 / 0.6);
+  --surface-medium: rgb(255 255 255 / 0.72);
+  --surface-sheen-from: rgb(255 255 255 / 0.55);
+  --surface-sheen-to: rgb(255 255 255 / 0.15);
+  --surface-strong-from: rgb(255 255 255 / 0.97);
+  --surface-strong-to: rgb(248 249 253 / 0.97);
+  --edge-from: rgb(124 77 255 / 0.45);
+  --edge-mid: rgb(13 18 38 / 0.08);
+  --edge-mid-2: rgb(13 18 38 / 0.06);
+  --edge-to: rgb(6 182 212 / 0.45);
+  --highlight: rgb(255 255 255 / 0.9);
+  --shadow-elev: rgb(15 23 42 / 0.14);
+  --shadow-deep: rgb(15 23 42 / 0.2);
+  --inset-bg: rgb(13 18 38 / 0.035);
+  --inset-shadow: rgb(13 18 38 / 0.06);
+  --grid-line: rgb(13 18 38 / 0.05);
+  --glow-violet: rgb(124 77 255 / 0.16);
+  --glow-violet-2: rgb(124 77 255 / 0.07);
+  --glow-cyan: rgb(6 182 212 / 0.12);
+  --glow-cyan-2: rgb(6 182 212 / 0.08);
+  --scrollbar: rgb(13 18 38 / 0.2);
+  --scrollbar-hover: rgb(13 18 38 / 0.35);
+  --cell-peer: rgb(237 233 254);
+  --cell-win: rgb(209 250 229);
+}
+
 body {
   @apply bg-ink-950 text-white antialiased;
   font-feature-settings: "cv11", "ss01";
@@ -53,7 +166,7 @@ body {
 
 ::selection {
   background: rgb(124 77 255 / 0.45);
-  color: white;
+  color: var(--color-white);
 }
 
 /* One thin, glass-toned scrollbar for every scrollable area in the app — dropdown/select
@@ -62,7 +175,7 @@ body {
    Edge) need the vendor-prefixed pseudo-elements since they ignore that property. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -75,14 +188,14 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.18);
+  background-color: var(--scrollbar);
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--scrollbar-hover);
 }
 
 .font-display {
@@ -107,17 +220,17 @@ body {
 
 .app-backdrop {
   background:
-    radial-gradient(ellipse 70% 55% at 12% -8%, rgb(124 77 255 / 0.32), transparent 62%),
-    radial-gradient(ellipse 45% 40% at 92% 4%, rgb(34 211 238 / 0.1), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 100% 100%, rgb(34 211 238 / 0.13), transparent 62%),
-    radial-gradient(ellipse 55% 45% at 0% 100%, rgb(124 77 255 / 0.12), transparent 60%),
+    radial-gradient(ellipse 70% 55% at 12% -8%, var(--glow-violet), transparent 62%),
+    radial-gradient(ellipse 45% 40% at 92% 4%, var(--glow-cyan-2), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 100% 100%, var(--glow-cyan), transparent 62%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, var(--glow-violet-2), transparent 60%),
     var(--color-ink-950);
 }
 
 .app-backdrop-grid {
   background-image:
-    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 48px 48px;
   background-position: center top;
   mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, black 25%, transparent 78%);
@@ -132,8 +245,8 @@ body {
 /* Quiet: list rows, secondary panels, wells inside a card. */
 @utility glass-subtle {
   @apply rounded-2xl border border-white/[0.07];
-  background-color: rgb(255 255 255 / 0.03);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  background-color: var(--surface-subtle);
+  box-shadow: inset 0 1px 0 var(--highlight);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -141,11 +254,11 @@ body {
 /* Default card. */
 @utility glass-medium {
   @apply rounded-2xl border border-white/[0.08];
-  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.02));
-  background-color: rgb(12 16 32 / 0.55);
+  background-image: linear-gradient(180deg, var(--surface-sheen-from), var(--surface-sheen-to));
+  background-color: var(--surface-medium);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.06),
-    0 24px 48px -24px rgb(0 0 0 / 0.7);
+    inset 0 1px 0 var(--highlight),
+    0 24px 48px -24px var(--shadow-elev);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
@@ -156,19 +269,18 @@ body {
   @apply rounded-2xl;
   border: 1px solid transparent;
   background:
-    linear-gradient(180deg, rgb(22 27 48 / 0.94), rgb(11 14 28 / 0.94)) padding-box,
+    linear-gradient(180deg, var(--surface-strong-from), var(--surface-strong-to)) padding-box,
     linear-gradient(
         135deg,
-        rgb(155 123 255 / 0.55),
-        rgb(255 255 255 / 0.08) 32%,
-        rgb(255 255 255 / 0.05) 68%,
-        rgb(34 211 238 / 0.45)
+        var(--edge-from),
+        var(--edge-mid) 32%,
+        var(--edge-mid-2) 68%,
+        var(--edge-to)
       )
       border-box;
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.07),
-    0 30px 60px -28px rgb(0 0 0 / 0.85),
-    0 0 0 1px rgb(0 0 0 / 0.2);
+    inset 0 1px 0 var(--highlight),
+    0 30px 60px -28px var(--shadow-deep);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
 }
@@ -176,8 +288,8 @@ body {
 /* A recessed well: segmented-control tracks, inputs, code-ish readouts. */
 @utility surface-inset {
   @apply rounded-xl border border-white/[0.06];
-  background-color: rgb(0 0 0 / 0.28);
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35);
+  background-color: var(--inset-bg);
+  box-shadow: inset 0 1px 2px var(--inset-shadow);
 }
 
 /* Small uppercase mono label above a title or a number ("SETTINGS", "TARGET"). */

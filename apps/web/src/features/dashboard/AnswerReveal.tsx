@@ -11,7 +11,7 @@ export function AnswerReveal({ answer }: { answer: AnswerRevealDTO }) {
             <span
               key={i}
               aria-hidden="true"
-              className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500/80 font-display text-lg font-bold text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-md bg-emerald-500 font-display text-lg font-bold text-on-accent"
             >
               {letter}
             </span>
@@ -151,7 +151,7 @@ function SolvedPath({
             dominantBaseline="central"
             fontSize={CELL * 0.4}
             fontWeight={700}
-            className="fill-white"
+            className="fill-on-accent"
           >
             {i + 1}
           </text>

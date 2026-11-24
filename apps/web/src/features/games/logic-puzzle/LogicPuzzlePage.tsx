@@ -143,7 +143,7 @@ function SettingRow({
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full bg-white/[0.14] transition-colors checked:bg-brand-600 before:absolute before:left-0.5 before:top-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white before:transition-transform checked:before:translate-x-4"
+        className="relative h-5 w-9 shrink-0 cursor-pointer appearance-none rounded-full bg-white/[0.14] transition-colors checked:bg-brand-600 before:absolute before:left-0.5 before:top-0.5 before:h-4 before:w-4 before:rounded-full before:bg-on-accent before:transition-transform checked:before:translate-x-4"
       />
     </label>
   );
@@ -600,7 +600,7 @@ export function LogicPuzzlePage() {
             aria-hidden="true"
           />
         ) : null}
-        <div className="grid grid-cols-6 gap-px overflow-hidden rounded-2xl border border-white/[0.16] bg-white/[0.1] shadow-[0_24px_48px_-24px_rgb(0_0_0/0.9)]">
+        <div className="grid grid-cols-6 gap-px overflow-hidden rounded-2xl border border-white/[0.16] bg-white/[0.1] shadow-[0_24px_48px_-24px_var(--shadow-deep)]">
           {view.grid.map((row, r) =>
             row.map((value, c) => {
               const given = isGiven(r, c);
@@ -626,9 +626,9 @@ export function LogicPuzzlePage() {
               // bright white on a raised cell, the player's own entries are cyan.
               let bgClass: string;
               if (given) bgClass = "bg-ink-700 text-white";
-              else if (isCelebratingCell) bgClass = "bg-[rgb(8_58_48)] text-emerald-100";
-              else if (isSelected) bgClass = "bg-brand-600 text-white";
-              else if (isSectionPeer) bgClass = "bg-[rgb(24_20_56)] text-accent-200";
+              else if (isCelebratingCell) bgClass = "bg-[var(--cell-win)] text-emerald-100";
+              else if (isSelected) bgClass = "bg-brand-600 text-on-accent";
+              else if (isSectionPeer) bgClass = "bg-[var(--cell-peer)] text-accent-200";
               else bgClass = "bg-ink-900 text-accent-200 hover:bg-ink-850";
 
               let ringClass = "";

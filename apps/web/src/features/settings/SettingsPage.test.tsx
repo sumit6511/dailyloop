@@ -94,3 +94,25 @@ describe("SettingsPage account deletion", () => {
     expect(calls).toEqual([]);
   });
 });
+
+describe("SettingsPage appearance", () => {
+  it("switches the theme straight away and remembers it", async () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => json(200, { data: {} }));
+    const user = userEvent.setup();
+    renderSettings();
+
+    const group = screen.getByRole("radiogroup", { name: "Theme" });
+    expect(within(group).getByRole("radio", { name: "System" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+
+    await user.click(within(group).getByRole("radio", { name: "Light" }));
+    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(localStorage.getItem("dailyloop-theme")).toBe("light");
+
+    await user.click(within(group).getByRole("radio", { name: "Dark" }));
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    localStorage.clear();
+  });
+});
