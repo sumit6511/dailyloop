@@ -15,6 +15,10 @@ import { Badge } from "../../components/Badge";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { Icon } from "../../components/Icon";
 import { Select } from "../../components/Select";
+import { IconButton } from "../../components/IconButton";
+import { GameIcon } from "../../components/GameIcon";
+import { SectionHeader } from "../../components/SectionHeader";
+import { FIELD_BORDER, FIELD_CLASSES } from "../../components/field-styles";
 import { ApiClientError } from "../../lib/api-client";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "neutral"> = {
@@ -23,8 +27,12 @@ const STATUS_TONE: Record<string, "success" | "warning" | "neutral"> = {
   ARCHIVED: "neutral",
 };
 
-const INPUT_CLASSES =
-  "rounded-xl border border-white/[0.12] bg-white/[0.05] px-3.5 py-2.5 text-sm text-white outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-400/30";
+const INPUT_CLASSES = `${FIELD_CLASSES} ${FIELD_BORDER} !w-auto px-3.5 [color-scheme:dark]`;
+const TEXTAREA_CLASSES =
+  "w-full rounded-xl border border-white/[0.1] bg-black/30 p-3 font-mono text-xs leading-relaxed text-white/90 outline-none transition-[border-color,box-shadow] placeholder:text-white/30 focus:border-accent-400/70 focus:ring-4 focus:ring-accent-400/15";
+
+/** Puzzles shown per page — the full list runs to hundreds of rows. */
+const PUZZLES_PER_PAGE = 20;
 
 function todayInputValue(): string {
   return new Date().toISOString().slice(0, 10);
@@ -71,12 +79,12 @@ function PuzzleEditor({ puzzle, onClose }: { puzzle: AdminPuzzleDTO; onClose: ()
   };
 
   return (
-    <div className="mt-3 flex flex-col gap-2 rounded-xl bg-black/20 p-3">
+    <div className="surface-inset mt-3 flex flex-col gap-3 p-3">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={10}
-        className="w-full rounded-lg border border-white/[0.12] bg-white/[0.04] p-2 font-mono text-xs text-white/90"
+        className={TEXTAREA_CLASSES}
       />
       {error ? <p className="text-xs font-medium text-rose-400">{error}</p> : null}
       <div className="flex gap-2">
@@ -103,6 +111,20 @@ export function PuzzlesPage() {
     date: filters.date || undefined,
     status: filters.status || undefined,
   });
+  const [page, setPage] = useState(0);
+  const updateFilters = (patch: Partial<typeof filters>) => {
+    setFilters((p) => ({ ...p, ...patch }));
+    setPage(0);
+  };
+  const pageCount = Math.max(1, Math.ceil((puzzles?.length ?? 0) / PUZZLES_PER_PAGE));
+  // Deleting the last row of the last page shouldn't strand you on an empty page.
+  const currentPage = Math.min(page, pageCount - 1);
+  const visiblePuzzles = (puzzles ?? []).slice(
+    currentPage * PUZZLES_PER_PAGE,
+    (currentPage + 1) * PUZZLES_PER_PAGE,
+  );
+  const firstShown = currentPage * PUZZLES_PER_PAGE + 1;
+  const lastShown = currentPage * PUZZLES_PER_PAGE + visiblePuzzles.length;
 
   const [generateForm, setGenerateForm] = useState({ gameSlug: "", date: todayInputValue() });
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -204,8 +226,8 @@ export function PuzzlesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card intensity="subtle">
-          <h2 className="mb-3 font-display text-lg font-bold text-white">Generate a puzzle</h2>
+        <Card>
+          <SectionHeader title="Generate a puzzle" icon="auto_awesome" />
           <p className="mb-3 text-xs text-white/50">
             Uses the game's real generator — only works for games with an engine module. Choose "All
             games" to generate every game's puzzle for that date at once, skipping any that already
@@ -239,8 +261,12 @@ export function PuzzlesPage() {
           ) : null}
         </Card>
 
-        <Card intensity="subtle">
-          <h2 className="mb-3 font-display text-lg font-bold text-white">Create manually</h2>
+        <Card>
+          <SectionHeader
+            title="Create manually"
+            icon="edit_note"
+            description="Paste content as JSON; it's checked against the game's schema."
+          />
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-end gap-2">
               <GameSelect
@@ -269,7 +295,7 @@ export function PuzzlesPage() {
               onChange={(e) => setCreateForm((p) => ({ ...p, content: e.target.value }))}
               rows={4}
               placeholder="Puzzle content as JSON"
-              className="w-full rounded-lg border border-white/[0.12] bg-white/[0.04] p-2 font-mono text-xs text-white/90 placeholder:text-white/30"
+              className={TEXTAREA_CLASSES}
             />
             {createError ? (
               <p className="text-xs font-medium text-rose-400">{createError}</p>
@@ -285,24 +311,33 @@ export function PuzzlesPage() {
         </Card>
       </div>
 
-      <Card intensity="subtle">
+      <Card>
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <h2 className="mr-auto font-display text-lg font-bold text-white">Puzzles</h2>
+          <SectionHeader
+            title="Puzzles"
+            icon="extension"
+            className="mr-auto"
+            action={
+              puzzles ? (
+                <span className="eyebrow ml-2 text-white/40">{puzzles.length} total</span>
+              ) : null
+            }
+          />
           <GameSelect
             value={filters.gameSlug}
-            onChange={(v) => setFilters((p) => ({ ...p, gameSlug: v }))}
+            onChange={(v) => updateFilters({ gameSlug: v })}
             games={gameOptions}
             includeAll
           />
           <input
             type="date"
             value={filters.date}
-            onChange={(e) => setFilters((p) => ({ ...p, date: e.target.value }))}
+            onChange={(e) => updateFilters({ date: e.target.value })}
             className={INPUT_CLASSES}
           />
           <Select
             value={filters.status}
-            onChange={(v) => setFilters((p) => ({ ...p, status: v }))}
+            onChange={(v) => updateFilters({ status: v })}
             options={[
               { value: "", label: "All statuses" },
               { value: "SCHEDULED", label: "Scheduled" },
@@ -314,77 +349,98 @@ export function PuzzlesPage() {
         </div>
 
         {isLoading || !puzzles ? (
-          <Spinner className="mx-auto h-6 w-6 text-brand-400" />
+          <Spinner className="mx-auto h-6 w-6 text-accent-400" />
         ) : puzzles.length === 0 ? (
           <p className="text-center text-sm text-white/50">No puzzles match these filters.</p>
         ) : (
-          <div className="flex flex-col gap-2">
-            {puzzles.map((puzzle) => (
-              <div key={puzzle.id} className="rounded-xl border border-white/[0.08] p-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-sm font-semibold text-white/85">{puzzle.gameName}</span>
-                  <span className="text-xs text-white/50">{puzzle.date}</span>
-                  <span className="text-xs text-white/40">#{puzzle.puzzleNumber}</span>
-                  <Badge tone={STATUS_TONE[puzzle.status] ?? "neutral"}>{puzzle.status}</Badge>
-                  <div className="ml-auto flex gap-2">
-                    {puzzle.status !== "PUBLISHED" ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="!h-11 !w-11 !px-0"
-                        aria-label="Publish"
-                        title="Publish"
-                        onClick={() =>
-                          updatePuzzle.mutate({ id: puzzle.id, data: { status: "PUBLISHED" } })
-                        }
-                      >
-                        <Icon name="publish" className="text-base" />
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="!h-11 !w-11 !px-0"
-                        aria-label="Unpublish"
-                        title="Unpublish"
-                        onClick={() =>
-                          updatePuzzle.mutate({ id: puzzle.id, data: { status: "ARCHIVED" } })
-                        }
-                      >
-                        <Icon name="unpublished" className="text-base" />
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="!h-11 !w-11 !px-0"
-                      aria-label={editingId === puzzle.id ? "Close editor" : "Edit"}
-                      title={editingId === puzzle.id ? "Close editor" : "Edit"}
-                      onClick={() => setEditingId(editingId === puzzle.id ? null : puzzle.id)}
-                    >
-                      <Icon
-                        name={editingId === puzzle.id ? "close" : "edit"}
-                        className="text-base"
+          <>
+            <ul className="flex flex-col">
+              {visiblePuzzles.map((puzzle) => (
+                <li
+                  key={puzzle.id}
+                  className="border-t border-white/[0.05] py-2.5 first:border-t-0"
+                >
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <span className="flex min-w-[10rem] items-center gap-2.5">
+                      <GameIcon slug={puzzle.gameSlug} size="sm" />
+                      <span className="text-sm font-semibold text-white/85">{puzzle.gameName}</span>
+                    </span>
+                    <span className="tabular font-mono text-xs text-white/55">{puzzle.date}</span>
+                    <span className="tabular font-mono text-xs text-white/35">
+                      #{puzzle.puzzleNumber}
+                    </span>
+                    <Badge tone={STATUS_TONE[puzzle.status] ?? "neutral"}>
+                      {puzzle.status.toLowerCase()}
+                    </Badge>
+                    <div className="ml-auto flex gap-1.5">
+                      {puzzle.status !== "PUBLISHED" ? (
+                        <IconButton
+                          icon="publish"
+                          label="Publish"
+                          onClick={() =>
+                            updatePuzzle.mutate({ id: puzzle.id, data: { status: "PUBLISHED" } })
+                          }
+                        />
+                      ) : (
+                        <IconButton
+                          icon="unpublished"
+                          label="Unpublish"
+                          onClick={() =>
+                            updatePuzzle.mutate({ id: puzzle.id, data: { status: "ARCHIVED" } })
+                          }
+                        />
+                      )}
+                      <IconButton
+                        icon={editingId === puzzle.id ? "close" : "edit"}
+                        label={editingId === puzzle.id ? "Close editor" : "Edit"}
+                        onClick={() => setEditingId(editingId === puzzle.id ? null : puzzle.id)}
                       />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      className="!h-11 !w-11 !px-0"
-                      aria-label="Delete"
-                      title="Delete"
-                      onClick={() => setPendingDelete(puzzle)}
-                    >
-                      <Icon name="delete" className="text-base" />
-                    </Button>
+                      <IconButton
+                        icon="delete"
+                        label="Delete"
+                        tone="danger"
+                        onClick={() => setPendingDelete(puzzle)}
+                      />
+                    </div>
                   </div>
+                  {editingId === puzzle.id ? (
+                    <PuzzleEditor puzzle={puzzle} onClose={() => setEditingId(null)} />
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+            {pageCount > 1 ? (
+              <nav
+                aria-label="Puzzle pages"
+                className="mt-4 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4"
+              >
+                <span className="tabular font-mono text-xs text-white/45">
+                  {firstShown}–{lastShown} of {puzzles.length}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={currentPage === 0}
+                    onClick={() => setPage(currentPage - 1)}
+                  >
+                    <Icon name="arrow_back" className="text-base" /> Previous
+                  </Button>
+                  <span className="tabular font-mono text-xs text-white/55">
+                    {currentPage + 1} / {pageCount}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={currentPage >= pageCount - 1}
+                    onClick={() => setPage(currentPage + 1)}
+                  >
+                    Next <Icon name="arrow_forward" className="text-base" />
+                  </Button>
                 </div>
-                {editingId === puzzle.id ? (
-                  <PuzzleEditor puzzle={puzzle} onClose={() => setEditingId(null)} />
-                ) : null}
-              </div>
-            ))}
-          </div>
+              </nav>
+            ) : null}
+          </>
         )}
       </Card>
 

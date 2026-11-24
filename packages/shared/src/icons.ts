@@ -11,6 +11,7 @@ export const ICON_NAMES = [
   "admin_panel_settings",
   "alternate_email",
   "arrow_back",
+  "arrow_forward",
   "auto_awesome",
   "backspace",
   "badge",

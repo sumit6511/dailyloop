@@ -3,15 +3,10 @@ import { Card } from "../../components/Card";
 import { Spinner } from "../../components/Spinner";
 import { Badge } from "../../components/Badge";
 import { Icon } from "../../components/Icon";
-
-function StatTile({ label, value }: { label: string; value: string | number }) {
-  return (
-    <Card intensity="subtle" className="text-center">
-      <div className="text-2xl font-bold text-white">{value}</div>
-      <div className="text-xs font-medium uppercase tracking-wide text-white/50">{label}</div>
-    </Card>
-  );
-}
+import { GameIcon } from "../../components/GameIcon";
+import { SectionHeader } from "../../components/SectionHeader";
+import { Stat } from "../../components/Stat";
+import { TABLE, TD, TD_NUM, TH, TR } from "../../components/table-styles";
 
 export function OverviewPage() {
   const { data: stats, isLoading: loadingStats } = useAdminStatsOverview();
@@ -20,45 +15,62 @@ export function OverviewPage() {
   if (loadingStats || loadingActivity || !stats || !activity) {
     return (
       <div className="flex justify-center py-12">
-        <Spinner className="h-8 w-8 text-brand-400" />
+        <Spinner className="h-8 w-8 text-accent-400" />
       </div>
     );
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile label="Total Users" value={stats.totalUsers} />
-        <StatTile label="Total Attempts" value={stats.totalAttempts} />
-        <StatTile label="Completed" value={stats.completedAttempts} />
-        <StatTile label="Perfect Days Today" value={activity.perfectDays} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat variant="tile" label="Players" icon="group" value={stats.totalUsers} />
+        <Stat variant="tile" label="Attempts" icon="sports_esports" value={stats.totalAttempts} />
+        <Stat
+          variant="tile"
+          label="Completed"
+          icon="check_circle"
+          iconClassName="text-emerald-300"
+          value={stats.completedAttempts}
+        />
+        <Stat
+          variant="tile"
+          label="Perfect today"
+          icon="workspace_premium"
+          iconClassName="text-yellow-300"
+          value={activity.perfectDays}
+        />
       </div>
 
-      <Card intensity="subtle">
-        <h2 className="mb-4 font-display text-lg font-bold text-white">Games</h2>
+      <Card>
+        <SectionHeader title="Games" icon="extension" />
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[500px] text-sm">
+          <table className={`${TABLE} min-w-[500px]`}>
             <thead>
-              <tr className="border-b border-white/[0.1] text-left text-xs font-semibold uppercase tracking-wide text-white/50">
-                <th className="pb-2">Game</th>
-                <th className="pb-2 text-center">Status</th>
-                <th className="pb-2 text-center">Puzzles</th>
-                <th className="pb-2 text-center">Completed</th>
-                <th className="pb-2 text-center">Avg Score</th>
+              <tr className="text-left">
+                <th className={TH}>Game</th>
+                <th className={`${TH} text-center`}>Status</th>
+                <th className={`${TH} text-right`}>Puzzles</th>
+                <th className={`${TH} text-right`}>Completed</th>
+                <th className={`${TH} text-right`}>Avg score</th>
               </tr>
             </thead>
             <tbody>
               {stats.games.map((game) => (
-                <tr key={game.slug} className="border-b border-white/[0.06]">
-                  <td className="py-2 font-medium text-white/85">{game.name}</td>
-                  <td className="py-2 text-center">
+                <tr key={game.slug} className={TR}>
+                  <td className={`${TD} font-medium text-white/85`}>
+                    <span className="flex items-center gap-2.5">
+                      <GameIcon slug={game.slug} size="sm" />
+                      {game.name}
+                    </span>
+                  </td>
+                  <td className={`${TD} text-center`}>
                     <Badge tone={game.isEnabled ? "success" : "neutral"}>
                       {game.isEnabled ? "Enabled" : "Disabled"}
                     </Badge>
                   </td>
-                  <td className="py-2 text-center text-white/60">{game.puzzleCount}</td>
-                  <td className="py-2 text-center text-white/60">{game.completedCount}</td>
-                  <td className="py-2 text-center text-white/60">{game.averageScore}</td>
+                  <td className={`${TD_NUM} text-right`}>{game.puzzleCount}</td>
+                  <td className={`${TD_NUM} text-right`}>{game.completedCount}</td>
+                  <td className={`${TD_NUM} text-right`}>{game.averageScore}</td>
                 </tr>
               ))}
             </tbody>
@@ -66,45 +78,39 @@ export function OverviewPage() {
         </div>
       </Card>
 
-      <Card intensity="subtle">
-        <h2 className="mb-4 font-display text-lg font-bold text-white">
-          Today's Activity ({activity.date})
-        </h2>
-        <div className="mb-4 grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
-          <div>
-            <div className="text-lg font-bold text-white">{activity.activeUsers}</div>
-            <div className="text-xs text-white/50">Active users</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-white">{activity.totalAttempts}</div>
-            <div className="text-xs text-white/50">Attempts</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-white">{activity.completedAttempts}</div>
-            <div className="text-xs text-white/50">Completed</div>
-          </div>
-          <div>
-            <div className="text-lg font-bold text-white">{activity.perfectDays}</div>
-            <div className="text-xs text-white/50">Perfect days</div>
-          </div>
+      <Card>
+        <SectionHeader
+          title="Today's activity"
+          icon="bolt"
+          action={<span className="eyebrow text-white/40">{activity.date}</span>}
+        />
+        <div className="surface-inset mb-5 grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
+          <Stat label="Active players" value={activity.activeUsers} />
+          <Stat label="Attempts" value={activity.totalAttempts} />
+          <Stat label="Completed" value={activity.completedAttempts} />
+          <Stat label="Perfect days" value={activity.perfectDays} />
         </div>
+        <h3 className="eyebrow mb-2 text-white/40">Top scores</h3>
         {activity.topScores.length > 0 ? (
-          <div className="flex flex-col gap-1">
+          <ol className="flex flex-col">
             {activity.topScores.map((s, i) => (
-              <div
+              <li
                 key={s.username}
-                className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm"
+                className="flex h-10 items-center justify-between rounded-lg px-2 text-sm hover:bg-white/[0.025]"
               >
-                <span className="inline-flex items-center gap-1 text-white/80">
-                  {i + 1}. {s.username}
+                <span className="inline-flex items-center gap-3 text-white/80">
+                  <span className="tabular w-5 text-right font-mono text-xs text-white/40">
+                    {i + 1}
+                  </span>
+                  {s.username}
                   {s.isPerfectDay ? (
                     <Icon name="emoji_events" className="text-sm text-yellow-400" filled />
                   ) : null}
                 </span>
-                <span className="font-semibold text-brand-300">{s.score}</span>
-              </div>
+                <span className="tabular font-mono font-semibold text-accent-200">{s.score}</span>
+              </li>
             ))}
-          </div>
+          </ol>
         ) : (
           <p className="text-sm text-white/50">No activity yet today.</p>
         )}
