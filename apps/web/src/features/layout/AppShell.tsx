@@ -4,6 +4,7 @@ import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
 import { useFriendRequests } from "../../lib/friends-api";
 import { api } from "../../lib/api-client";
 import { Button } from "../../components/Button";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 import { Icon } from "../../components/Icon";
 import { LogoFull } from "../../components/Logo";
 
@@ -122,9 +123,13 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
       </div>
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        <div key={location.pathname} className="animate-route-fade">
-          {children}
-        </div>
+        {/* A crash in one page shows in place of that page only — the header and navigation keep
+            working, and moving to another route clears it. */}
+        <ErrorBoundary variant="page" resetKey={location.pathname}>
+          <div key={location.pathname} className="animate-route-fade">
+            {children}
+          </div>
+        </ErrorBoundary>
       </main>
     </div>
   );

@@ -24,6 +24,17 @@ export class ApiClientError extends Error {
   }
 }
 
+let unauthorizedHandler: (() => void) | null = null;
+
+/**
+ * Called when a request outside /auth/* comes back 401 — the session expired or was revoked
+ * (e.g. a password change on another device) while the app still believed it was signed in.
+ * /auth/* is excluded: a 401 from /auth/me is the normal "signed out" answer.
+ */
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  unauthorizedHandler = handler;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
@@ -38,6 +49,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const body = isJson ? await response.json() : null;
 
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith("/auth/")) unauthorizedHandler?.();
     const errorBody = body as ApiErrorBody | null;
     throw new ApiClientError(
       response.status,
@@ -53,15 +65,28 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data?: unknown) =>
-    request<T>(path, { method: "POST", body: data !== undefined ? JSON.stringify(data) : undefined }),
+    request<T>(path, {
+      method: "POST",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    }),
   patch: <T>(path: string, data?: unknown) =>
-    request<T>(path, { method: "PATCH", body: data !== undefined ? JSON.stringify(data) : undefined }),
+    request<T>(path, {
+      method: "PATCH",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    }),
   put: <T>(path: string, data?: unknown) =>
-    request<T>(path, { method: "PUT", body: data !== undefined ? JSON.stringify(data) : undefined }),
+    request<T>(path, {
+      method: "PUT",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
   /** Fire-and-forget POST that survives the page unloading (tab close, reload, external
    * navigation) — a normal fetch is cancelled at unload. Response and errors are ignored. */
   postOnUnload: (path: string) => {
-    void fetch(`${API_URL}${path}`, { method: "POST", credentials: "include", keepalive: true }).catch(() => {});
+    void fetch(`${API_URL}${path}`, {
+      method: "POST",
+      credentials: "include",
+      keepalive: true,
+    }).catch(() => {});
   },
 };
