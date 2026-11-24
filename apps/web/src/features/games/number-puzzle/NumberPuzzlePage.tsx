@@ -239,109 +239,122 @@ export function NumberPuzzlePage() {
       title="Number Puzzle"
       subtitle={`Reach ${view.target} using the numbers below.`}
     >
-      <div className="mb-6 text-center">
-        <div className="text-xs font-medium uppercase tracking-wide text-white/50">Target</div>
-        <div className="relative inline-flex items-center justify-center">
-          {celebrating ? (
+      <section className="glass-subtle relative mx-auto flex w-full max-w-md flex-col items-center gap-6 overflow-hidden px-4 py-7 sm:px-6">
+        <div
+          className="pointer-events-none absolute -top-20 left-1/2 h-40 w-40 -translate-x-1/2 rounded-full bg-accent-500/15 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="relative text-center">
+          <div className="eyebrow text-white/45">Target</div>
+          <div className="relative mt-1 inline-flex items-center justify-center">
+            {celebrating ? (
+              <div
+                className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-emerald-500/50 blur-xl"
+                aria-hidden="true"
+              />
+            ) : null}
             <div
-              className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-emerald-500/50 blur-xl"
-              aria-hidden="true"
-            />
-          ) : null}
-          <div
-            className={`text-4xl font-bold transition-colors ${celebrating ? "text-emerald-300" : "text-brand-300"}`}
-          >
-            {view.target}
+              className={`tabular font-mono text-5xl font-semibold transition-colors sm:text-6xl ${
+                celebrating
+                  ? "text-emerald-300"
+                  : "text-accent-200 drop-shadow-[0_0_18px_rgb(34_211_238/0.45)]"
+              }`}
+            >
+              {view.target}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="mb-4 flex flex-wrap justify-center gap-2">
-        {(frozenPool ?? view.pool).map((num, i) => {
-          const isCombining = combiningIndices?.includes(i);
-          const state = isCombining ? "correct" : firstIndex === i ? "selected" : "default";
-          return (
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-2.5">
+          {(frozenPool ?? view.pool).map((num, i) => {
+            const isCombining = combiningIndices?.includes(i);
+            const state = isCombining ? "correct" : firstIndex === i ? "selected" : "default";
+            return (
+              <GameTile
+                key={i}
+                state={state}
+                size="lg"
+                className="font-mono"
+                onClick={() => void selectNumber(i)}
+                disabled={!!combiningIndices}
+              >
+                {num}
+              </GameTile>
+            );
+          })}
+        </div>
+
+        <div className="flex justify-center gap-2 sm:gap-2.5">
+          {OPS.map((o) => (
             <GameTile
-              key={i}
-              state={state}
-              size="lg"
-              onClick={() => void selectNumber(i)}
-              disabled={!!combiningIndices}
+              key={o}
+              state={op === o ? "selected" : firstIndex === null ? "disabled" : "default"}
+              size="md"
+              className="text-2xl sm:text-3xl"
+              onClick={() => setOp(o)}
+              disabled={firstIndex === null}
+              aria-label={OP_NAMES[o]}
             >
-              {num}
+              {OP_SYMBOLS[o]}
             </GameTile>
-          );
-        })}
-      </div>
-
-      <div className="mb-6 flex justify-center gap-2">
-        {OPS.map((o) => (
-          <GameTile
-            key={o}
-            state={op === o ? "selected" : firstIndex === null ? "disabled" : "default"}
-            size="sm"
-            onClick={() => setOp(o)}
-            disabled={firstIndex === null}
-            aria-label={OP_NAMES[o]}
-          >
-            {OP_SYMBOLS[o]}
-          </GameTile>
-        ))}
-      </div>
-
-      {view.steps.length > 0 ? (
-        <div className="mb-6 flex flex-col items-center gap-2">
-          <div className="flex flex-col gap-1 text-center text-sm text-white/50">
-            {view.steps.map((step, i) => (
-              <div key={i} className="animate-pop-in">
-                {step.a} {OP_SYMBOLS[step.op]} {step.b} ={" "}
-                <span className="font-semibold text-white/80">{step.result}</span>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              isLoading={undoMove.isPending}
-              disabled={!!combiningIndices}
-              onClick={() => void undoLastStep()}
-            >
-              <Icon name="undo" className="text-base" /> Undo last step
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={!!combiningIndices || undoMove.isPending}
-              onClick={() => void resetPuzzle()}
-            >
-              <Icon name="restart_alt" className="text-base" /> Reset
-            </Button>
-          </div>
+          ))}
         </div>
-      ) : null}
+
+        {view.steps.length > 0 ? (
+          <div className="flex w-full flex-col items-center gap-3 border-t border-white/[0.06] pt-5">
+            <ol className="flex flex-col gap-1 text-center font-mono text-sm text-white/50">
+              {view.steps.map((step, i) => (
+                <li key={i} className="animate-pop-in tabular">
+                  {step.a} {OP_SYMBOLS[step.op]} {step.b} ={" "}
+                  <span className="font-semibold text-white/85">{step.result}</span>
+                </li>
+              ))}
+            </ol>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                isLoading={undoMove.isPending}
+                disabled={!!combiningIndices}
+                onClick={() => void undoLastStep()}
+              >
+                <Icon name="undo" className="text-base" /> Undo last step
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={!!combiningIndices || undoMove.isPending}
+                onClick={() => void resetPuzzle()}
+              >
+                <Icon name="restart_alt" className="text-base" /> Reset
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </section>
 
       {error ? (
-        <p role="alert" className="mb-4 text-center text-sm font-medium text-rose-400">
+        <p role="alert" className="text-center text-sm font-medium text-rose-300">
           {error}
         </p>
       ) : null}
 
-      <p className="mb-4 text-center text-xs text-white/40">
-        Tap a number, tap an operator, then tap a second number to combine them.
-      </p>
-
-      <div className="flex justify-center gap-3">
-        <Button
-          variant="secondary"
-          onClick={resetSelection}
-          disabled={firstIndex === null && op === null}
-        >
-          <Icon name="close" className="text-lg" /> Clear selection
-        </Button>
-        <Button onClick={requestSubmit} isLoading={submitMove.isPending}>
-          <Icon name="check" className="text-lg" /> Submit answer
-        </Button>
+      <div className="flex flex-col items-center gap-4">
+        <p className="text-center text-xs text-white/40">
+          Tap a number, tap an operator, then tap a second number to combine them.
+        </p>
+        <div className="flex justify-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={resetSelection}
+            disabled={firstIndex === null && op === null}
+          >
+            <Icon name="close" className="text-lg" /> Clear selection
+          </Button>
+          <Button onClick={requestSubmit} isLoading={submitMove.isPending}>
+            <Icon name="check" className="text-lg" /> Submit answer
+          </Button>
+        </div>
       </div>
 
       <ConfirmDialog

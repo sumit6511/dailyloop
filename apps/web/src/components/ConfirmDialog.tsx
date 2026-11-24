@@ -52,11 +52,11 @@ export function ConfirmDialog({
       onClick={(event) => {
         if (event.target === ref.current) onCancel();
       }}
-      className="glass-strong m-auto max-w-sm border-white/[0.18] bg-slate-900/90 p-6 text-white backdrop:bg-slate-950/70 backdrop:backdrop-blur-sm"
+      className="glass-strong m-auto w-[calc(100%-2rem)] max-w-sm p-6 text-white backdrop:bg-ink-950/75 backdrop:backdrop-blur-sm"
     >
       <h2 className="font-display text-lg font-semibold text-white">{title}</h2>
       {body ? <p className="mt-2 text-sm text-white/60">{body}</p> : null}
-      <div className="mt-6 flex justify-end gap-3">
+      <div className="mt-6 flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel} type="button">
           <Icon name="close" className="text-lg" /> {cancelLabel}
         </Button>

@@ -32,9 +32,9 @@ export function ShareButton() {
   };
 
   return (
-    <Button variant="secondary" isLoading={isFetching} onClick={() => void handleShare()}>
+    <Button isLoading={isFetching} onClick={() => void handleShare()}>
       <Icon name={copied ? "check" : "share"} className="text-lg" />{" "}
-      {copied ? "Copied to clipboard!" : "Share Result"}
+      {copied ? "Copied!" : "Share result"}
     </Button>
   );
 }

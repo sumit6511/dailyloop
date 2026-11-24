@@ -51,7 +51,7 @@ export function GameTile({
       type="button"
       disabled={disabled || state === "disabled" || state === "given"}
       aria-pressed={state === "selected"}
-      className={`flex items-center justify-center rounded-xl border font-display font-bold uppercase transition-[background-color,border-color,color,transform] duration-150 active:scale-90 disabled:cursor-not-allowed disabled:active:scale-100 ${STATE_CLASSES[state]} ${POP_STATES.has(state) ? "animate-pop-in" : ""} ${SIZE_CLASSES[size]} ${className}`}
+      className={`flex items-center justify-center rounded-xl border font-display font-bold uppercase outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 transition-[background-color,border-color,color,transform] duration-150 active:scale-90 disabled:cursor-not-allowed disabled:active:scale-100 ${STATE_CLASSES[state]} ${POP_STATES.has(state) ? "animate-pop-in" : ""} ${SIZE_CLASSES[size]} ${className}`}
       {...props}
     />
   );

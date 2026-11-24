@@ -15,10 +15,11 @@ const AUTO_DISMISS_MS = 3500;
 // only after its exit animation finishes, instead of vanishing instantly.
 const EXIT_MS = 180;
 
+// The surface is the shared elevated glass; the variant shows in the icon chip.
 const VARIANT_CLASSES: Record<ToastVariant, string> = {
-  success: "border-emerald-400/30 text-emerald-200",
-  error: "border-rose-400/30 text-rose-200",
-  info: "border-brand-400/30 text-brand-200",
+  success: "bg-emerald-400/15 text-emerald-300",
+  error: "bg-rose-400/15 text-rose-300",
+  info: "bg-accent-400/15 text-accent-300",
 };
 
 const VARIANT_ICON: Record<ToastVariant, IconName> = {
@@ -61,15 +62,19 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={toast.id}
             role="status"
-            className={`${toast.leaving ? "animate-toast-out" : "animate-toast-in"} glass-strong pointer-events-auto flex max-w-sm items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-white ${VARIANT_CLASSES[toast.variant]}`}
+            className={`${toast.leaving ? "animate-toast-out" : "animate-toast-in"} glass-strong pointer-events-auto flex w-full max-w-sm items-center gap-3 py-2.5 pl-2.5 pr-3 text-sm font-medium text-white`}
           >
-            <Icon name={VARIANT_ICON[toast.variant]} className="text-lg" filled />
+            <span
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${VARIANT_CLASSES[toast.variant]}`}
+            >
+              <Icon name={VARIANT_ICON[toast.variant]} className="text-lg" filled />
+            </span>
             <span className="flex-1">{toast.message}</span>
             <button
               type="button"
               onClick={() => dismissToast(toast.id)}
               aria-label="Dismiss notification"
-              className="text-white/50 transition-colors hover:text-white"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-white/45 transition-colors hover:bg-white/[0.06] hover:text-white"
             >
               <Icon name="close" className="text-base" />
             </button>

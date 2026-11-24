@@ -5,6 +5,7 @@ import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
 import { TextField } from "../../../components/TextField";
 import { Skeleton } from "../../../components/Skeleton";
+import { DotMeter, HudChip } from "../Hud";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
@@ -149,15 +150,13 @@ export function GuessItPage() {
       title="Guess It"
       subtitle={view.category}
       headerRight={
-        <span className="flex items-center gap-1 text-sm font-medium text-white/50">
-          Clue {view.cluesRevealed} of {MAX_CLUES}
-          {Array.from({ length: MAX_CLUES }, (_, i) => (
-            <span
-              key={i}
-              className={`h-2.5 w-2.5 rounded-full ${i < view.cluesRevealed ? "bg-brand-400" : "bg-white/[0.12]"}`}
-            />
-          ))}
-        </span>
+        <HudChip label="Clue">
+          <span className="tabular font-mono text-sm text-white/85">
+            {view.cluesRevealed}
+            <span className="text-white/40">/{MAX_CLUES}</span>
+          </span>
+          <DotMeter total={MAX_CLUES} filled={view.cluesRevealed} />
+        </HudChip>
       }
     >
       <div className="flex flex-col gap-3">
@@ -179,21 +178,29 @@ export function GuessItPage() {
                   aria-hidden="true"
                 />
               ) : null}
-              <div className="text-xs font-bold uppercase tracking-wide text-brand-300">
-                Clue {i + 1}
-              </div>
-              <p className="mt-1 text-sm text-white/80">{clue}</p>
+              <div className="eyebrow text-accent-300/80">Clue {i + 1}</div>
+              <p className="mt-1.5 text-[15px] text-white/85">{clue}</p>
             </div>
           );
         })}
+        {Array.from({ length: MAX_CLUES - view.clues.length }, (_, i) => (
+          <div
+            key={`locked-${i}`}
+            className="flex items-center gap-3 rounded-2xl border border-dashed border-white/[0.08] px-4 py-3 text-sm text-white/30"
+          >
+            <Icon name="lock" className="text-base" />
+            <span className="eyebrow">Clue {view.clues.length + i + 1}</span>
+            <span className="text-xs">Unlocks after a wrong guess</span>
+          </div>
+        ))}
       </div>
 
       {view.guesses.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
           {view.guesses.map((g, i) => (
             <span
               key={i}
-              className={`animate-pop-in rounded-full border px-3 py-1 text-xs font-medium ${
+              className={`animate-pop-in inline-flex h-7 items-center rounded-full border px-3 text-xs font-medium ${
                 g.correct
                   ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300"
                   : "border-rose-400/30 bg-rose-500/10 text-rose-300 line-through"
@@ -206,10 +213,7 @@ export function GuessItPage() {
       ) : null}
 
       {error ? (
-        <p
-          role="alert"
-          className="animate-pop-in mt-3 text-center text-sm font-medium text-rose-400"
-        >
+        <p role="alert" className="animate-pop-in text-center text-sm font-medium text-rose-300">
           {error}
         </p>
       ) : null}
@@ -219,7 +223,7 @@ export function GuessItPage() {
           e.preventDefault();
           void submitGuess();
         }}
-        className={`mt-6 flex items-end gap-2 ${shake ? "animate-shake" : ""}`}
+        className={`flex items-end gap-2 ${shake ? "animate-shake" : ""}`}
       >
         <div className="flex-1">
           <TextField
@@ -233,6 +237,7 @@ export function GuessItPage() {
         </div>
         <Button
           type="submit"
+          className="h-11"
           isLoading={submitMove.isPending}
           disabled={!guess.trim() || shake || celebrating}
         >

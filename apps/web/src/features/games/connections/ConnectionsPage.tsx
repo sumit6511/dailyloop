@@ -9,6 +9,7 @@ import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
 import { DIFFICULTY_LABELS, DIFFICULTY_STYLES } from "./difficulty";
+import { DotMeter, HudChip } from "../Hud";
 
 interface SolvedGroup {
   categoryIndex: number;
@@ -221,15 +222,10 @@ export function ConnectionsPage() {
       title="Connections"
       subtitle="Find groups of four!"
       headerRight={
-        <span className="flex items-center gap-1 text-sm font-medium text-white/50">
-          Mistakes:
-          {Array.from({ length: MAX_MISTAKES }, (_, i) => (
-            <span
-              key={i}
-              className={`h-2.5 w-2.5 rounded-full ${i < view.mistakesRemaining ? "bg-white/50" : "bg-white/[0.12]"}`}
-            />
-          ))}
-        </span>
+        <HudChip label="Mistakes left">
+          <span className="sr-only">{view.mistakesRemaining}</span>
+          <DotMeter total={MAX_MISTAKES} filled={view.mistakesRemaining} tone="brand" />
+        </HudChip>
       }
     >
       <div className="flex flex-col gap-2">
@@ -247,7 +243,7 @@ export function ConnectionsPage() {
           </div>
         ))}
 
-        <div className={`grid grid-cols-4 gap-2 ${shake ? "animate-shake" : ""}`}>
+        <div className={`grid grid-cols-4 gap-2 sm:gap-2.5 ${shake ? "animate-shake" : ""}`}>
           {displayWords.map((word) => {
             const isPending = pendingSolve?.words.includes(word);
             const isWrong = shake && selected.includes(word);
@@ -264,7 +260,7 @@ export function ConnectionsPage() {
                 state={state}
                 size="sm"
                 onClick={() => toggleWord(word)}
-                className="aspect-square h-auto w-full p-1 text-center text-[11px] leading-tight sm:text-sm"
+                className="aspect-[5/4] h-auto w-full break-words p-1 text-center text-[11px] leading-tight tracking-wide sm:aspect-[2/1] sm:text-[15px]"
               >
                 {word}
               </GameTile>
@@ -291,20 +287,24 @@ export function ConnectionsPage() {
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap justify-center gap-3">
+      <div className="mx-auto grid w-full max-w-md grid-cols-[auto_auto_1fr] gap-2 sm:gap-3">
         <Button
           variant="secondary"
           onClick={() => setShuffledOrder(shuffle(displayWords))}
           disabled={busy}
+          aria-label="Shuffle"
         >
-          <Icon name="shuffle" className="text-lg" /> Shuffle
+          <Icon name="shuffle" className="text-lg" />
+          <span className="hidden sm:inline">Shuffle</span>
         </Button>
         <Button
           variant="secondary"
           onClick={() => setSelected([])}
           disabled={selected.length === 0 || busy}
+          aria-label="Deselect all"
         >
-          <Icon name="close" className="text-lg" /> Deselect all
+          <Icon name="close" className="text-lg" />
+          <span className="hidden sm:inline">Deselect</span>
         </Button>
         <Button
           onClick={() => void submitGuess()}
@@ -312,6 +312,9 @@ export function ConnectionsPage() {
           disabled={selected.length !== 4 || busy}
         >
           <Icon name="check" className="text-lg" /> Submit
+          <span className="tabular font-mono text-xs text-white/60" aria-hidden="true">
+            {selected.length}/4
+          </span>
         </Button>
       </div>
     </GameShell>

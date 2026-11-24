@@ -6,6 +6,7 @@ import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Skeleton } from "../../../components/Skeleton";
 import { GameTile } from "../../../components/GameTile";
+import { HudChip } from "../Hud";
 import { Button } from "../../../components/Button";
 import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { GameIcon } from "../../../components/GameIcon";
@@ -205,7 +206,7 @@ function SettingsPopover({
         aria-expanded={open}
         aria-label="Logic Puzzle settings"
         onClick={() => setOpen((o) => !o)}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-white/50 transition-colors hover:bg-white/[0.08] hover:text-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+        className="surface-inset flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400"
       >
         <Icon name="settings" className="text-xl" />
       </button>
@@ -582,10 +583,12 @@ export function LogicPuzzlePage() {
       subtitle="Fill every row, column, and box with 1–6."
       headerRight={
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1 text-sm font-medium text-white/50">
-            <Icon name="timer" className="text-base" />
-            {formatElapsed(elapsedSeconds)}
-          </span>
+          <HudChip>
+            <Icon name="timer" className="text-base text-accent-300" />
+            <span className="tabular font-mono text-sm text-white/85">
+              {formatElapsed(elapsedSeconds)}
+            </span>
+          </HudChip>
           <SettingsPopover settings={settings} onChange={updateSettings} />
         </div>
       }
@@ -597,7 +600,7 @@ export function LogicPuzzlePage() {
             aria-hidden="true"
           />
         ) : null}
-        <div className="grid grid-cols-6 gap-0.5 rounded-xl border-2 border-white/[0.16] bg-white/[0.16] p-0.5">
+        <div className="grid grid-cols-6 gap-px overflow-hidden rounded-2xl border border-white/[0.16] bg-white/[0.1] shadow-[0_24px_48px_-24px_rgb(0_0_0/0.9)]">
           {view.grid.map((row, r) =>
             row.map((value, c) => {
               const given = isGiven(r, c);
@@ -615,21 +618,24 @@ export function LogicPuzzlePage() {
               const isCelebratingCell = celebratingCells.has(cellKey(r, c));
               const isHintTarget = hintSuggestion?.row === r && hintSuggestion?.col === c;
               const cellNotes = value === 0 ? notes[cellKey(r, c)] : undefined;
-              const rightBorder = c === 2 ? "border-r-2 border-r-white/[0.16]" : "";
-              const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/[0.16]" : "";
+              // Thicker rules between the 2×3 boxes.
+              const rightBorder = c === 2 ? "border-r-2 border-r-white/30" : "";
+              const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/30" : "";
 
+              // Solid fills (the 1px gaps between cells are the grid lines): printed digits are
+              // bright white on a raised cell, the player's own entries are cyan.
               let bgClass: string;
-              if (given) bgClass = "bg-white/[0.03] text-white/50";
-              else if (isCelebratingCell) bgClass = "bg-emerald-500/25 text-emerald-100";
+              if (given) bgClass = "bg-ink-700 text-white";
+              else if (isCelebratingCell) bgClass = "bg-[rgb(8_58_48)] text-emerald-100";
               else if (isSelected) bgClass = "bg-brand-600 text-white";
-              else if (isSectionPeer) bgClass = "bg-brand-500/[0.12] text-white";
-              else bgClass = "bg-white/[0.06] text-white hover:bg-white/[0.1]";
+              else if (isSectionPeer) bgClass = "bg-[rgb(24_20_56)] text-accent-200";
+              else bgClass = "bg-ink-900 text-accent-200 hover:bg-ink-850";
 
               let ringClass = "";
               if (isRejecting) ringClass = "ring-2 ring-inset ring-rose-500/70";
               else if (isCelebratingCell) ringClass = "ring-2 ring-inset ring-emerald-400/70";
               else if (isHintTarget) ringClass = "ring-2 ring-inset ring-amber-400/70";
-              else if (isMatchingValue) ringClass = "ring-2 ring-inset ring-brand-400/40";
+              else if (isMatchingValue) ringClass = "ring-2 ring-inset ring-accent-400/50";
 
               const cellLabel = `Row ${r + 1}, column ${c + 1}, ${
                 given
@@ -649,7 +655,7 @@ export function LogicPuzzlePage() {
                   aria-label={cellLabel}
                   onClick={() => setSelected({ row: r, col: c })}
                   style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
-                  className={`relative flex h-10 w-10 items-center justify-center text-lg font-bold transition-colors focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
+                  className={`relative flex h-12 w-12 items-center justify-center font-display text-xl font-bold transition-colors focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent-400 sm:h-14 sm:w-14 sm:text-2xl ${rightBorder} ${bottomBorder} ${
                     isJustFilled ? "animate-pop-in" : ""
                   } ${isRejecting ? "animate-shake" : ""} ${
                     celebrating || isCelebratingCell ? "animate-tile-bounce" : ""
@@ -660,7 +666,7 @@ export function LogicPuzzlePage() {
                   ) : isHintTarget ? (
                     <span className="text-amber-300/70">{hintSuggestion?.value}</span>
                   ) : cellNotes?.size ? (
-                    <span className="grid grid-cols-3 grid-rows-2 place-items-center gap-0 p-0.5 text-[8px] font-semibold leading-none text-white/45 sm:text-[9px]">
+                    <span className="grid h-full w-full grid-cols-3 grid-rows-2 place-items-center gap-0 p-1 font-mono text-[9px] font-medium leading-none text-white/50 sm:text-[10px]">
                       {[1, 2, 3, 4, 5, 6].map((n) => (
                         <span key={n}>{cellNotes.has(n) ? n : ""}</span>
                       ))}
@@ -674,13 +680,13 @@ export function LogicPuzzlePage() {
       </div>
 
       {rejectMessage || error ? (
-        <p role="alert" className="mt-3 text-center text-sm font-medium text-rose-400">
+        <p role="alert" className="text-center text-sm font-medium text-rose-300">
           {rejectMessage ?? error}
         </p>
       ) : null}
 
       {hintSuggestion ? (
-        <div className="animate-pop-in mt-4 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-100">
+        <div className="animate-pop-in mx-auto flex flex-wrap items-center justify-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-100">
           <Icon name="lightbulb" className="text-lg" filled />
           {hintSuggestion.kind === "fix" ? (
             <>
@@ -709,56 +715,58 @@ export function LogicPuzzlePage() {
         </div>
       ) : null}
 
-      <div className="mt-6 flex justify-center">
-        <Button
-          variant={notesMode ? "primary" : "secondary"}
-          size="sm"
-          onClick={() => setNotesMode((m) => !m)}
-        >
-          <Icon name="edit_note" className="text-lg" /> Notes {notesMode ? "On" : "Off"}
-        </Button>
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex justify-center">
+          <Button
+            variant={notesMode ? "primary" : "secondary"}
+            size="sm"
+            onClick={() => setNotesMode((m) => !m)}
+          >
+            <Icon name="edit_note" className="text-lg" /> Notes {notesMode ? "On" : "Off"}
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+          {[1, 2, 3, 4, 5, 6].map((n) => {
+            const remaining = 6 - countOf(view.grid, n);
+            return (
+              <div key={n} className="relative">
+                <GameTile
+                  size="md"
+                  onClick={() => {
+                    if (!selected) return;
+                    if (notesMode) toggleNote(n);
+                    else void fillCell(selected, n);
+                  }}
+                  disabled={!selected || resetting}
+                  className={settings.countRemaining && remaining <= 0 ? "opacity-40" : ""}
+                >
+                  {n}
+                </GameTile>
+                {settings.countRemaining ? (
+                  <span className="pointer-events-none absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-white/[0.1] bg-ink-800 px-1 font-mono text-[10px] font-semibold text-white/60">
+                    {remaining}
+                  </span>
+                ) : null}
+              </div>
+            );
+          })}
+          <GameTile
+            size="md"
+            onClick={() => {
+              if (!selected) return;
+              if (notesMode) clearNotes(selected.row, selected.col);
+              else void fillCell(selected, 0);
+            }}
+            disabled={!selected || resetting}
+            aria-label="Erase cell"
+          >
+            <Icon name="backspace" className="text-xl" />
+          </GameTile>
+        </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:gap-2">
-        {[1, 2, 3, 4, 5, 6].map((n) => {
-          const remaining = 6 - countOf(view.grid, n);
-          return (
-            <div key={n} className="relative">
-              <GameTile
-                size="sm"
-                onClick={() => {
-                  if (!selected) return;
-                  if (notesMode) toggleNote(n);
-                  else void fillCell(selected, n);
-                }}
-                disabled={!selected || resetting}
-                className={settings.countRemaining && remaining <= 0 ? "opacity-40" : ""}
-              >
-                {n}
-              </GameTile>
-              {settings.countRemaining ? (
-                <span className="pointer-events-none absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[9px] font-bold text-white/60">
-                  {remaining}
-                </span>
-              ) : null}
-            </div>
-          );
-        })}
-        <GameTile
-          size="sm"
-          onClick={() => {
-            if (!selected) return;
-            if (notesMode) clearNotes(selected.row, selected.col);
-            else void fillCell(selected, 0);
-          }}
-          disabled={!selected || resetting}
-          aria-label="Erase cell"
-        >
-          <Icon name="backspace" className="text-base" />
-        </GameTile>
-      </div>
-
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         <Button
           variant="secondary"
           size="sm"
@@ -769,7 +777,9 @@ export function LogicPuzzlePage() {
           aria-label={`Hint (costs ${SCORE.HINT_PENALTY} points)`}
         >
           <Icon name="lightbulb" className="text-lg" /> Hint
-          <span className="text-xs font-medium text-amber-300/80">−{SCORE.HINT_PENALTY}</span>
+          <span className="font-mono text-[11px] font-medium text-amber-300/80">
+            −{SCORE.HINT_PENALTY}
+          </span>
         </Button>
         <Button
           variant="ghost"

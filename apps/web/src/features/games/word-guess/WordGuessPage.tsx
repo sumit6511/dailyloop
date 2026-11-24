@@ -4,6 +4,7 @@ import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Skeleton } from "../../../components/Skeleton";
 import { GameTile, type GameTileState } from "../../../components/GameTile";
+import { DotMeter, HudChip } from "../Hud";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
 import { ApiClientError } from "../../../lib/api-client";
@@ -39,12 +40,15 @@ const STATUS_TO_TILE_STATE: Record<LetterStatus, GameTileState> = {
 };
 
 const GRID_FEEDBACK_CLASSES: Record<LetterStatus, string> = {
-  correct: "border-emerald-500 bg-emerald-500 text-white",
-  present: "border-amber-400 bg-amber-400 text-white",
-  absent: "border-white/[0.14] bg-white/[0.08] text-white/60",
+  correct:
+    "border-emerald-300/60 bg-emerald-500 text-white shadow-[0_8px_24px_-10px_rgb(16_185_129/0.9)]",
+  present: "border-amber-200/60 bg-amber-400 text-ink-950",
+  absent: "border-white/[0.04] bg-white/[0.06] text-white/45",
 };
 
 const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+const WIDE_KEY_CLASSES =
+  "flex h-12 min-w-0 max-w-[4.5rem] flex-[1.6] items-center justify-center rounded-lg px-1 text-xs font-bold uppercase tracking-wide outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent-400/60 disabled:cursor-not-allowed sm:h-14";
 
 function BoardSkeleton() {
   return (
@@ -226,6 +230,12 @@ export function WordGuessPage() {
       icon={<GameIcon slug="word-guess" size="lg" />}
       title="Word Guess"
       subtitle={`Guess the word in ${MAX_GUESSES} tries.`}
+      headerRight={
+        <HudChip label="Tries left">
+          <span className="sr-only">{MAX_GUESSES - view.guesses.length}</span>
+          <DotMeter total={MAX_GUESSES} filled={MAX_GUESSES - view.guesses.length} tone="brand" />
+        </HudChip>
+      }
     >
       <div className="mx-auto flex flex-col gap-1.5">
         {rows.map((row, rowIndex) => {
@@ -258,14 +268,16 @@ export function WordGuessPage() {
                           ? { animationDelay: `${colIndex * 70}ms` }
                           : undefined
                     }
-                    className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 text-xl font-bold uppercase sm:h-14 sm:w-14 ${
+                    className={`flex h-[3.25rem] w-[3.25rem] items-center justify-center rounded-xl border font-display text-2xl font-bold uppercase sm:h-[3.75rem] sm:w-[3.75rem] ${
                       isAnimating ? "animate-flip" : isCelebrating ? "animate-tile-bounce" : ""
                     } ${
                       feedback && isRevealed
                         ? GRID_FEEDBACK_CLASSES[feedback.status]
                         : letter
-                          ? "border-white/40 text-white"
-                          : "border-white/[0.14]"
+                          ? "border-white/45 bg-white/[0.06] text-white"
+                          : isCurrentRow
+                            ? "border-white/[0.16] bg-ink-850/60"
+                            : "border-white/[0.08] bg-ink-850/40"
                     }`}
                   >
                     {letter}
@@ -283,15 +295,15 @@ export function WordGuessPage() {
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-col items-center gap-1.5">
+      <div className="mx-auto flex w-full max-w-lg flex-col gap-1.5 sm:gap-2">
         {KEY_ROWS.map((row, i) => (
-          <div key={row} className="flex gap-1">
+          <div key={row} className="flex w-full justify-center gap-1 sm:gap-1.5">
             {i === 2 ? (
               <button
                 type="button"
                 onClick={() => void submitGuess()}
                 disabled={submitMove.isPending || current.length !== WORD_LENGTH}
-                className="rounded-lg bg-white/[0.08] px-2 text-xs font-bold text-white/80 transition-colors hover:bg-white/[0.14] disabled:opacity-40"
+                className={`${WIDE_KEY_CLASSES} bg-gradient-to-b from-brand-500 to-brand-600 text-white disabled:from-white/[0.08] disabled:to-white/[0.08] disabled:text-white/40`}
               >
                 Enter
               </button>
@@ -307,7 +319,7 @@ export function WordGuessPage() {
                 onClick={() =>
                   setCurrent((prev) => (prev.length < WORD_LENGTH ? prev + letter : prev))
                 }
-                className="!h-11 !w-6 rounded-lg border-0 px-0 text-sm normal-case sm:!w-9"
+                className="!h-12 min-w-0 !w-auto max-w-[2.75rem] flex-1 rounded-lg px-0 text-sm sm:!h-14 sm:max-w-[3rem] sm:text-base"
               >
                 {letter}
               </GameTile>
@@ -317,9 +329,9 @@ export function WordGuessPage() {
                 type="button"
                 onClick={() => setCurrent((prev) => prev.slice(0, -1))}
                 aria-label="Backspace"
-                className="rounded-lg bg-white/[0.08] px-2 text-xs font-bold text-white/80 transition-colors hover:bg-white/[0.14]"
+                className={`${WIDE_KEY_CLASSES} border border-white/[0.1] bg-ink-800/80 text-white/80 hover:bg-ink-700`}
               >
-                <Icon name="backspace" className="text-base" />
+                <Icon name="backspace" className="text-xl" />
               </button>
             ) : null}
           </div>

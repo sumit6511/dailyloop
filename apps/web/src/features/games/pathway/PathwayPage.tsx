@@ -4,6 +4,7 @@ import { useGameToday, useAutoStartAttempt, useSubmitMove, useHint } from "../..
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Skeleton } from "../../../components/Skeleton";
+import { HudChip } from "../Hud";
 import { GameIcon } from "../../../components/GameIcon";
 import { Button } from "../../../components/Button";
 import { Icon } from "../../../components/Icon";
@@ -333,6 +334,14 @@ export function PathwayPage() {
       icon={<GameIcon slug="pathway" size="lg" />}
       title="Pathway"
       subtitle="Draw one line through every cell, in number order."
+      headerRight={
+        <HudChip label="Cells">
+          <span className="tabular font-mono text-sm text-white/85">
+            {localPath.length}
+            <span className="text-white/40">/{size * size}</span>
+          </span>
+        </HudChip>
+      }
     >
       <div
         ref={gridRef}
@@ -345,11 +354,15 @@ export function PathwayPage() {
         role="application"
         aria-label={`Pathway board, ${size} by ${size}. Arrow keys draw from the end of your path, Backspace steps back.`}
         aria-describedby="pathway-progress"
-        className="relative mx-auto aspect-square w-full max-w-sm touch-none select-none rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+        className="relative mx-auto aspect-square w-full max-w-[26rem] touch-none select-none rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-4 focus-visible:ring-offset-ink-950"
       >
         <div
-          className="glass-subtle absolute inset-0 grid"
-          style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
+          className="absolute inset-0 grid overflow-hidden rounded-2xl border border-white/[0.12] bg-ink-900/90 shadow-[0_24px_48px_-24px_rgb(0_0_0/0.9)]"
+          // Both axes: with rows left to size themselves, the last row came out shorter.
+          style={{
+            gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
+            gridTemplateRows: `repeat(${size}, minmax(0, 1fr))`,
+          }}
         >
           {cells.map((cell) => {
             const checkpointIdx = cellIndex(checkpoints, cell);
@@ -370,22 +383,24 @@ export function PathwayPage() {
                 key={`${cell.row}-${cell.col}`}
                 data-row={cell.row}
                 data-col={cell.col}
-                className={`relative flex items-center justify-center border border-white/[0.08] text-lg font-bold transition-colors ${
+                className={`relative flex items-center justify-center border border-white/[0.06] font-display text-lg font-bold transition-colors ${
                   isBlocked
                     ? "bg-rose-500/30 text-rose-100"
                     : onPath
                       ? isHead
                         ? "bg-brand-500 text-white"
-                        : "bg-brand-600/60 text-white"
+                        : "bg-brand-600/45 text-white"
                       : "text-white/70"
-                } ${wallTop ? "border-t-4 border-t-amber-400" : ""} ${wallRight ? "border-r-4 border-r-amber-400" : ""} ${
-                  wallBottom ? "border-b-4 border-b-amber-400" : ""
-                } ${wallLeft ? "border-l-4 border-l-amber-400" : ""} ${isHintTarget ? "ring-2 ring-inset ring-amber-300" : ""}`}
+                } ${wallTop ? "border-t-4 border-t-white/85" : ""} ${wallRight ? "border-r-4 border-r-white/85" : ""} ${
+                  wallBottom ? "border-b-4 border-b-white/85" : ""
+                } ${wallLeft ? "border-l-4 border-l-white/85" : ""} ${isHintTarget ? "ring-2 ring-inset ring-amber-300" : ""}`}
               >
                 {checkpointIdx >= 0 ? (
                   <span
-                    className={`flex h-2/3 w-2/3 items-center justify-center rounded-full text-base font-bold ${
-                      onPath ? "bg-white/25" : "bg-white/[0.08] text-white/90"
+                    className={`flex h-2/3 w-2/3 items-center justify-center rounded-full font-mono text-base font-semibold ${
+                      onPath
+                        ? "bg-white text-brand-700 shadow-[0_0_14px_rgb(255_255_255/0.45)]"
+                        : "border border-accent-400/50 bg-accent-400/10 text-accent-100 shadow-[0_0_12px_-2px_rgb(34_211_238/0.6)]"
                     }`}
                   >
                     {checkpointIdx + 1}
@@ -402,8 +417,8 @@ export function PathwayPage() {
           <polyline
             points={localPath.map((c) => `${c.col + 0.5},${c.row + 0.5}`).join(" ")}
             fill="none"
-            stroke="rgba(255,255,255,0.85)"
-            strokeWidth="0.06"
+            stroke="rgba(255,255,255,0.9)"
+            strokeWidth="0.08"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -411,7 +426,7 @@ export function PathwayPage() {
       </div>
 
       {hintSuggestion ? (
-        <div className="animate-pop-in mx-auto mt-4 flex max-w-sm flex-wrap items-center justify-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-100">
+        <div className="animate-pop-in mx-auto flex max-w-sm flex-wrap items-center justify-center gap-3 rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-100">
           <Icon name="lightbulb" className="text-lg" filled />
           {hintSuggestion.kind === "extend"
             ? `Next, go to row ${hintSuggestion.cell.row + 1}, column ${hintSuggestion.cell.col + 1}.`
@@ -432,7 +447,7 @@ export function PathwayPage() {
         </div>
       ) : null}
 
-      <div className="mt-4 flex justify-center">
+      <div className="flex justify-center">
         <Button
           variant="secondary"
           size="sm"
@@ -452,7 +467,7 @@ export function PathwayPage() {
         {nextCheckpoint <= checkpoints.length ? `, next number ${nextCheckpoint}` : ""}.
       </p>
 
-      <p className="mt-4 text-center text-xs text-white/40">
+      <p className="mx-auto max-w-md text-center text-xs text-white/40">
         Press and drag from 1, through every cell, ending on {checkpoints.length}. Tap a cell on
         your trail to back up to it. On a keyboard, use the arrow keys and Backspace.
       </p>

@@ -149,7 +149,7 @@ export function PuzzlesPage() {
   if (!games) {
     return (
       <div className="flex justify-center py-12">
-        <Spinner className="h-8 w-8 text-brand-400" />
+        <Spinner className="h-8 w-8 text-accent-400" />
       </div>
     );
   }
