@@ -251,3 +251,68 @@ Found along the way, not on the list:
 - **Logging out kept the previous player's cached data** (friends, leaderboards, stats) in
   memory, so the next person signing in on the same tab could briefly see it. Logout, password
   change, account deletion and session expiry now all drop it.
+
+## Backlog — round 6 (UI/UX: one consistent, modern look)
+
+An audit of every screen (16 signed-in pages and 3 signed-out ones, at 1440 px and 390 px wide)
+found the app works but looks assembled screen by screen: similar things are styled differently,
+and some screens are plainly off.
+
+### Foundations
+
+1. **No real theme.** Headings use a rounded font (Lexend) and numbers use Inter, which isn't
+   tabular. There's no accent colour, and surface styles were picked per screen (ten different
+   `bg-white/[…]` opacities). The app needs one set of tokens: a display face, a monospaced face
+   for numbers, an accent, surface levels, radii and glows.
+2. **The background is three animated, 120 px-blurred blobs.** They are expensive to composite on
+   phones and wash the whole app with a purple/brown haze. A still aurora with a fine grid is
+   cheaper and reads as deliberate.
+3. **Controls disagree.** Buttons have no fixed heights, so rows of mixed buttons don't line up.
+   Small touch targets are 32–40 px. The Leaderboard has two different segmented controls, and
+   the admin tabs are a third style.
+
+### Layout
+
+4. **The header doesn't line up with the page** (a 1024 px box over 976 px of content), and page
+   widths vary at random (Settings 512, Friends 672, Profile 512, Admin 1024).
+5. **Every page builds its own title**, at three different sizes. Card titles are just as
+   inconsistent.
+6. **Three different "stat" styles** for the same thing: the admin tiles, the admin "today" row,
+   and the profile stats.
+7. **Dashboard game cards in a row have different heights**, so their buttons don't line up.
+
+### Games
+
+8. **Each game's top-right status uses its own style** (bare dots, a timer and a cog, dots with
+   text, or nothing).
+9. **Connections tiles are 160 px squares on a desktop**, and on a phone the action row wraps
+   Submit onto a line of its own.
+10. **Word Guess keys are 40 px**, below the 44 px minimum touch target.
+11. **Number Puzzle's operator buttons are smaller than its number tiles**, with tiny glyphs.
+12. **The Logic Puzzle grid is washed-out grey** and its printed digits are low-contrast. Its
+    number pad is 40 px.
+13. **Pathway's bottom row is shorter than the others** (the board's rows aren't sized), and its
+    amber walls clash with everything else.
+
+### Admin and the rest
+
+14. **The puzzle list renders every puzzle at once**: 216 rows, a 16,000 px page.
+15. **Admin sections use different widths.**
+16. **The 404 and error screens are bare text.**
+
+**Status:** all 16 done, in four commits (foundation and page layouts, admin, games). Every screen
+was re-checked at 1440 px and 390 px: no horizontal overflow and no console errors. The shared
+pieces it introduced are `PageHeader`, `SectionHeader`, `Stat`, `SegmentedControl`,
+`StatusPanel`, `IconButton`, `DifficultyMeter`, `Page`, `HudChip`/`DotMeter`, plus
+`buttonClasses()`, `FIELD_CLASSES` and the table styles. New screens should be built from these
+rather than from raw `bg-white/[…]` classes.
+
+Found along the way:
+
+- **Pathway's last row was shorter than the others** (item 13).
+- Three places put a `<button>` inside a link (the game cards, the profile's Edit button, and the
+  404 page's home button). These are now links styled as buttons.
+- **Game tiles had no keyboard focus indicator.**
+- The mobile menu's links stayed in the tab order while the menu was closed.
+
+Not done: a light theme, and screenshot-based visual regression tests.
