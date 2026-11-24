@@ -97,6 +97,13 @@ function applyLocalStep(view: PathwayView, path: Cell[], move: Cell): Cell[] | n
   return [...path, move];
 }
 
+const ARROW_DELTAS: Record<string, [number, number]> = {
+  ArrowUp: [-1, 0],
+  ArrowDown: [1, 0],
+  ArrowLeft: [0, -1],
+  ArrowRight: [0, 1],
+};
+
 function BoardSkeleton() {
   return (
     <div className="mx-auto aspect-square w-full max-w-sm">
@@ -183,23 +190,50 @@ export function PathwayPage() {
     }
   };
 
+  /** Cut the path back to `cell` (an earlier cell on it). The server only knows single-step
+   * retreats (moving onto the second-to-last cell), so this queues one per removed cell. */
+  const backtrackTo = (cell: Cell) => {
+    const target = cellIndex(localPath, cell);
+    if (target < 0 || target === localPath.length - 1) return;
+    for (let i = localPath.length - 2; i >= target; i--) queueRef.current.push(localPath[i]!);
+    setLocalPath(localPath.slice(0, target + 1));
+    setHintSuggestion(null);
+    void processQueue();
+  };
+
   const acceptHint = () => {
     if (!view || !hintSuggestion) return;
     const { kind, cell } = hintSuggestion;
     setHintSuggestion(null);
-    if (kind === "extend") {
-      const predicted = applyLocalStep(view, localPath, cell);
-      if (!predicted) return;
-      setLocalPath(predicted);
-      queueRef.current.push(cell);
-    } else {
-      // Retreating is one step back at a time (each step lands on the second-to-last cell).
-      const target = cellIndex(localPath, cell);
-      if (target < 0) return;
-      for (let i = localPath.length - 2; i >= target; i--) queueRef.current.push(localPath[i]!);
-      setLocalPath(localPath.slice(0, target + 1));
+    if (kind === "retreat") {
+      backtrackTo(cell);
+      return;
     }
+    const predicted = applyLocalStep(view, localPath, cell);
+    if (!predicted) return;
+    setLocalPath(predicted);
+    queueRef.current.push(cell);
     void processQueue();
+  };
+
+  /** One step from the keyboard: arrows move the head (the first press starts on 1), Backspace
+   * steps back. Same moves a drag sends, so the server can't tell the difference. */
+  const onBoardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!view || view.complete) return;
+    const delta = ARROW_DELTAS[event.key];
+    const head = localPath[localPath.length - 1];
+    let target: Cell | undefined;
+    if (delta) {
+      target = head ? { row: head.row + delta[0], col: head.col + delta[1] } : view.checkpoints[0];
+    } else if (event.key === "Backspace" || event.key === "Delete") {
+      target = localPath.length >= 2 ? localPath[localPath.length - 2] : undefined;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    if (!target) return;
+    lastHitRef.current = null;
+    handleAt(target.row, target.col);
   };
 
   const cellFromPoint = (x: number, y: number): Cell | null => {
@@ -213,7 +247,12 @@ export function PathwayPage() {
     const cell = cellFromPoint(event.clientX, event.clientY);
     if (!cell) return;
     const head = localPath[localPath.length - 1];
-    // Only starts a drag from a blank board, or resumes exactly from the current head.
+    // Tapping an earlier cell on the trail cuts the path back to it.
+    if (head && !sameCell(head, cell) && cellIndex(localPath, cell) >= 0) {
+      backtrackTo(cell);
+      return;
+    }
+    // Otherwise a drag only starts from a blank board, or resumes exactly from the current head.
     if (localPath.length > 0 && !(head && sameCell(head, cell))) return;
     gridRef.current?.setPointerCapture(event.pointerId);
     setDragging(true);
@@ -278,6 +317,7 @@ export function PathwayPage() {
   }
 
   const { size, checkpoints, walls } = view;
+  const nextCheckpoint = highestCheckpointInPath(localPath, checkpoints) + 1;
   const cells: Cell[] = [];
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) cells.push({ row, col });
@@ -291,7 +331,12 @@ export function PathwayPage() {
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        className="relative mx-auto aspect-square w-full max-w-sm touch-none select-none"
+        onKeyDown={onBoardKeyDown}
+        tabIndex={0}
+        role="application"
+        aria-label={`Pathway board, ${size} by ${size}. Arrow keys draw from the end of your path, Backspace steps back.`}
+        aria-describedby="pathway-progress"
+        className="relative mx-auto aspect-square w-full max-w-sm touch-none select-none rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
       >
         <div className="glass-subtle absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}>
           {cells.map((cell) => {
@@ -378,9 +423,14 @@ export function PathwayPage() {
         </Button>
       </div>
 
+      <p id="pathway-progress" className="sr-only" aria-live="polite">
+        {localPath.length} of {size * size} cells filled
+        {nextCheckpoint <= checkpoints.length ? `, next number ${nextCheckpoint}` : ""}.
+      </p>
+
       <p className="mt-4 text-center text-xs text-white/40">
-        Press and drag from 1, through every cell, ending on {checkpoints.length}. Drag back over your trail to
-        retreat, or back to 1 to start over.
+        Press and drag from 1, through every cell, ending on {checkpoints.length}. Tap a cell on your trail to back
+        up to it. On a keyboard, use the arrow keys and Backspace.
       </p>
     </GameShell>
   );
