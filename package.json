@@ -2,7 +2,7 @@
   "name": "dailyloop",
   "private": true,
   "version": "0.1.0",
-  "description": "DailyLoop — a daily puzzle platform with streaks, scoring, and friends.",
+  "description": "DailyLoop \u2014 a daily puzzle platform with streaks, scoring, and friends.",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -60,5 +60,9 @@
     "@prisma/engines@6.19.3": true,
     "argon2@0.41.1": true,
     "prisma@6.19.3": true
+  },
+  "overrides": {
+    "effect": "^3.22.5",
+    "deepmerge-ts": "^8.0.2"
   }
 }

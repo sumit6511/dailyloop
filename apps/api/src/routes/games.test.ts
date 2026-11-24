@@ -71,6 +71,17 @@ describe("game routes", () => {
     expect(getTodayKey("Asia/Kathmandu", new Date(rollover))).toBe(addDaysToKey(body.today, 1));
   });
 
+  it("answers malformed JSON with 400 and an oversized body with 413, not 500", async () => {
+    const send = (payload: string) =>
+      app.inject({ method: "POST", url: "/api/auth/login", headers: { "content-type": "application/json" }, payload });
+    const malformed = await send("{not json");
+    expect(malformed.statusCode).toBe(400);
+    expect(malformed.json().error.code).toBe("BAD_REQUEST");
+    const oversized = await send(JSON.stringify({ emailOrUsername: "x".repeat(100_000), password: "y" }));
+    expect(oversized.statusCode).toBe(413);
+    expect(oversized.json().error.code).toBe("PAYLOAD_TOO_LARGE");
+  });
+
   it("GET /games/today requires auth", async () => {
     const res = await app.inject({ method: "GET", url: "/api/games/today" });
     expect(res.statusCode).toBe(401);

@@ -33,6 +33,10 @@ export async function buildApp() {
     // Never `true` by default: that trusts a client-supplied X-Forwarded-For outright, so anyone
     // could claim a fresh IP per request and walk straight past the login/register rate limits.
     trustProxy: env.TRUST_PROXY,
+    // The largest legitimate body (an admin's puzzle JSON) is a few KB. A tight cap bounds how
+    // much work validation can be made to do (zod's array-validation advisory) and memory per
+    // request; Fastify's default is 1 MiB.
+    bodyLimit: 64 * 1024,
   });
 
   await app.register(cors, { origin: corsOrigins, credentials: true });
@@ -68,6 +72,14 @@ export async function buildApp() {
       return reply
         .status(429)
         .send({ error: { code: "RATE_LIMITED", message: "Too many requests — please slow down" } });
+    }
+    // Fastify's own client errors (malformed JSON, a body over the limit, an unsupported content
+    // type, ...) carry a 4xx status — they're the caller's mistake, not a server fault.
+    const clientStatus = (error as { statusCode?: unknown }).statusCode;
+    if (typeof clientStatus === "number" && clientStatus >= 400 && clientStatus < 500) {
+      const code = clientStatus === 413 ? "PAYLOAD_TOO_LARGE" : "BAD_REQUEST";
+      const message = clientStatus === 413 ? "Request body is too large" : (error as Error).message;
+      return reply.status(clientStatus).send({ error: { code, message } });
     }
     request.log.error(error);
     return reply.status(500).send({ error: { code: "INTERNAL_ERROR", message: "Something went wrong" } });

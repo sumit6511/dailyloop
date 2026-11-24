@@ -154,3 +154,39 @@ admin edit.
 
 Needs your input (not started): real password-reset email delivery needs a provider and API key;
 a past-puzzle archive and Word Guess hard mode are larger product decisions.
+
+## Backlog — round 4 (dependencies, operations, accessibility, code health)
+
+### Dependencies & security
+
+1. **Seven high-severity advisories in production dependencies.** Six (`fastify` ×2, `fast-uri`,
+   and `deepmerge-ts`/`effect` under Prisma) have non-breaking fixes. `zod` has no fixed 3.x
+   release, so it needs the 3 → 4 upgrade (with `@hookform/resolvers`). Until then, request bodies
+   should be capped well below Fastify's 1 MiB default.
+2. **No security headers** on the API or the static web app (clickjacking, MIME sniffing,
+   referrer leakage).
+
+### Operations
+
+3. **The health check doesn't check the database**, so a host keeps routing traffic to an instance
+   that can't reach Postgres.
+4. **No graceful shutdown** — every deploy/restart cuts in-flight requests (including a final move
+   mid-transaction).
+
+### Web app robustness
+
+5. **An expired session mid-game just shows errors** — the client keeps believing it's logged in
+   until its cached `/auth/me` goes stale. Any 401 should send the player to login and back.
+6. **One crashing page blanks the whole app** — the only error boundary wraps everything, so even
+   navigating away doesn't recover without a reload.
+
+### Accessibility & gameplay UX
+
+7. **Pathway is unplayable without a pointer** — no keyboard controls at all.
+8. **Backing up in Pathway means dragging back cell by cell** — tapping a cell on your trail
+   should cut the path back to it.
+
+### Code health
+
+9. **Formatting has drifted** — 112 files fail the repo's own Prettier config, and nothing checks it.
+10. **The web app has 16 tests** — none for Pathway, Number Puzzle, Logic Puzzle or Guess It.
