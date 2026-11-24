@@ -69,3 +69,51 @@ export interface TodayGameEntryDTO {
    * compute an elapsed-time display that survives a page refresh instead of resetting to zero. */
   startedAt: string | null;
 }
+
+export interface RevealCell {
+  row: number;
+  col: number;
+}
+
+/**
+ * A finished puzzle's answer, in a shape the web app knows how to draw. Each game picks the
+ * `kind` that fits it; games with nothing sensible to show simply don't offer one.
+ */
+export type AnswerRevealDTO =
+  /** A single word to guess (Word Guess). */
+  | { kind: "word"; answer: string }
+  /** A mystery to identify from clues (Guess It). */
+  | { kind: "mystery"; category: string; answer: string }
+  /** Hidden groups, easiest first (Connections). */
+  | {
+      kind: "groups";
+      groups: { title: string; difficulty: 1 | 2 | 3 | 4; words: string[] }[];
+    }
+  /** Numbers combined to hit a target; `expression` is null if no solution was recorded. */
+  | { kind: "equation"; numbers: number[]; target: number; expression: string | null }
+  /** A filled number grid; `givens` marks the cells that were printed at the start. */
+  | { kind: "grid"; rows: number[][]; givens: boolean[][] }
+  /** One path through every cell of a size×size board, visiting checkpoints in order. */
+  | {
+      kind: "path";
+      size: number;
+      path: RevealCell[];
+      checkpoints: RevealCell[];
+      walls: { a: RevealCell; b: RevealCell }[];
+    };
+
+export interface YesterdayGameDTO {
+  slug: string;
+  name: string;
+  icon: string;
+  puzzleNumber: number;
+  answer: AnswerRevealDTO;
+  /** How the signed-in player got on; null if they never started it. */
+  result: { completed: boolean; won: boolean; score: number | null } | null;
+}
+
+export interface YesterdayAnswersDTO {
+  /** The (server-timezone) day these puzzles belonged to. */
+  date: string;
+  games: YesterdayGameDTO[];
+}

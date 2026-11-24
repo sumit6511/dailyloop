@@ -1,4 +1,5 @@
 import type { ZodType } from "zod";
+import type { AnswerRevealDTO } from "@dailyloop/shared";
 
 export type Difficulty = "easy" | "medium" | "hard";
 
@@ -99,6 +100,11 @@ export interface DailyGameModule<TContent = unknown, TMove = unknown, TResult = 
    * shape. Procedural games (no fixed bank) omit this.
    */
   contentIdentity?(content: TContent): string[];
+  /**
+   * Optional: the full answer, for showing once a puzzle can no longer be played (yesterday's
+   * answers). Never called for a puzzle that's still live.
+   */
+  revealAnswer?(content: TContent): AnswerRevealDTO;
 }
 
 // The registry/API layer manages many different games generically and can't know each

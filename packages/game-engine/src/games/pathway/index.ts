@@ -205,6 +205,16 @@ export const pathwayGame: DailyGameModule<PathwayContent, PathwayMove, PathwayRe
       ...(complete ? { mistakes: result.mistakes, won: result.won } : {}),
     };
   },
+
+  revealAnswer(content) {
+    return {
+      kind: "path",
+      size: content.size,
+      path: content.solution,
+      checkpoints: content.checkpoints,
+      walls: content.walls,
+    };
+  },
 };
 
 export type PathwayHint = { kind: "extend"; cell: Cell } | { kind: "retreat"; cell: Cell };

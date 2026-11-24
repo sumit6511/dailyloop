@@ -166,4 +166,12 @@ export const logicPuzzleGame: DailyGameModule<
     const { result } = replay(content, moves);
     return findHint(result.grid, content.solution);
   },
+
+  revealAnswer(content) {
+    return {
+      kind: "grid",
+      rows: content.solution,
+      givens: content.puzzle.map((row) => row.map((value) => value !== 0)),
+    };
+  },
 };

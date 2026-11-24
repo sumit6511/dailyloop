@@ -270,6 +270,108 @@ describe("game routes", () => {
     expect(res.json().data.available).toBe(false);
   });
 
+  it("GET /games/yesterday reveals yesterday's published answers, with the player's own result", async () => {
+    const { cookies } = await registerUser("harry");
+    const harry = await prisma.user.findUniqueOrThrow({ where: { username: "harry" } });
+    const today = getTodayKey();
+    const yesterday = dateKeyToJSDate(addDaysToKey(today, -1));
+    const game = (slug: string, sortOrder: number, isEnabled = true) =>
+      prisma.game.create({
+        data: { slug, name: slug, description: "d", icon: "?", sortOrder, isEnabled },
+      });
+    const [wordGuess, guessIt, connections, logic] = await Promise.all([
+      game("word-guess", 1),
+      game("guess-it", 2),
+      game("connections", 0),
+      game("logic-puzzle", 3, false),
+    ]);
+
+    const played = await prisma.dailyPuzzle.create({
+      data: {
+        gameId: wordGuess.id,
+        date: yesterday,
+        puzzleNumber: 7,
+        status: "PUBLISHED",
+        content: { answer: "CRANE" },
+      },
+    });
+    await prisma.gameAttempt.create({
+      data: {
+        userId: harry.id,
+        dailyPuzzleId: played.id,
+        status: "COMPLETED",
+        won: true,
+        score: 812,
+      },
+    });
+    const groups = (["A", "B", "C", "D"] as const).map((letter, i) => ({
+      title: `Group ${letter}`,
+      difficulty: (4 - i) as 1 | 2 | 3 | 4,
+      words: [1, 2, 3, 4].map((n) => `${letter}${n}`),
+    }));
+    await prisma.dailyPuzzle.create({
+      data: {
+        gameId: connections.id,
+        date: yesterday,
+        puzzleNumber: 3,
+        status: "PUBLISHED",
+        content: { categories: groups, words: groups.flatMap((g) => g.words) },
+      },
+    });
+    // Withdrawn, disabled, and today's — none of these may show.
+    await prisma.dailyPuzzle.create({
+      data: {
+        gameId: guessIt.id,
+        date: yesterday,
+        puzzleNumber: 1,
+        status: "ARCHIVED",
+        content: { category: "Place", answer: "Paris", aliases: [], clues: ["a", "b", "c", "d"] },
+      },
+    });
+    await prisma.dailyPuzzle.create({
+      data: {
+        gameId: logic.id,
+        date: yesterday,
+        puzzleNumber: 1,
+        status: "PUBLISHED",
+        content: {},
+      },
+    });
+    await prisma.dailyPuzzle.create({
+      data: {
+        gameId: wordGuess.id,
+        date: dateKeyToJSDate(today),
+        puzzleNumber: 8,
+        status: "PUBLISHED",
+        content: { answer: "SLATE" },
+      },
+    });
+
+    expect((await app.inject({ method: "GET", url: "/api/games/yesterday" })).statusCode).toBe(401);
+    const res = await app.inject({ method: "GET", url: "/api/games/yesterday", cookies });
+    expect(res.statusCode).toBe(200);
+    const data = res.json().data;
+    expect(data.date).toBe(addDaysToKey(today, -1));
+    expect(data.games).toHaveLength(2);
+    const [first, second] = data.games;
+    expect(first).toMatchObject({ slug: "connections", puzzleNumber: 3, result: null });
+    expect(first.answer.kind).toBe("groups");
+    expect(first.answer.groups.map((g: { title: string }) => g.title)).toEqual([
+      "Group D",
+      "Group C",
+      "Group B",
+      "Group A",
+    ]);
+    expect(second).toEqual({
+      slug: "word-guess",
+      name: "word-guess",
+      icon: "?",
+      puzzleNumber: 7,
+      answer: { kind: "word", answer: "CRANE" },
+      result: { completed: true, won: true, score: 812 },
+    });
+  });
+
   it("404s for an unknown game slug", async () => {
     const { cookies } = await registerUser("harry");
     const res = await app.inject({

@@ -284,4 +284,11 @@ export const connectionsGame: DailyGameModule<
       ...(complete ? { categories: content.categories } : {}),
     };
   },
+
+  revealAnswer(content) {
+    const groups = [...content.categories]
+      .sort((a, b) => a.difficulty - b.difficulty)
+      .map(({ title, difficulty, words }) => ({ title, difficulty, words: [...words] }));
+    return { kind: "groups", groups };
+  },
 };

@@ -194,4 +194,11 @@ export const numberPuzzleGame: DailyGameModule<
       ...(complete && content.solution ? { solution: content.solution } : {}),
     };
   },
+
+  revealAnswer(content) {
+    // Admin-entered puzzles may not record a solution; any route to the target will do.
+    const expression =
+      content.solution ?? analyzeNumbers(content.numbers).get(content.target)?.expression ?? null;
+    return { kind: "equation", numbers: content.numbers, target: content.target, expression };
+  },
 };

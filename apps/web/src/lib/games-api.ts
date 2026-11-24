@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TodayGameEntryDTO } from "@dailyloop/shared";
+import type { TodayGameEntryDTO, YesterdayAnswersDTO } from "@dailyloop/shared";
 import { api } from "./api-client";
 
 export interface ScheduleDTO {
@@ -28,6 +28,14 @@ export function useTodayLineup() {
   return useQuery({
     queryKey: ["games", "today"],
     queryFn: () => api.get<TodayGameEntryDTO[]>("/games/today"),
+  });
+}
+
+export function useYesterdayAnswers() {
+  return useQuery({
+    queryKey: ["games", "yesterday"],
+    queryFn: () => api.get<YesterdayAnswersDTO>("/games/yesterday"),
+    staleTime: 10 * 60_000,
   });
 }
 

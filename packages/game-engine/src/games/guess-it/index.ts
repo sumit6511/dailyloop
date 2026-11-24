@@ -184,4 +184,8 @@ export const guessItGame: DailyGameModule<GuessItContent, GuessItMove, GuessItRe
       ...(complete ? { answer: content.answer } : {}),
     };
   },
+
+  revealAnswer(content) {
+    return { kind: "mystery", category: content.category, answer: content.answer };
+  },
 };

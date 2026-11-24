@@ -10,6 +10,7 @@ import {
 import { prisma } from "../lib/prisma.js";
 import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
+import { getYesterdayAnswers } from "../services/yesterday.js";
 import { getTodayLineup, getTodayEntryForSlug } from "../services/games-today.js";
 import { sharePattern } from "../services/share-patterns.js";
 import {
@@ -58,6 +59,11 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
 
   app.get("/today", { preHandler: app.requireAuth }, async (request, reply) => {
     const data = await getTodayLineup(request.currentUser!.id);
+    return reply.send({ data });
+  });
+
+  app.get("/yesterday", { preHandler: app.requireAuth }, async (request, reply) => {
+    const data = await getYesterdayAnswers(request.currentUser!.id);
     return reply.send({ data });
   });
 

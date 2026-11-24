@@ -144,4 +144,8 @@ export const wordGuessGame: DailyGameModule<WordGuessContent, WordGuessMove, Wor
       ...(complete ? { answer: content.answer } : {}),
     };
   },
+
+  revealAnswer(content) {
+    return { kind: "word", answer: content.answer };
+  },
 };

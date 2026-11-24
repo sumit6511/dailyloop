@@ -9,6 +9,7 @@ import { StreakBadge } from "../../components/StreakBadge";
 import { Icon } from "../../components/Icon";
 import { GameCard } from "./GameCard";
 import { LeaderboardCard } from "./LeaderboardCard";
+import { YesterdayCard } from "./YesterdayCard";
 
 function GameCardSkeleton() {
   return (
@@ -135,8 +136,9 @@ export function DashboardPage() {
           )}
         </div>
 
-        <div>
+        <div className="flex flex-col gap-8">
           <LeaderboardCard />
+          <YesterdayCard />
         </div>
       </div>
     </div>
