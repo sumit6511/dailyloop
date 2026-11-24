@@ -1,0 +1,6 @@
+# Purely mechanical reformatting commits, skipped by GitHub's blame view and by
+# `git blame --ignore-revs-file .git-blame-ignore-revs` (or
+# `git config blame.ignoreRevsFile .git-blame-ignore-revs` once per clone).
+
+# Format the repo with its own Prettier config
+f3413c8a176c924859f19d00f3205e36d0a4ac6d
