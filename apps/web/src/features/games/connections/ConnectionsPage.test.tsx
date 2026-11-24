@@ -5,8 +5,22 @@ import { createTestQueryClient, renderWithProviders } from "../../../test/render
 import { ConnectionsPage } from "./ConnectionsPage";
 
 const WORDS = [
-  "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT",
-  "NINE", "TEN", "ELEVEN", "TWELVE", "RED", "BLUE", "GREEN", "PINK",
+  "ONE",
+  "TWO",
+  "THREE",
+  "FOUR",
+  "FIVE",
+  "SIX",
+  "SEVEN",
+  "EIGHT",
+  "NINE",
+  "TEN",
+  "ELEVEN",
+  "TWELVE",
+  "RED",
+  "BLUE",
+  "GREEN",
+  "PINK",
 ];
 
 function seedInProgressEntry(extraContent: Record<string, unknown> = {}) {
@@ -74,7 +88,9 @@ describe("ConnectionsPage tile selection", () => {
     const user = userEvent.setup();
     renderWithProviders(
       <ConnectionsPage />,
-      seedInProgressEntry({ guesses: [{ words: ["ONE", "FIVE", "NINE", "RED"], correct: false, oneAway: false }] }),
+      seedInProgressEntry({
+        guesses: [{ words: ["ONE", "FIVE", "NINE", "RED"], correct: false, oneAway: false }],
+      }),
     );
 
     for (const word of ["RED", "NINE", "FIVE", "ONE"]) {

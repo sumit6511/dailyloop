@@ -1,4 +1,4 @@
-import { forwardRef, useState, type InputHTMLAttributes } from "react";
+import { forwardRef, useId, useState, type InputHTMLAttributes } from "react";
 import { Icon } from "./Icon";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -10,7 +10,10 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   ({ label, error, icon, id, className = "", type, ...props }, ref) => {
-    const fieldId = id ?? props.name;
+    // Every field needs an id for its <label htmlFor> — without one (no id or name passed) the label
+    // isn't linked and screen readers announce an unlabelled input.
+    const autoId = useId();
+    const fieldId = id ?? props.name ?? autoId;
     const isPassword = type === "password";
     const [revealed, setRevealed] = useState(false);
 

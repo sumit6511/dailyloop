@@ -9,6 +9,8 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   danger?: boolean;
+  /** Material Symbols name for the confirm button; defaults to a bin for danger, else a tick. */
+  confirmIcon?: string;
   isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -21,6 +23,7 @@ export function ConfirmDialog({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
   danger = false,
+  confirmIcon,
   isLoading = false,
   onConfirm,
   onCancel,
@@ -57,7 +60,7 @@ export function ConfirmDialog({
           <Icon name="close" className="text-lg" /> {cancelLabel}
         </Button>
         <Button variant={danger ? "danger" : "primary"} onClick={onConfirm} isLoading={isLoading} type="button">
-          <Icon name={danger ? "delete" : "check"} className="text-lg" /> {confirmLabel}
+          <Icon name={confirmIcon ?? (danger ? "delete" : "check")} className="text-lg" /> {confirmLabel}
         </Button>
       </div>
     </dialog>

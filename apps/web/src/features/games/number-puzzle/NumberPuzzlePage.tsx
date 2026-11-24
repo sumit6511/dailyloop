@@ -7,6 +7,7 @@ import { Skeleton } from "../../../components/Skeleton";
 import { GameTile } from "../../../components/GameTile";
 import { GameIcon } from "../../../components/GameIcon";
 import { Icon } from "../../../components/Icon";
+import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { ApiClientError } from "../../../lib/api-client";
 import { useToast } from "../../../lib/toast-context";
 
@@ -43,6 +44,7 @@ function BoardSkeleton() {
 
 const OPS = ["+", "-", "*", "/"] as const;
 const OP_SYMBOLS: Record<string, string> = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+const OP_NAMES: Record<string, string> = { "+": "add", "-": "subtract", "*": "multiply", "/": "divide" };
 const MERGE_MS = 380;
 const CELEBRATE_MS = 700;
 
@@ -58,6 +60,7 @@ export function NumberPuzzlePage() {
   const [combiningIndices, setCombiningIndices] = useState<number[] | null>(null);
   const [frozenPool, setFrozenPool] = useState<number[] | null>(null);
   const [celebrating, setCelebrating] = useState(false);
+  const [confirmingGiveUp, setConfirmingGiveUp] = useState(false);
 
   useAutoStartAttempt("number-puzzle", entry?.status);
 
@@ -163,7 +166,15 @@ export function NumberPuzzlePage() {
     }
   };
 
+  // Submitting ends today's puzzle for good, so only do it straight away once the target is on the
+  // board. Before that, a stray tap would forfeit the day: ask first.
+  const requestSubmit = () => {
+    if (view.pool.includes(view.target)) void submitFinal();
+    else setConfirmingGiveUp(true);
+  };
+
   const submitFinal = async () => {
+    setConfirmingGiveUp(false);
     setError(null);
     try {
       const response = await submitMove.mutateAsync({ type: "submit" });
@@ -241,6 +252,7 @@ export function NumberPuzzlePage() {
             size="sm"
             onClick={() => setOp(o)}
             disabled={firstIndex === null}
+            aria-label={OP_NAMES[o]}
           >
             {OP_SYMBOLS[o]}
           </GameTile>
@@ -287,10 +299,23 @@ export function NumberPuzzlePage() {
         <Button variant="secondary" onClick={resetSelection} disabled={firstIndex === null && op === null}>
           <Icon name="close" className="text-lg" /> Clear selection
         </Button>
-        <Button onClick={() => void submitFinal()} isLoading={submitMove.isPending}>
+        <Button onClick={requestSubmit} isLoading={submitMove.isPending}>
           <Icon name="check" className="text-lg" /> Submit answer
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={confirmingGiveUp}
+        title={`You haven't made ${view.target} yet`}
+        body="Submitting now ends today's puzzle as a loss, and you'll see one way to solve it. Keep trying?"
+        confirmLabel="Give up"
+        cancelLabel="Keep playing"
+        danger
+        confirmIcon="flag"
+        isLoading={submitMove.isPending}
+        onConfirm={() => void submitFinal()}
+        onCancel={() => setConfirmingGiveUp(false)}
+      />
     </GameShell>
   );
 }
