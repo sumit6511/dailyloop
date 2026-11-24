@@ -65,7 +65,9 @@ jobs:
   visual:
     # Screenshot comparisons (apps/web/visual). Same OS as the machine the baselines were made on.
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # Installing Chromium's system packages (incl. the fallback fonts the baselines were made
+    # with) is usually quick but has taken 8 minutes on a slow Ubuntu mirror.
+    timeout-minutes: 25
 
     steps:
       - uses: actions/checkout@v4
