@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import cookie from "@fastify/cookie";
 import rateLimit from "@fastify/rate-limit";
-import { ZodError } from "zod";
+import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import { registerAllGames } from "@dailyloop/game-engine";
 import { env, corsOrigins } from "./config/env.js";
@@ -55,9 +55,11 @@ export async function buildApp() {
         .status(error.statusCode)
         .send({ error: { code: error.code, message: error.message, details: error.details } });
     }
-    if (error instanceof ZodError) {
+    // The base class covers both classic zod (the API's own schemas) and zod/mini (the shared
+    // schemas); mini's errors are not instances of classic ZodError.
+    if (error instanceof z.core.$ZodError) {
       return reply.status(400).send({
-        error: { code: "VALIDATION_ERROR", message: "Invalid request", details: error.flatten() },
+        error: { code: "VALIDATION_ERROR", message: "Invalid request", details: z.flattenError(error) },
       });
     }
     // A unique-constraint race (two requests creating the same thing at once) or a write to a row

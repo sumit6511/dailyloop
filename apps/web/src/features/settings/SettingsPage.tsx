@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import * as z from "zod/mini";
 import { useNavigate } from "react-router-dom";
 import { updateProfileSchema, changePasswordSchema, type UpdateProfileInput } from "@dailyloop/shared";
 import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
@@ -12,12 +12,14 @@ import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
 import { Icon } from "../../components/Icon";
 
-const changePasswordFormSchema = changePasswordSchema
-  .extend({ confirmPassword: z.string().min(1) })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+const changePasswordFormSchema = z
+  .extend(changePasswordSchema, { confirmPassword: z.string().check(z.minLength(1)) })
+  .check(
+    z.refine((data) => data.newPassword === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    }),
+  );
 type ChangePasswordFormInput = z.infer<typeof changePasswordFormSchema>;
 
 function ProfileSection() {

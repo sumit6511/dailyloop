@@ -1,20 +1,22 @@
-import { z } from "zod";
+import * as z from "zod/mini"; // see schemas/auth.ts for why mini
 
 export const updateProfileSchema = z.object({
-  displayName: z.string().trim().min(1).max(40).optional(),
-  bio: z.string().trim().max(200).optional(),
+  displayName: z.optional(z.string().check(z.trim(), z.minLength(1), z.maxLength(40))),
+  bio: z.optional(z.string().check(z.trim(), z.maxLength(200))),
   /** An https image URL, or "" to clear it — never javascript:/data:/plain-http URLs. */
-  avatarUrl: z
-    .union([
+  avatarUrl: z.optional(
+    z.union([
       z.literal(""),
-      z
-        .string()
-        .trim()
-        .max(500)
-        .url()
-        .refine((url) => url.startsWith("https://"), "Avatar URL must start with https://"),
-    ])
-    .optional(),
+      z.pipe(
+        z.string().check(z.trim(), z.maxLength(500)),
+        z
+          .url()
+          .check(
+            z.refine((url) => url.startsWith("https://"), "Avatar URL must start with https://"),
+          ),
+      ),
+    ]),
+  ),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
