@@ -1,0 +1,159 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /games/guess-it/today": {
+    "status": 200,
+    "body": {
+      "data": {
+        "slug": "guess-it",
+        "name": "Guess It",
+        "description": "Identify the mystery answer from four clues.",
+        "icon": "🎯",
+        "difficulty": "easy",
+        "available": true,
+        "puzzleNumber": 30,
+        "status": "completed",
+        "score": 100,
+        "mistakeCount": 0,
+        "hintsUsed": 0,
+        "activeMs": 6,
+        "content": {
+          "category": "Animals",
+          "clues": ["This is an animal."],
+          "cluesRevealed": 1,
+          "guesses": [
+            {
+              "guess": "Octopus",
+              "correct": true
+            }
+          ],
+          "complete": true,
+          "won": true,
+          "answer": "Octopus"
+        },
+        "startedAt": "2026-11-24T08:07:52.215Z"
+      }
+    }
+  },
+  "GET /games/schedule": {
+    "status": 200,
+    "body": {
+      "data": {
+        "today": "2026-11-24",
+        "timezone": "Asia/Kathmandu",
+        "nextRolloverAt": "2026-11-24T18:15:00.000Z",
+        "serverTime": "2026-11-24T08:08:06.384Z"
+      }
+    }
+  },
+  "GET /achievements": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "cmwuewing00cj7df890muglsr",
+          "key": "ALL_ROUNDER",
+          "name": "All-Rounder",
+          "description": "Win every game at least once.",
+          "icon": "extension",
+          "createdAt": "2026-11-24T08:07:41.932Z"
+        },
+        {
+          "id": "cmwuewind00ce7df8r2oruff6",
+          "key": "FIRST_WIN",
+          "name": "First Win",
+          "description": "Win a daily game for the first time.",
+          "icon": "emoji_events",
+          "createdAt": "2026-11-24T08:07:41.929Z"
+        },
+        {
+          "id": "cmwuewinf00ci7df8u20uy6rf",
+          "key": "FLAWLESS",
+          "name": "Flawless",
+          "description": "Win a game without a single mistake or hint.",
+          "icon": "diamond",
+          "createdAt": "2026-11-24T08:07:41.932Z"
+        },
+        {
+          "id": "cmwuewine00cg7df8xi50jvoy",
+          "key": "PERFECT_DAY",
+          "name": "Perfect Day",
+          "description": "Complete every game available in a single day.",
+          "icon": "verified",
+          "createdAt": "2026-11-24T08:07:41.930Z"
+        },
+        {
+          "id": "cmwuewind00cf7df8omb85ulb",
+          "key": "PUZZLE_MASTER",
+          "name": "Puzzle Master",
+          "description": "Complete 50 daily games.",
+          "icon": "workspace_premium",
+          "createdAt": "2026-11-24T08:07:41.930Z"
+        },
+        {
+          "id": "cmwuewinf00ch7df80g6ervbr",
+          "key": "SPEED_DEMON",
+          "name": "Speed Demon",
+          "description": "Win a game in under 15 seconds.",
+          "icon": "bolt",
+          "createdAt": "2026-11-24T08:07:41.931Z"
+        },
+        {
+          "id": "cmwuewinh00ck7df85nuwo4ms",
+          "key": "STREAK_100",
+          "name": "Centurion",
+          "description": "Complete a daily game 100 days in a row.",
+          "icon": "auto_awesome",
+          "createdAt": "2026-11-24T08:07:41.933Z"
+        },
+        {
+          "id": "cmwuewina00cb7df8uh547j4y",
+          "key": "STREAK_3",
+          "name": "3 Day Streak",
+          "description": "Complete a daily game 3 days in a row.",
+          "icon": "local_fire_department",
+          "createdAt": "2026-11-24T08:07:41.926Z"
+        },
+        {
+          "id": "cmwuewinc00cd7df8xvwrtmiz",
+          "key": "STREAK_30",
+          "name": "30 Day Streak",
+          "description": "Complete a daily game 30 days in a row.",
+          "icon": "military_tech",
+          "createdAt": "2026-11-24T08:07:41.928Z"
+        },
+        {
+          "id": "cmwuewinb00cc7df8w442rsp9",
+          "key": "STREAK_7",
+          "name": "7 Day Streak",
+          "description": "Complete a daily game 7 days in a row.",
+          "icon": "whatshot",
+          "createdAt": "2026-11-24T08:07:41.928Z"
+        }
+      ]
+    }
+  }
+}

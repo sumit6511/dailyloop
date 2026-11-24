@@ -315,4 +315,14 @@ Found along the way:
 - **Game tiles had no keyboard focus indicator.**
 - The mobile menu's links stayed in the tab order while the menu was closed.
 
-Not done: a light theme, and screenshot-based visual regression tests.
+Follow-ups, both done:
+
+- **Light theme.** Settings > Appearance offers System / Light / Dark, and the header has a quick
+  toggle. "System", the default, follows the device. Under `data-theme="light"`, `index.css`
+  remaps the palette (the UI draws in white-at-some-opacity, which Tailwind compiles to
+  `var(--color-white)`). `public/theme-init.js` applies the theme before the first paint.
+- **Visual regression tests** (`apps/web/visual`, also a CI job): 15 screens × desktop/phone ×
+  dark/light, replayed from recorded API fixtures under a frozen clock. Getting them stable took
+  pinning Playwright, loading every font face before capture, and running Chromium with
+  single-threaded software raster and font hinting off; see `apps/web/visual/README.md` for what
+  they catch and what they can't.

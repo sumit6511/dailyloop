@@ -1,0 +1,668 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /games/schedule": {
+    "status": 200,
+    "body": {
+      "data": {
+        "today": "2026-11-24",
+        "timezone": "Asia/Kathmandu",
+        "nextRolloverAt": "2026-11-24T18:15:00.000Z",
+        "serverTime": "2026-11-24T08:07:55.761Z"
+      }
+    }
+  },
+  "GET /me/streak": {
+    "status": 200,
+    "body": {
+      "data": {
+        "currentStreak": 1,
+        "longestStreak": 1,
+        "lastCompletedDate": "2026-11-24"
+      }
+    }
+  },
+  "GET /leaderboard/daily": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "userId": "cmwuewhrb00027df8zbiq50co",
+          "username": "sumit",
+          "displayName": "Sumit",
+          "avatarUrl": null,
+          "score": 195,
+          "rank": 1
+        },
+        {
+          "userId": "cmwuewhpx00017df80oqjhi0l",
+          "username": "harry",
+          "displayName": "Harry",
+          "avatarUrl": null,
+          "score": 100,
+          "rank": 2
+        },
+        {
+          "userId": "cmwuewhso00037df8osl80xyg",
+          "username": "aayush",
+          "displayName": "Aayush",
+          "avatarUrl": null,
+          "score": 80,
+          "rank": 3
+        },
+        {
+          "userId": "cmwuewhu300047df86w7kw8fs",
+          "username": "sagar",
+          "displayName": "Sagar",
+          "avatarUrl": null,
+          "score": 80,
+          "rank": 3
+        }
+      ]
+    }
+  },
+  "GET /leaderboard/me?range=daily": {
+    "status": 200,
+    "body": {
+      "data": {
+        "rank": 2,
+        "score": 100,
+        "players": 4
+      }
+    }
+  },
+  "GET /leaderboard/friends?range=daily": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "userId": "cmwuewhrb00027df8zbiq50co",
+          "username": "sumit",
+          "displayName": "Sumit",
+          "avatarUrl": null,
+          "score": 195,
+          "rank": 1
+        },
+        {
+          "userId": "cmwuewhpx00017df80oqjhi0l",
+          "username": "harry",
+          "displayName": "Harry",
+          "avatarUrl": null,
+          "score": 100,
+          "rank": 2
+        },
+        {
+          "userId": "cmwuewhso00037df8osl80xyg",
+          "username": "aayush",
+          "displayName": "Aayush",
+          "avatarUrl": null,
+          "score": 80,
+          "rank": 3
+        },
+        {
+          "userId": "cmwuewhu300047df86w7kw8fs",
+          "username": "sagar",
+          "displayName": "Sagar",
+          "avatarUrl": null,
+          "score": 80,
+          "rank": 3
+        }
+      ]
+    }
+  },
+  "GET /games/yesterday": {
+    "status": 200,
+    "body": {
+      "data": {
+        "date": "2026-11-23",
+        "games": [
+          {
+            "slug": "connections",
+            "name": "Connections",
+            "icon": "🟩",
+            "puzzleNumber": 29,
+            "answer": {
+              "kind": "groups",
+              "groups": [
+                {
+                  "title": "Pasta Sauces",
+                  "difficulty": 1,
+                  "words": ["MARINARA", "ALFREDO", "PESTO", "BOLOGNESE"]
+                },
+                {
+                  "title": "Composers",
+                  "difficulty": 2,
+                  "words": ["BACH", "MOZART", "CHOPIN", "HANDEL"]
+                },
+                {
+                  "title": "Skiing Terms",
+                  "difficulty": 3,
+                  "words": ["SLALOM", "MOGUL", "CHAIRLIFT", "POWDER"]
+                },
+                {
+                  "title": "Things You Shuffle",
+                  "difficulty": 4,
+                  "words": ["CARDS", "FEET", "PLAYLIST", "PAPERS"]
+                }
+              ]
+            },
+            "result": null
+          },
+          {
+            "slug": "word-guess",
+            "name": "Word Guess",
+            "icon": "🟨",
+            "puzzleNumber": 29,
+            "answer": {
+              "kind": "word",
+              "answer": "WRONG"
+            },
+            "result": null
+          },
+          {
+            "slug": "number-puzzle",
+            "name": "Number Puzzle",
+            "icon": "🔢",
+            "puzzleNumber": 29,
+            "answer": {
+              "kind": "equation",
+              "numbers": [2, 11, 1, 5],
+              "target": 15,
+              "expression": "(1 + 2) × 5"
+            },
+            "result": null
+          },
+          {
+            "slug": "logic-puzzle",
+            "name": "Logic Puzzle",
+            "icon": "🧠",
+            "puzzleNumber": 29,
+            "answer": {
+              "kind": "grid",
+              "rows": [
+                [4, 5, 6, 1, 3, 2],
+                [2, 3, 1, 6, 4, 5],
+                [5, 2, 3, 4, 6, 1],
+                [6, 1, 4, 2, 5, 3],
+                [3, 4, 2, 5, 1, 6],
+                [1, 6, 5, 3, 2, 4]
+              ],
+              "givens": [
+                [true, false, false, true, true, false],
+                [false, false, true, false, true, true],
+                [false, false, true, false, false, true],
+                [true, false, false, true, false, false],
+                [true, true, false, true, false, false],
+                [false, true, true, false, false, true]
+              ]
+            },
+            "result": null
+          },
+          {
+            "slug": "guess-it",
+            "name": "Guess It",
+            "icon": "🎯",
+            "puzzleNumber": 29,
+            "answer": {
+              "kind": "mystery",
+              "category": "People",
+              "answer": "Frida Kahlo"
+            },
+            "result": null
+          },
+          {
+            "slug": "pathway",
+            "name": "Pathway",
+            "icon": "🧵",
+            "puzzleNumber": 29,
+            "answer": {
+              "kind": "path",
+              "size": 5,
+              "path": [
+                {
+                  "row": 4,
+                  "col": 2
+                },
+                {
+                  "row": 4,
+                  "col": 1
+                },
+                {
+                  "row": 4,
+                  "col": 0
+                },
+                {
+                  "row": 3,
+                  "col": 0
+                },
+                {
+                  "row": 2,
+                  "col": 0
+                },
+                {
+                  "row": 2,
+                  "col": 1
+                },
+                {
+                  "row": 3,
+                  "col": 1
+                },
+                {
+                  "row": 3,
+                  "col": 2
+                },
+                {
+                  "row": 3,
+                  "col": 3
+                },
+                {
+                  "row": 4,
+                  "col": 3
+                },
+                {
+                  "row": 4,
+                  "col": 4
+                },
+                {
+                  "row": 3,
+                  "col": 4
+                },
+                {
+                  "row": 2,
+                  "col": 4
+                },
+                {
+                  "row": 1,
+                  "col": 4
+                },
+                {
+                  "row": 0,
+                  "col": 4
+                },
+                {
+                  "row": 0,
+                  "col": 3
+                },
+                {
+                  "row": 1,
+                  "col": 3
+                },
+                {
+                  "row": 2,
+                  "col": 3
+                },
+                {
+                  "row": 2,
+                  "col": 2
+                },
+                {
+                  "row": 1,
+                  "col": 2
+                },
+                {
+                  "row": 0,
+                  "col": 2
+                },
+                {
+                  "row": 0,
+                  "col": 1
+                },
+                {
+                  "row": 0,
+                  "col": 0
+                },
+                {
+                  "row": 1,
+                  "col": 0
+                },
+                {
+                  "row": 1,
+                  "col": 1
+                }
+              ],
+              "checkpoints": [
+                {
+                  "row": 4,
+                  "col": 2
+                },
+                {
+                  "row": 3,
+                  "col": 0
+                },
+                {
+                  "row": 3,
+                  "col": 2
+                },
+                {
+                  "row": 2,
+                  "col": 4
+                },
+                {
+                  "row": 1,
+                  "col": 3
+                },
+                {
+                  "row": 0,
+                  "col": 2
+                },
+                {
+                  "row": 1,
+                  "col": 1
+                }
+              ],
+              "walls": [
+                {
+                  "a": {
+                    "row": 2,
+                    "col": 0
+                  },
+                  "b": {
+                    "row": 1,
+                    "col": 0
+                  }
+                },
+                {
+                  "a": {
+                    "row": 3,
+                    "col": 2
+                  },
+                  "b": {
+                    "row": 2,
+                    "col": 2
+                  }
+                },
+                {
+                  "a": {
+                    "row": 2,
+                    "col": 4
+                  },
+                  "b": {
+                    "row": 2,
+                    "col": 3
+                  }
+                }
+              ]
+            },
+            "result": null
+          }
+        ]
+      }
+    }
+  },
+  "GET /games/today": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "slug": "connections",
+          "name": "Connections",
+          "description": "Group 16 words into four hidden categories.",
+          "icon": "🟩",
+          "difficulty": "medium",
+          "available": true,
+          "puzzleNumber": 30,
+          "status": "not_started",
+          "score": null,
+          "mistakeCount": null,
+          "hintsUsed": null,
+          "activeMs": null,
+          "content": {
+            "words": [
+              "BOUNTY",
+              "BAGUETTE",
+              "RYE",
+              "MAPLE",
+              "SOURDOUGH",
+              "SPOT",
+              "OAK",
+              "TITANIC",
+              "TOPS",
+              "WILLOW",
+              "CIABATTA",
+              "POTS",
+              "STOP",
+              "MAYFLOWER",
+              "ENDEAVOUR",
+              "BIRCH"
+            ],
+            "solved": [],
+            "guesses": [],
+            "lastMoveRepeated": false,
+            "mistakesRemaining": 4,
+            "complete": false
+          },
+          "startedAt": null
+        },
+        {
+          "slug": "word-guess",
+          "name": "Word Guess",
+          "description": "Guess the daily word in six tries.",
+          "icon": "🟨",
+          "difficulty": "medium",
+          "available": true,
+          "puzzleNumber": 30,
+          "status": "in_progress",
+          "score": null,
+          "mistakeCount": 1,
+          "hintsUsed": 0,
+          "activeMs": 6,
+          "content": {
+            "guesses": [
+              {
+                "word": "CRANE",
+                "feedback": [
+                  {
+                    "letter": "C",
+                    "status": "absent"
+                  },
+                  {
+                    "letter": "R",
+                    "status": "present"
+                  },
+                  {
+                    "letter": "A",
+                    "status": "absent"
+                  },
+                  {
+                    "letter": "N",
+                    "status": "absent"
+                  },
+                  {
+                    "letter": "E",
+                    "status": "absent"
+                  }
+                ]
+              }
+            ],
+            "guessesRemaining": 5,
+            "complete": false
+          },
+          "startedAt": "2026-11-24T08:07:52.241Z"
+        },
+        {
+          "slug": "number-puzzle",
+          "name": "Number Puzzle",
+          "description": "Reach the target using numbers and operators.",
+          "icon": "🔢",
+          "difficulty": "medium",
+          "available": true,
+          "puzzleNumber": 30,
+          "status": "not_started",
+          "score": null,
+          "mistakeCount": null,
+          "hintsUsed": null,
+          "activeMs": null,
+          "content": {
+            "numbers": [2, 2, 9, 9],
+            "target": 27,
+            "difficulty": "easy",
+            "pool": [2, 2, 9, 9],
+            "steps": [],
+            "complete": false
+          },
+          "startedAt": null
+        },
+        {
+          "slug": "logic-puzzle",
+          "name": "Logic Puzzle",
+          "description": "Solve a daily 6×6 mini logic grid.",
+          "icon": "🧠",
+          "difficulty": "hard",
+          "available": true,
+          "puzzleNumber": 30,
+          "status": "not_started",
+          "score": null,
+          "mistakeCount": null,
+          "hintsUsed": null,
+          "activeMs": null,
+          "content": {
+            "puzzle": [
+              [0, 0, 5, 0, 2, 0],
+              [3, 1, 2, 0, 6, 0],
+              [0, 0, 4, 0, 0, 1],
+              [5, 0, 0, 2, 0, 0],
+              [0, 5, 0, 4, 3, 2],
+              [0, 4, 0, 6, 0, 0]
+            ],
+            "grid": [
+              [0, 0, 5, 0, 2, 0],
+              [3, 1, 2, 0, 6, 0],
+              [0, 0, 4, 0, 0, 1],
+              [5, 0, 0, 2, 0, 0],
+              [0, 5, 0, 4, 3, 2],
+              [0, 4, 0, 6, 0, 0]
+            ],
+            "difficulty": "easy",
+            "complete": false
+          },
+          "startedAt": null
+        },
+        {
+          "slug": "guess-it",
+          "name": "Guess It",
+          "description": "Identify the mystery answer from four clues.",
+          "icon": "🎯",
+          "difficulty": "easy",
+          "available": true,
+          "puzzleNumber": 30,
+          "status": "completed",
+          "score": 100,
+          "mistakeCount": 0,
+          "hintsUsed": 0,
+          "activeMs": 6,
+          "content": {
+            "category": "Animals",
+            "clues": ["This is an animal."],
+            "cluesRevealed": 1,
+            "guesses": [
+              {
+                "guess": "Octopus",
+                "correct": true
+              }
+            ],
+            "complete": true,
+            "won": true,
+            "answer": "Octopus"
+          },
+          "startedAt": "2026-11-24T08:07:52.215Z"
+        },
+        {
+          "slug": "pathway",
+          "name": "Pathway",
+          "description": "Draw one continuous path through every cell, in checkpoint order.",
+          "icon": "🧵",
+          "difficulty": "hard",
+          "available": true,
+          "puzzleNumber": 30,
+          "status": "not_started",
+          "score": null,
+          "mistakeCount": null,
+          "hintsUsed": null,
+          "activeMs": null,
+          "content": {
+            "size": 5,
+            "checkpoints": [
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 3
+              }
+            ],
+            "walls": [
+              {
+                "a": {
+                  "col": 2,
+                  "row": 1
+                },
+                "b": {
+                  "col": 3,
+                  "row": 1
+                }
+              },
+              {
+                "a": {
+                  "col": 2,
+                  "row": 2
+                },
+                "b": {
+                  "col": 1,
+                  "row": 2
+                }
+              }
+            ],
+            "difficulty": "easy",
+            "path": [],
+            "complete": false
+          },
+          "startedAt": null
+        }
+      ]
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /admin/users": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "cmwuewhu300047df86w7kw8fs",
+          "username": "sagar",
+          "displayName": "Sagar",
+          "email": "sagar@dailyloop.dev",
+          "role": "USER",
+          "createdAt": "2026-11-24T08:07:40.875Z",
+          "currentStreak": 1,
+          "gamesPlayed": 1,
+          "totalPoints": 80
+        },
+        {
+          "id": "cmwuewhso00037df8osl80xyg",
+          "username": "aayush",
+          "displayName": "Aayush",
+          "email": "aayush@dailyloop.dev",
+          "role": "USER",
+          "createdAt": "2026-11-24T08:07:40.824Z",
+          "currentStreak": 1,
+          "gamesPlayed": 1,
+          "totalPoints": 80
+        },
+        {
+          "id": "cmwuewhrb00027df8zbiq50co",
+          "username": "sumit",
+          "displayName": "Sumit",
+          "email": "sumit@dailyloop.dev",
+          "role": "USER",
+          "createdAt": "2026-11-24T08:07:40.775Z",
+          "currentStreak": 1,
+          "gamesPlayed": 2,
+          "totalPoints": 195
+        },
+        {
+          "id": "cmwuewhpx00017df80oqjhi0l",
+          "username": "harry",
+          "displayName": "Harry",
+          "email": "harry@dailyloop.dev",
+          "role": "ADMIN",
+          "createdAt": "2026-11-24T08:07:40.726Z",
+          "currentStreak": 1,
+          "gamesPlayed": 1,
+          "totalPoints": 100
+        },
+        {
+          "id": "cmwuewhoh00007df8p15r3dmx",
+          "username": "admin",
+          "displayName": "DailyLoop Admin",
+          "email": "admin@dailyloop.dev",
+          "role": "ADMIN",
+          "createdAt": "2026-11-24T08:07:40.673Z",
+          "currentStreak": 0,
+          "gamesPlayed": 0,
+          "totalPoints": 0
+        }
+      ]
+    }
+  }
+}

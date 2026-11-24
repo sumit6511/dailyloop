@@ -1,0 +1,78 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /games/word-guess/today": {
+    "status": 200,
+    "body": {
+      "data": {
+        "slug": "word-guess",
+        "name": "Word Guess",
+        "description": "Guess the daily word in six tries.",
+        "icon": "🟨",
+        "difficulty": "medium",
+        "available": true,
+        "puzzleNumber": 30,
+        "status": "in_progress",
+        "score": null,
+        "mistakeCount": 1,
+        "hintsUsed": 0,
+        "activeMs": 6,
+        "content": {
+          "guesses": [
+            {
+              "word": "CRANE",
+              "feedback": [
+                {
+                  "letter": "C",
+                  "status": "absent"
+                },
+                {
+                  "letter": "R",
+                  "status": "present"
+                },
+                {
+                  "letter": "A",
+                  "status": "absent"
+                },
+                {
+                  "letter": "N",
+                  "status": "absent"
+                },
+                {
+                  "letter": "E",
+                  "status": "absent"
+                }
+              ]
+            }
+          ],
+          "guessesRemaining": 5,
+          "complete": false
+        },
+        "startedAt": "2026-11-24T08:07:52.241Z"
+      }
+    }
+  }
+}

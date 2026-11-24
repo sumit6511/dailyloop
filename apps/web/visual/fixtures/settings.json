@@ -1,0 +1,27 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  }
+}

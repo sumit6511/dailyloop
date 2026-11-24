@@ -1,0 +1,105 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /games/connections/today": {
+    "status": 200,
+    "body": {
+      "data": {
+        "slug": "connections",
+        "name": "Connections",
+        "description": "Group 16 words into four hidden categories.",
+        "icon": "🟩",
+        "difficulty": "medium",
+        "available": true,
+        "puzzleNumber": 30,
+        "status": "in_progress",
+        "score": null,
+        "mistakeCount": 0,
+        "hintsUsed": 0,
+        "activeMs": 0,
+        "content": {
+          "words": [
+            "BOUNTY",
+            "BAGUETTE",
+            "RYE",
+            "MAPLE",
+            "SOURDOUGH",
+            "SPOT",
+            "OAK",
+            "TITANIC",
+            "TOPS",
+            "WILLOW",
+            "CIABATTA",
+            "POTS",
+            "STOP",
+            "MAYFLOWER",
+            "ENDEAVOUR",
+            "BIRCH"
+          ],
+          "solved": [],
+          "guesses": [],
+          "lastMoveRepeated": false,
+          "mistakesRemaining": 4,
+          "complete": false
+        },
+        "startedAt": "2026-11-24T08:07:58.065Z"
+      }
+    }
+  },
+  "POST /games/connections/attempts/start": {
+    "status": 200,
+    "body": {
+      "data": {
+        "status": "IN_PROGRESS",
+        "content": {
+          "words": [
+            "BOUNTY",
+            "BAGUETTE",
+            "RYE",
+            "MAPLE",
+            "SOURDOUGH",
+            "SPOT",
+            "OAK",
+            "TITANIC",
+            "TOPS",
+            "WILLOW",
+            "CIABATTA",
+            "POTS",
+            "STOP",
+            "MAYFLOWER",
+            "ENDEAVOUR",
+            "BIRCH"
+          ],
+          "solved": [],
+          "guesses": [],
+          "lastMoveRepeated": false,
+          "mistakesRemaining": 4,
+          "complete": false
+        }
+      }
+    }
+  }
+}

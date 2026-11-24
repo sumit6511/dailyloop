@@ -1,0 +1,121 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /admin/activity": {
+    "status": 200,
+    "body": {
+      "data": {
+        "date": "2026-11-24",
+        "activeUsers": 4,
+        "perfectDays": 0,
+        "totalAttempts": 10,
+        "completedAttempts": 5,
+        "topScores": [
+          {
+            "username": "sumit",
+            "score": 195,
+            "isPerfectDay": false
+          },
+          {
+            "username": "harry",
+            "score": 100,
+            "isPerfectDay": false
+          },
+          {
+            "username": "aayush",
+            "score": 80,
+            "isPerfectDay": false
+          },
+          {
+            "username": "sagar",
+            "score": 80,
+            "isPerfectDay": false
+          }
+        ]
+      }
+    }
+  },
+  "GET /admin/stats/overview": {
+    "status": 200,
+    "body": {
+      "data": {
+        "totalUsers": 5,
+        "totalAttempts": 10,
+        "completedAttempts": 5,
+        "games": [
+          {
+            "slug": "connections",
+            "name": "Connections",
+            "isEnabled": true,
+            "puzzleCount": 35,
+            "completedCount": 0,
+            "averageScore": 0
+          },
+          {
+            "slug": "word-guess",
+            "name": "Word Guess",
+            "isEnabled": true,
+            "puzzleCount": 35,
+            "completedCount": 1,
+            "averageScore": 95
+          },
+          {
+            "slug": "number-puzzle",
+            "name": "Number Puzzle",
+            "isEnabled": true,
+            "puzzleCount": 35,
+            "completedCount": 0,
+            "averageScore": 0
+          },
+          {
+            "slug": "logic-puzzle",
+            "name": "Logic Puzzle",
+            "isEnabled": true,
+            "puzzleCount": 35,
+            "completedCount": 0,
+            "averageScore": 0
+          },
+          {
+            "slug": "guess-it",
+            "name": "Guess It",
+            "isEnabled": true,
+            "puzzleCount": 35,
+            "completedCount": 4,
+            "averageScore": 90
+          },
+          {
+            "slug": "pathway",
+            "name": "Pathway",
+            "isEnabled": true,
+            "puzzleCount": 35,
+            "completedCount": 0,
+            "averageScore": 0
+          }
+        ]
+      }
+    }
+  }
+}

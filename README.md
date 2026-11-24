@@ -98,17 +98,18 @@ repo root instead of `apps/web/`).
 
 Run from the repo root:
 
-| Command                                    | What it does                                                 |
-| ------------------------------------------ | ------------------------------------------------------------ |
-| `npm run dev`                              | Runs the API and web app together                            |
-| `npm run build`                            | Builds the web app for production                            |
-| `npm run typecheck`                        | Type-checks every package                                    |
-| `npm run lint` / `format` / `format:check` | ESLint / Prettier (write / check) across the repo            |
-| `npm test`                                 | Runs all test suites (needs the DB containers up + migrated) |
-| `npm run db:up` / `db:down`                | Start/stop local Postgres (dev + test)                       |
-| `npm run db:migrate`                       | Create & apply a dev migration                               |
-| `npm run db:studio`                        | Open Prisma Studio                                           |
-| `npm run db:seed`                          | (Re-)seed dev data                                           |
+| Command                                    | What it does                                                    |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `npm run dev`                              | Runs the API and web app together                               |
+| `npm run build`                            | Builds the web app for production                               |
+| `npm run typecheck`                        | Type-checks every package                                       |
+| `npm run lint` / `format` / `format:check` | ESLint / Prettier (write / check) across the repo               |
+| `npm test`                                 | Runs all test suites (needs the DB containers up + migrated)    |
+| `npm run test:visual -w @dailyloop/web`    | Screenshot regression tests, no DB needed (see apps/web/visual) |
+| `npm run db:up` / `db:down`                | Start/stop local Postgres (dev + test)                          |
+| `npm run db:migrate`                       | Create & apply a dev migration                                  |
+| `npm run db:studio`                        | Open Prisma Studio                                              |
+| `npm run db:seed`                          | (Re-)seed dev data                                              |
 
 ## Testing
 

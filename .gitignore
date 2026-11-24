@@ -14,3 +14,7 @@ prisma/generated/
 *.tsbuildinfo
 .vscode/*
 !.vscode/extensions.json
+
+# Playwright visual-test output
+apps/web/test-results/
+apps/web/playwright-report/

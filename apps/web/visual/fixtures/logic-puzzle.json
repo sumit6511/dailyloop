@@ -1,0 +1,104 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /games/logic-puzzle/today": {
+    "status": 200,
+    "body": {
+      "data": {
+        "slug": "logic-puzzle",
+        "name": "Logic Puzzle",
+        "description": "Solve a daily 6×6 mini logic grid.",
+        "icon": "🧠",
+        "difficulty": "hard",
+        "available": true,
+        "puzzleNumber": 30,
+        "status": "in_progress",
+        "score": null,
+        "mistakeCount": 0,
+        "hintsUsed": 0,
+        "activeMs": 0,
+        "content": {
+          "puzzle": [
+            [0, 0, 5, 0, 2, 0],
+            [3, 1, 2, 0, 6, 0],
+            [0, 0, 4, 0, 0, 1],
+            [5, 0, 0, 2, 0, 0],
+            [0, 5, 0, 4, 3, 2],
+            [0, 4, 0, 6, 0, 0]
+          ],
+          "grid": [
+            [0, 0, 5, 0, 2, 0],
+            [3, 1, 2, 0, 6, 0],
+            [0, 0, 4, 0, 0, 1],
+            [5, 0, 0, 2, 0, 0],
+            [0, 5, 0, 4, 3, 2],
+            [0, 4, 0, 6, 0, 0]
+          ],
+          "difficulty": "easy",
+          "complete": false
+        },
+        "startedAt": "2026-11-24T08:08:03.787Z"
+      }
+    }
+  },
+  "POST /games/logic-puzzle/attempts/start": {
+    "status": 200,
+    "body": {
+      "data": {
+        "status": "IN_PROGRESS",
+        "content": {
+          "puzzle": [
+            [0, 0, 5, 0, 2, 0],
+            [3, 1, 2, 0, 6, 0],
+            [0, 0, 4, 0, 0, 1],
+            [5, 0, 0, 2, 0, 0],
+            [0, 5, 0, 4, 3, 2],
+            [0, 4, 0, 6, 0, 0]
+          ],
+          "grid": [
+            [0, 0, 5, 0, 2, 0],
+            [3, 1, 2, 0, 6, 0],
+            [0, 0, 4, 0, 0, 1],
+            [5, 0, 0, 2, 0, 0],
+            [0, 5, 0, 4, 3, 2],
+            [0, 4, 0, 6, 0, 0]
+          ],
+          "difficulty": "easy",
+          "complete": false
+        }
+      }
+    }
+  },
+  "POST /games/logic-puzzle/attempts/heartbeat": {
+    "status": 200,
+    "body": {
+      "data": {
+        "activeMs": 46,
+        "complete": false
+      }
+    }
+  }
+}

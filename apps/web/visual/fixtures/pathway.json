@@ -1,0 +1,171 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /games/pathway/today": {
+    "status": 200,
+    "body": {
+      "data": {
+        "slug": "pathway",
+        "name": "Pathway",
+        "description": "Draw one continuous path through every cell, in checkpoint order.",
+        "icon": "🧵",
+        "difficulty": "hard",
+        "available": true,
+        "puzzleNumber": 30,
+        "status": "in_progress",
+        "score": null,
+        "mistakeCount": 0,
+        "hintsUsed": 0,
+        "activeMs": 0,
+        "content": {
+          "size": 5,
+          "checkpoints": [
+            {
+              "col": 4,
+              "row": 2
+            },
+            {
+              "col": 3,
+              "row": 3
+            },
+            {
+              "col": 3,
+              "row": 0
+            },
+            {
+              "col": 0,
+              "row": 1
+            },
+            {
+              "col": 0,
+              "row": 3
+            },
+            {
+              "col": 2,
+              "row": 3
+            },
+            {
+              "col": 1,
+              "row": 3
+            }
+          ],
+          "walls": [
+            {
+              "a": {
+                "col": 2,
+                "row": 1
+              },
+              "b": {
+                "col": 3,
+                "row": 1
+              }
+            },
+            {
+              "a": {
+                "col": 2,
+                "row": 2
+              },
+              "b": {
+                "col": 1,
+                "row": 2
+              }
+            }
+          ],
+          "difficulty": "easy",
+          "path": [],
+          "complete": false
+        },
+        "startedAt": "2026-11-24T08:08:08.325Z"
+      }
+    }
+  },
+  "POST /games/pathway/attempts/start": {
+    "status": 200,
+    "body": {
+      "data": {
+        "status": "IN_PROGRESS",
+        "content": {
+          "size": 5,
+          "checkpoints": [
+            {
+              "col": 4,
+              "row": 2
+            },
+            {
+              "col": 3,
+              "row": 3
+            },
+            {
+              "col": 3,
+              "row": 0
+            },
+            {
+              "col": 0,
+              "row": 1
+            },
+            {
+              "col": 0,
+              "row": 3
+            },
+            {
+              "col": 2,
+              "row": 3
+            },
+            {
+              "col": 1,
+              "row": 3
+            }
+          ],
+          "walls": [
+            {
+              "a": {
+                "col": 2,
+                "row": 1
+              },
+              "b": {
+                "col": 3,
+                "row": 1
+              }
+            },
+            {
+              "a": {
+                "col": 2,
+                "row": 2
+              },
+              "b": {
+                "col": 1,
+                "row": 2
+              }
+            }
+          ],
+          "difficulty": "easy",
+          "path": [],
+          "complete": false
+        }
+      }
+    }
+  }
+}

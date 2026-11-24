@@ -1,0 +1,2513 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /admin/games": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "cmwuewhue000h7df8otntkvxi",
+          "slug": "connections",
+          "name": "Connections",
+          "description": "Group 16 words into four hidden categories.",
+          "icon": "🟩",
+          "difficulty": "medium",
+          "isEnabled": true,
+          "sortOrder": 0,
+          "createdAt": "2026-11-24T08:07:40.887Z",
+          "updatedAt": "2026-11-24T08:07:40.887Z"
+        },
+        {
+          "id": "cmwuewhug000i7df87vefvgkg",
+          "slug": "word-guess",
+          "name": "Word Guess",
+          "description": "Guess the daily word in six tries.",
+          "icon": "🟨",
+          "difficulty": "medium",
+          "isEnabled": true,
+          "sortOrder": 1,
+          "createdAt": "2026-11-24T08:07:40.888Z",
+          "updatedAt": "2026-11-24T08:07:40.888Z"
+        },
+        {
+          "id": "cmwuewhuh000j7df87m96pzjh",
+          "slug": "number-puzzle",
+          "name": "Number Puzzle",
+          "description": "Reach the target using numbers and operators.",
+          "icon": "🔢",
+          "difficulty": "medium",
+          "isEnabled": true,
+          "sortOrder": 2,
+          "createdAt": "2026-11-24T08:07:40.889Z",
+          "updatedAt": "2026-11-24T08:07:40.889Z"
+        },
+        {
+          "id": "cmwuewhuh000k7df8zzs46sgi",
+          "slug": "logic-puzzle",
+          "name": "Logic Puzzle",
+          "description": "Solve a daily 6×6 mini logic grid.",
+          "icon": "🧠",
+          "difficulty": "hard",
+          "isEnabled": true,
+          "sortOrder": 3,
+          "createdAt": "2026-11-24T08:07:40.890Z",
+          "updatedAt": "2026-11-24T08:07:40.890Z"
+        },
+        {
+          "id": "cmwuewhui000l7df8pjz80b4z",
+          "slug": "guess-it",
+          "name": "Guess It",
+          "description": "Identify the mystery answer from four clues.",
+          "icon": "🎯",
+          "difficulty": "easy",
+          "isEnabled": true,
+          "sortOrder": 4,
+          "createdAt": "2026-11-24T08:07:40.891Z",
+          "updatedAt": "2026-11-24T08:07:40.891Z"
+        },
+        {
+          "id": "cmwuewhuj000m7df8blvpa1z0",
+          "slug": "pathway",
+          "name": "Pathway",
+          "description": "Draw one continuous path through every cell, in checkpoint order.",
+          "icon": "🧵",
+          "difficulty": "hard",
+          "isEnabled": true,
+          "sortOrder": 5,
+          "createdAt": "2026-11-24T08:07:40.891Z",
+          "updatedAt": "2026-11-24T08:07:40.891Z"
+        }
+      ]
+    }
+  },
+  "GET /admin/puzzles": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "cmwuewhx5002k7df8sfdhmevk",
+          "gameSlug": "connections",
+          "gameName": "Connections",
+          "date": "2026-11-29",
+          "puzzleNumber": 35,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "words": [
+              "EYE",
+              "BOWLINE",
+              "THOR",
+              "SEA",
+              "SUPERMAN",
+              "BEE",
+              "DIME",
+              "QUARTER",
+              "REEF",
+              "SHEEPSHANK",
+              "BATMAN",
+              "NICKEL",
+              "HITCH",
+              "FLASH",
+              "TEA",
+              "PENNY"
+            ],
+            "categories": [
+              {
+                "title": "Superheroes",
+                "words": ["BATMAN", "SUPERMAN", "FLASH", "THOR"],
+                "difficulty": 1
+              },
+              {
+                "title": "U.S. Coins",
+                "words": ["PENNY", "NICKEL", "DIME", "QUARTER"],
+                "difficulty": 2
+              },
+              {
+                "title": "Knots",
+                "words": ["BOWLINE", "HITCH", "REEF", "SHEEPSHANK"],
+                "difficulty": 3
+              },
+              {
+                "title": "Sound Like Letters",
+                "words": ["SEA", "TEA", "BEE", "EYE"],
+                "difficulty": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhz2004i7df8s3x9nltn",
+          "gameSlug": "word-guess",
+          "gameName": "Word Guess",
+          "date": "2026-11-29",
+          "puzzleNumber": 35,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "answer": "TRIED"
+          }
+        },
+        {
+          "id": "cmwuewi11006g7df83ztgcv3n",
+          "gameSlug": "number-puzzle",
+          "gameName": "Number Puzzle",
+          "date": "2026-11-29",
+          "puzzleNumber": 35,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "target": 99,
+            "numbers": [9, 7, 12, 7],
+            "solution": "(12 − (7 ÷ 7)) × 9",
+            "difficulty": "hard"
+          }
+        },
+        {
+          "id": "cmwuewi89008e7df88jm3fuii",
+          "gameSlug": "logic-puzzle",
+          "gameName": "Logic Puzzle",
+          "date": "2026-11-29",
+          "puzzleNumber": 35,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "puzzle": [
+              [4, 0, 0, 0, 0, 0],
+              [2, 0, 0, 6, 0, 0],
+              [0, 0, 2, 1, 0, 0],
+              [0, 0, 6, 5, 0, 0],
+              [0, 0, 5, 0, 0, 3],
+              [0, 0, 0, 0, 0, 1]
+            ],
+            "solution": [
+              [4, 6, 1, 3, 2, 5],
+              [2, 5, 3, 6, 1, 4],
+              [5, 4, 2, 1, 3, 6],
+              [3, 1, 6, 5, 4, 2],
+              [1, 2, 5, 4, 6, 3],
+              [6, 3, 4, 2, 5, 1]
+            ],
+            "difficulty": "hard"
+          }
+        },
+        {
+          "id": "cmwuewia800ac7df8lrt5miwj",
+          "gameSlug": "guess-it",
+          "gameName": "Guess It",
+          "date": "2026-11-29",
+          "puzzleNumber": 35,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "clues": [
+              "This is an ancient monument.",
+              "It is more than 4,000 years old.",
+              "It is in Wiltshire, England.",
+              "It is a prehistoric ring of giant standing stones."
+            ],
+            "answer": "Stonehenge",
+            "aliases": [],
+            "category": "Places"
+          }
+        },
+        {
+          "id": "cmwuewin800ca7df8k3yupjgg",
+          "gameSlug": "pathway",
+          "gameName": "Pathway",
+          "date": "2026-11-29",
+          "puzzleNumber": 35,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "size": 7,
+            "walls": [
+              {
+                "a": {
+                  "col": 1,
+                  "row": 1
+                },
+                "b": {
+                  "col": 1,
+                  "row": 0
+                }
+              },
+              {
+                "a": {
+                  "col": 1,
+                  "row": 2
+                },
+                "b": {
+                  "col": 1,
+                  "row": 1
+                }
+              },
+              {
+                "a": {
+                  "col": 6,
+                  "row": 2
+                },
+                "b": {
+                  "col": 6,
+                  "row": 1
+                }
+              },
+              {
+                "a": {
+                  "col": 5,
+                  "row": 4
+                },
+                "b": {
+                  "col": 5,
+                  "row": 5
+                }
+              },
+              {
+                "a": {
+                  "col": 3,
+                  "row": 5
+                },
+                "b": {
+                  "col": 2,
+                  "row": 5
+                }
+              },
+              {
+                "a": {
+                  "col": 2,
+                  "row": 5
+                },
+                "b": {
+                  "col": 2,
+                  "row": 6
+                }
+              }
+            ],
+            "solution": [
+              {
+                "col": 6,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 1
+              },
+              {
+                "col": 6,
+                "row": 1
+              },
+              {
+                "col": 6,
+                "row": 0
+              },
+              {
+                "col": 5,
+                "row": 0
+              },
+              {
+                "col": 4,
+                "row": 0
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 1,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 0,
+                "row": 4
+              },
+              {
+                "col": 0,
+                "row": 5
+              },
+              {
+                "col": 0,
+                "row": 6
+              },
+              {
+                "col": 1,
+                "row": 6
+              },
+              {
+                "col": 2,
+                "row": 6
+              },
+              {
+                "col": 3,
+                "row": 6
+              },
+              {
+                "col": 4,
+                "row": 6
+              },
+              {
+                "col": 5,
+                "row": 6
+              },
+              {
+                "col": 6,
+                "row": 6
+              },
+              {
+                "col": 6,
+                "row": 5
+              },
+              {
+                "col": 5,
+                "row": 5
+              },
+              {
+                "col": 4,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 4
+              },
+              {
+                "col": 4,
+                "row": 4
+              },
+              {
+                "col": 5,
+                "row": 4
+              },
+              {
+                "col": 6,
+                "row": 4
+              },
+              {
+                "col": 6,
+                "row": 3
+              },
+              {
+                "col": 5,
+                "row": 3
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 4,
+                "row": 1
+              },
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 3,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 4
+              },
+              {
+                "col": 1,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 4
+              }
+            ],
+            "difficulty": "hard",
+            "checkpoints": [
+              {
+                "col": 6,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 6
+              },
+              {
+                "col": 6,
+                "row": 6
+              },
+              {
+                "col": 5,
+                "row": 4
+              },
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhx3002i7df8713romlq",
+          "gameSlug": "connections",
+          "gameName": "Connections",
+          "date": "2026-11-28",
+          "puzzleNumber": 34,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "words": [
+              "ANGEL",
+              "LEMON",
+              "HOSPITAL",
+              "MAROON",
+              "FLASH",
+              "PLANE",
+              "TRAFFIC",
+              "KIWI",
+              "HEAD",
+              "CRIMSON",
+              "APPLE",
+              "MOON",
+              "BAT",
+              "SCARLET",
+              "MANGO",
+              "BURGUNDY"
+            ],
+            "categories": [
+              {
+                "title": "Fruits",
+                "words": ["KIWI", "MANGO", "APPLE", "LEMON"],
+                "difficulty": 1
+              },
+              {
+                "title": "Shades of Red",
+                "words": ["SCARLET", "CRIMSON", "MAROON", "BURGUNDY"],
+                "difficulty": 2
+              },
+              {
+                "title": "___light",
+                "words": ["MOON", "HEAD", "FLASH", "TRAFFIC"],
+                "difficulty": 3
+              },
+              {
+                "title": "Things with Wings",
+                "words": ["PLANE", "ANGEL", "HOSPITAL", "BAT"],
+                "difficulty": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhz1004g7df8zzn8ubbw",
+          "gameSlug": "word-guess",
+          "gameName": "Word Guess",
+          "date": "2026-11-28",
+          "puzzleNumber": 34,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "answer": "HELLO"
+          }
+        },
+        {
+          "id": "cmwuewi0z006e7df8xz418o9k",
+          "gameSlug": "number-puzzle",
+          "gameName": "Number Puzzle",
+          "date": "2026-11-28",
+          "puzzleNumber": 34,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "target": 82,
+            "numbers": [2, 4, 5, 4],
+            "solution": "((4 × 5) × 4) + 2",
+            "difficulty": "hard"
+          }
+        },
+        {
+          "id": "cmwuewi7s008c7df872eharvf",
+          "gameSlug": "logic-puzzle",
+          "gameName": "Logic Puzzle",
+          "date": "2026-11-28",
+          "puzzleNumber": 34,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "puzzle": [
+              [5, 0, 0, 0, 6, 0],
+              [0, 1, 0, 0, 0, 4],
+              [0, 0, 0, 1, 0, 0],
+              [0, 0, 4, 0, 0, 0],
+              [3, 0, 0, 0, 2, 0],
+              [0, 2, 0, 0, 0, 5]
+            ],
+            "solution": [
+              [5, 4, 3, 2, 6, 1],
+              [6, 1, 2, 5, 3, 4],
+              [2, 6, 5, 1, 4, 3],
+              [1, 3, 4, 6, 5, 2],
+              [3, 5, 1, 4, 2, 6],
+              [4, 2, 6, 3, 1, 5]
+            ],
+            "difficulty": "hard"
+          }
+        },
+        {
+          "id": "cmwuewia600aa7df8w7t1t99h",
+          "gameSlug": "guess-it",
+          "gameName": "Guess It",
+          "date": "2026-11-28",
+          "puzzleNumber": 34,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "clues": [
+              "This person was a writer.",
+              "He lived in England during the 16th and 17th centuries.",
+              "He wrote plays including Hamlet and Macbeth.",
+              "He is often called the greatest playwright in the English language."
+            ],
+            "answer": "William Shakespeare",
+            "aliases": ["Shakespeare"],
+            "category": "People"
+          }
+        },
+        {
+          "id": "cmwuewiml00c87df8top684bz",
+          "gameSlug": "pathway",
+          "gameName": "Pathway",
+          "date": "2026-11-28",
+          "puzzleNumber": 34,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "size": 7,
+            "walls": [
+              {
+                "a": {
+                  "col": 3,
+                  "row": 0
+                },
+                "b": {
+                  "col": 4,
+                  "row": 0
+                }
+              },
+              {
+                "a": {
+                  "col": 0,
+                  "row": 1
+                },
+                "b": {
+                  "col": 0,
+                  "row": 2
+                }
+              },
+              {
+                "a": {
+                  "col": 6,
+                  "row": 1
+                },
+                "b": {
+                  "col": 5,
+                  "row": 1
+                }
+              },
+              {
+                "a": {
+                  "col": 6,
+                  "row": 4
+                },
+                "b": {
+                  "col": 6,
+                  "row": 5
+                }
+              },
+              {
+                "a": {
+                  "col": 1,
+                  "row": 5
+                },
+                "b": {
+                  "col": 1,
+                  "row": 6
+                }
+              }
+            ],
+            "solution": [
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 1,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 2
+              },
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 1
+              },
+              {
+                "col": 4,
+                "row": 1
+              },
+              {
+                "col": 4,
+                "row": 0
+              },
+              {
+                "col": 5,
+                "row": 0
+              },
+              {
+                "col": 6,
+                "row": 0
+              },
+              {
+                "col": 6,
+                "row": 1
+              },
+              {
+                "col": 6,
+                "row": 2
+              },
+              {
+                "col": 6,
+                "row": 3
+              },
+              {
+                "col": 6,
+                "row": 4
+              },
+              {
+                "col": 5,
+                "row": 4
+              },
+              {
+                "col": 5,
+                "row": 5
+              },
+              {
+                "col": 6,
+                "row": 5
+              },
+              {
+                "col": 6,
+                "row": 6
+              },
+              {
+                "col": 5,
+                "row": 6
+              },
+              {
+                "col": 4,
+                "row": 6
+              },
+              {
+                "col": 3,
+                "row": 6
+              },
+              {
+                "col": 2,
+                "row": 6
+              },
+              {
+                "col": 1,
+                "row": 6
+              },
+              {
+                "col": 0,
+                "row": 6
+              },
+              {
+                "col": 0,
+                "row": 5
+              },
+              {
+                "col": 1,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 5
+              },
+              {
+                "col": 4,
+                "row": 5
+              },
+              {
+                "col": 4,
+                "row": 4
+              },
+              {
+                "col": 3,
+                "row": 4
+              },
+              {
+                "col": 2,
+                "row": 4
+              },
+              {
+                "col": 1,
+                "row": 4
+              },
+              {
+                "col": 0,
+                "row": 4
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 0,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 3
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 5,
+                "row": 3
+              }
+            ],
+            "difficulty": "hard",
+            "checkpoints": [
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 1
+              },
+              {
+                "col": 6,
+                "row": 4
+              },
+              {
+                "col": 2,
+                "row": 6
+              },
+              {
+                "col": 4,
+                "row": 5
+              },
+              {
+                "col": 1,
+                "row": 4
+              },
+              {
+                "col": 5,
+                "row": 3
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhx2002g7df88myvhh1l",
+          "gameSlug": "connections",
+          "gameName": "Connections",
+          "date": "2026-11-27",
+          "puzzleNumber": 33,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "words": [
+              "ESPRESSO",
+              "TANGO",
+              "THYME",
+              "COMB",
+              "GEAR",
+              "ZIPPER",
+              "CUMIN",
+              "BRAVO",
+              "MACCHIATO",
+              "PAPRIKA",
+              "SAW",
+              "BASIL",
+              "CHARLIE",
+              "WHISKEY",
+              "MOCHA",
+              "LATTE"
+            ],
+            "categories": [
+              {
+                "title": "Coffee Drinks",
+                "words": ["LATTE", "MOCHA", "ESPRESSO", "MACCHIATO"],
+                "difficulty": 1
+              },
+              {
+                "title": "Herbs & Spices",
+                "words": ["BASIL", "THYME", "CUMIN", "PAPRIKA"],
+                "difficulty": 2
+              },
+              {
+                "title": "NATO Alphabet",
+                "words": ["BRAVO", "CHARLIE", "TANGO", "WHISKEY"],
+                "difficulty": 3
+              },
+              {
+                "title": "Things with Teeth",
+                "words": ["COMB", "SAW", "ZIPPER", "GEAR"],
+                "difficulty": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhyz004e7df8sqx5tail",
+          "gameSlug": "word-guess",
+          "gameName": "Word Guess",
+          "date": "2026-11-27",
+          "puzzleNumber": 33,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "answer": "PHONE"
+          }
+        },
+        {
+          "id": "cmwuewi0y006c7df8yvcscfnt",
+          "gameSlug": "number-puzzle",
+          "gameName": "Number Puzzle",
+          "date": "2026-11-27",
+          "puzzleNumber": 33,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "target": 96,
+            "numbers": [3, 4, 3, 4],
+            "solution": "((3 + 3) × 4) × 4",
+            "difficulty": "hard"
+          }
+        },
+        {
+          "id": "cmwuewi7b008a7df8xlztq33w",
+          "gameSlug": "logic-puzzle",
+          "gameName": "Logic Puzzle",
+          "date": "2026-11-27",
+          "puzzleNumber": 33,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "puzzle": [
+              [0, 4, 0, 0, 0, 0],
+              [0, 0, 0, 0, 4, 5],
+              [0, 2, 0, 6, 0, 0],
+              [0, 0, 6, 0, 2, 0],
+              [5, 1, 0, 0, 0, 0],
+              [0, 0, 0, 0, 3, 0]
+            ],
+            "solution": [
+              [2, 4, 5, 3, 1, 6],
+              [6, 3, 1, 2, 4, 5],
+              [1, 2, 4, 6, 5, 3],
+              [3, 5, 6, 1, 2, 4],
+              [5, 1, 3, 4, 6, 2],
+              [4, 6, 2, 5, 3, 1]
+            ],
+            "difficulty": "hard"
+          }
+        },
+        {
+          "id": "cmwuewia400a87df8xg9f9y3i",
+          "gameSlug": "guess-it",
+          "gameName": "Guess It",
+          "date": "2026-11-27",
+          "puzzleNumber": 33,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "clues": [
+              "This is a movie.",
+              "Disney released it in 2013.",
+              "It is loosely inspired by Hans Christian Andersen's 'The Snow Queen'.",
+              "Its hit song is 'Let It Go'."
+            ],
+            "answer": "Frozen",
+            "aliases": [],
+            "category": "Movies"
+          }
+        },
+        {
+          "id": "cmwuewilv00c67df8zzfm7j73",
+          "gameSlug": "pathway",
+          "gameName": "Pathway",
+          "date": "2026-11-27",
+          "puzzleNumber": 33,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "size": 7,
+            "walls": [
+              {
+                "a": {
+                  "col": 1,
+                  "row": 0
+                },
+                "b": {
+                  "col": 2,
+                  "row": 0
+                }
+              },
+              {
+                "a": {
+                  "col": 4,
+                  "row": 2
+                },
+                "b": {
+                  "col": 4,
+                  "row": 1
+                }
+              },
+              {
+                "a": {
+                  "col": 1,
+                  "row": 3
+                },
+                "b": {
+                  "col": 2,
+                  "row": 3
+                }
+              },
+              {
+                "a": {
+                  "col": 0,
+                  "row": 5
+                },
+                "b": {
+                  "col": 0,
+                  "row": 4
+                }
+              },
+              {
+                "a": {
+                  "col": 4,
+                  "row": 4
+                },
+                "b": {
+                  "col": 5,
+                  "row": 4
+                }
+              },
+              {
+                "a": {
+                  "col": 4,
+                  "row": 5
+                },
+                "b": {
+                  "col": 4,
+                  "row": 4
+                }
+              },
+              {
+                "a": {
+                  "col": 6,
+                  "row": 4
+                },
+                "b": {
+                  "col": 6,
+                  "row": 5
+                }
+              }
+            ],
+            "solution": [
+              {
+                "col": 5,
+                "row": 5
+              },
+              {
+                "col": 6,
+                "row": 5
+              },
+              {
+                "col": 6,
+                "row": 6
+              },
+              {
+                "col": 5,
+                "row": 6
+              },
+              {
+                "col": 4,
+                "row": 6
+              },
+              {
+                "col": 4,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 6
+              },
+              {
+                "col": 2,
+                "row": 6
+              },
+              {
+                "col": 1,
+                "row": 6
+              },
+              {
+                "col": 0,
+                "row": 6
+              },
+              {
+                "col": 0,
+                "row": 5
+              },
+              {
+                "col": 1,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 4
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 4
+              },
+              {
+                "col": 4,
+                "row": 4
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 5,
+                "row": 3
+              },
+              {
+                "col": 5,
+                "row": 4
+              },
+              {
+                "col": 6,
+                "row": 4
+              },
+              {
+                "col": 6,
+                "row": 3
+              },
+              {
+                "col": 6,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 2
+              },
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 2
+              },
+              {
+                "col": 2,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 4
+              },
+              {
+                "col": 0,
+                "row": 4
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 0,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 0,
+                "row": 0
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 1,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 4,
+                "row": 1
+              },
+              {
+                "col": 4,
+                "row": 0
+              },
+              {
+                "col": 5,
+                "row": 0
+              },
+              {
+                "col": 6,
+                "row": 0
+              },
+              {
+                "col": 6,
+                "row": 1
+              },
+              {
+                "col": 5,
+                "row": 1
+              }
+            ],
+            "difficulty": "hard",
+            "checkpoints": [
+              {
+                "col": 5,
+                "row": 5
+              },
+              {
+                "col": 1,
+                "row": 6
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 6,
+                "row": 3
+              },
+              {
+                "col": 5,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 5,
+                "row": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhwz002e7df8s3h7ajpe",
+          "gameSlug": "connections",
+          "gameName": "Connections",
+          "date": "2026-11-26",
+          "puzzleNumber": 32,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "words": [
+              "OOLONG",
+              "EGG",
+              "MATCHA",
+              "JOKE",
+              "NIMBUS",
+              "OVEN",
+              "KNUCKLES",
+              "CUMULUS",
+              "CIRRUS",
+              "BLENDER",
+              "STRATUS",
+              "DARJEELING",
+              "CODE",
+              "CHAMOMILE",
+              "TOASTER",
+              "KETTLE"
+            ],
+            "categories": [
+              {
+                "title": "Kitchen Appliances",
+                "words": ["BLENDER", "TOASTER", "KETTLE", "OVEN"],
+                "difficulty": 1
+              },
+              {
+                "title": "Types of Tea",
+                "words": ["CHAMOMILE", "OOLONG", "MATCHA", "DARJEELING"],
+                "difficulty": 2
+              },
+              {
+                "title": "Types of Clouds",
+                "words": ["CIRRUS", "CUMULUS", "STRATUS", "NIMBUS"],
+                "difficulty": 3
+              },
+              {
+                "title": "Things You Can Crack",
+                "words": ["CODE", "JOKE", "EGG", "KNUCKLES"],
+                "difficulty": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhyy004c7df8jf34t2sf",
+          "gameSlug": "word-guess",
+          "gameName": "Word Guess",
+          "date": "2026-11-26",
+          "puzzleNumber": 32,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "answer": "CAUSE"
+          }
+        },
+        {
+          "id": "cmwuewi0x006a7df80u88fz9s",
+          "gameSlug": "number-puzzle",
+          "gameName": "Number Puzzle",
+          "date": "2026-11-26",
+          "puzzleNumber": 32,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "target": 77,
+            "numbers": [4, 2, 7, 5],
+            "solution": "((2 + 5) + 4) × 7",
+            "difficulty": "medium"
+          }
+        },
+        {
+          "id": "cmwuewi6t00887df8nx6tbw0c",
+          "gameSlug": "logic-puzzle",
+          "gameName": "Logic Puzzle",
+          "date": "2026-11-26",
+          "puzzleNumber": 32,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "puzzle": [
+              [0, 0, 0, 6, 4, 0],
+              [6, 0, 4, 0, 5, 0],
+              [3, 0, 0, 4, 0, 0],
+              [0, 0, 6, 0, 0, 2],
+              [0, 6, 0, 1, 0, 4],
+              [0, 1, 3, 0, 0, 0]
+            ],
+            "solution": [
+              [1, 5, 2, 6, 4, 3],
+              [6, 3, 4, 2, 5, 1],
+              [3, 2, 1, 4, 6, 5],
+              [5, 4, 6, 3, 1, 2],
+              [2, 6, 5, 1, 3, 4],
+              [4, 1, 3, 5, 2, 6]
+            ],
+            "difficulty": "medium"
+          }
+        },
+        {
+          "id": "cmwuewia200a67df8o7sntavl",
+          "gameSlug": "guess-it",
+          "gameName": "Guess It",
+          "date": "2026-11-26",
+          "puzzleNumber": 32,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "clues": [
+              "This person is an athlete.",
+              "He is from Switzerland.",
+              "He won Wimbledon eight times.",
+              "He is one of the greatest tennis players of all time."
+            ],
+            "answer": "Roger Federer",
+            "aliases": ["Federer"],
+            "category": "Sports"
+          }
+        },
+        {
+          "id": "cmwuewilb00c47df8beawljgv",
+          "gameSlug": "pathway",
+          "gameName": "Pathway",
+          "date": "2026-11-26",
+          "puzzleNumber": 32,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "size": 6,
+            "walls": [
+              {
+                "a": {
+                  "col": 1,
+                  "row": 2
+                },
+                "b": {
+                  "col": 1,
+                  "row": 1
+                }
+              },
+              {
+                "a": {
+                  "col": 1,
+                  "row": 4
+                },
+                "b": {
+                  "col": 2,
+                  "row": 4
+                }
+              },
+              {
+                "a": {
+                  "col": 3,
+                  "row": 5
+                },
+                "b": {
+                  "col": 3,
+                  "row": 4
+                }
+              }
+            ],
+            "solution": [
+              {
+                "col": 5,
+                "row": 1
+              },
+              {
+                "col": 5,
+                "row": 0
+              },
+              {
+                "col": 4,
+                "row": 0
+              },
+              {
+                "col": 4,
+                "row": 1
+              },
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 2
+              },
+              {
+                "col": 5,
+                "row": 3
+              },
+              {
+                "col": 5,
+                "row": 4
+              },
+              {
+                "col": 5,
+                "row": 5
+              },
+              {
+                "col": 4,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 4
+              },
+              {
+                "col": 3,
+                "row": 4
+              },
+              {
+                "col": 4,
+                "row": 4
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 2
+              },
+              {
+                "col": 2,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 2,
+                "row": 1
+              },
+              {
+                "col": 1,
+                "row": 1
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 0,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 0,
+                "row": 4
+              },
+              {
+                "col": 1,
+                "row": 4
+              },
+              {
+                "col": 1,
+                "row": 5
+              },
+              {
+                "col": 0,
+                "row": 5
+              }
+            ],
+            "difficulty": "medium",
+            "checkpoints": [
+              {
+                "col": 5,
+                "row": 1
+              },
+              {
+                "col": 5,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 5
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 2
+              },
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 0,
+                "row": 5
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhww002c7df825hkwyfm",
+          "gameSlug": "connections",
+          "gameName": "Connections",
+          "date": "2026-11-25",
+          "puzzleNumber": 31,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "words": [
+              "MEAT",
+              "VENUS",
+              "MARS",
+              "BED",
+              "GOUDA",
+              "BASKET",
+              "SNOW",
+              "SATURN",
+              "FETA",
+              "JITTER",
+              "LADY",
+              "EARTH",
+              "LITTER",
+              "FOOT",
+              "BRIE",
+              "CHEDDAR"
+            ],
+            "categories": [
+              {
+                "title": "Planets",
+                "words": ["MARS", "VENUS", "EARTH", "SATURN"],
+                "difficulty": 1
+              },
+              {
+                "title": "Cheeses",
+                "words": ["BRIE", "CHEDDAR", "GOUDA", "FETA"],
+                "difficulty": 2
+              },
+              {
+                "title": "___ball",
+                "words": ["FOOT", "BASKET", "MEAT", "SNOW"],
+                "difficulty": 3
+              },
+              {
+                "title": "___bug",
+                "words": ["LADY", "BED", "JITTER", "LITTER"],
+                "difficulty": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhyv004a7df8pfgxccx1",
+          "gameSlug": "word-guess",
+          "gameName": "Word Guess",
+          "date": "2026-11-25",
+          "puzzleNumber": 31,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "answer": "SHELF"
+          }
+        },
+        {
+          "id": "cmwuewi0v00687df8m0uvnrt6",
+          "gameSlug": "number-puzzle",
+          "gameName": "Number Puzzle",
+          "date": "2026-11-25",
+          "puzzleNumber": 31,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "target": 30,
+            "numbers": [6, 11, 4, 12],
+            "solution": "((12 + 4) − 11) × 6",
+            "difficulty": "medium"
+          }
+        },
+        {
+          "id": "cmwuewi6r00867df8kbgsaz2u",
+          "gameSlug": "logic-puzzle",
+          "gameName": "Logic Puzzle",
+          "date": "2026-11-25",
+          "puzzleNumber": 31,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "puzzle": [
+              [0, 6, 3, 0, 4, 0],
+              [2, 0, 0, 0, 0, 6],
+              [0, 0, 0, 3, 0, 2],
+              [3, 0, 1, 0, 0, 0],
+              [1, 0, 0, 0, 0, 3],
+              [0, 3, 0, 1, 5, 0]
+            ],
+            "solution": [
+              [5, 6, 3, 2, 4, 1],
+              [2, 1, 4, 5, 3, 6],
+              [4, 5, 6, 3, 1, 2],
+              [3, 2, 1, 4, 6, 5],
+              [1, 4, 5, 6, 2, 3],
+              [6, 3, 2, 1, 5, 4]
+            ],
+            "difficulty": "medium"
+          }
+        },
+        {
+          "id": "cmwuewia000a47df8tun89ahl",
+          "gameSlug": "guess-it",
+          "gameName": "Guess It",
+          "date": "2026-11-25",
+          "puzzleNumber": 31,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "clues": [
+              "This person was a political leader.",
+              "He spent 27 years in prison.",
+              "He won the Nobel Peace Prize in 1993.",
+              "He became South Africa's first Black president."
+            ],
+            "answer": "Nelson Mandela",
+            "aliases": ["Mandela"],
+            "category": "People"
+          }
+        },
+        {
+          "id": "cmwuewil500c27df8oruyiof6",
+          "gameSlug": "pathway",
+          "gameName": "Pathway",
+          "date": "2026-11-25",
+          "puzzleNumber": 31,
+          "status": "SCHEDULED",
+          "publishAt": null,
+          "content": {
+            "size": 6,
+            "walls": [
+              {
+                "a": {
+                  "col": 4,
+                  "row": 2
+                },
+                "b": {
+                  "col": 3,
+                  "row": 2
+                }
+              },
+              {
+                "a": {
+                  "col": 2,
+                  "row": 4
+                },
+                "b": {
+                  "col": 1,
+                  "row": 4
+                }
+              },
+              {
+                "a": {
+                  "col": 1,
+                  "row": 5
+                },
+                "b": {
+                  "col": 1,
+                  "row": 4
+                }
+              }
+            ],
+            "solution": [
+              {
+                "col": 5,
+                "row": 3
+              },
+              {
+                "col": 5,
+                "row": 2
+              },
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 4,
+                "row": 1
+              },
+              {
+                "col": 5,
+                "row": 1
+              },
+              {
+                "col": 5,
+                "row": 0
+              },
+              {
+                "col": 4,
+                "row": 0
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 1,
+                "row": 1
+              },
+              {
+                "col": 2,
+                "row": 1
+              },
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 3,
+                "row": 2
+              },
+              {
+                "col": 2,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 4
+              },
+              {
+                "col": 0,
+                "row": 4
+              },
+              {
+                "col": 0,
+                "row": 5
+              },
+              {
+                "col": 1,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 5
+              },
+              {
+                "col": 2,
+                "row": 4
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 4,
+                "row": 4
+              },
+              {
+                "col": 5,
+                "row": 4
+              },
+              {
+                "col": 5,
+                "row": 5
+              },
+              {
+                "col": 4,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 5
+              },
+              {
+                "col": 3,
+                "row": 4
+              }
+            ],
+            "difficulty": "medium",
+            "checkpoints": [
+              {
+                "col": 5,
+                "row": 3
+              },
+              {
+                "col": 4,
+                "row": 0
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 2,
+                "row": 4
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhwu002a7df8ir4ainag",
+          "gameSlug": "connections",
+          "gameName": "Connections",
+          "date": "2026-11-24",
+          "puzzleNumber": 30,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "words": [
+              "BOUNTY",
+              "BAGUETTE",
+              "RYE",
+              "MAPLE",
+              "SOURDOUGH",
+              "SPOT",
+              "OAK",
+              "TITANIC",
+              "TOPS",
+              "WILLOW",
+              "CIABATTA",
+              "POTS",
+              "STOP",
+              "MAYFLOWER",
+              "ENDEAVOUR",
+              "BIRCH"
+            ],
+            "categories": [
+              {
+                "title": "Trees",
+                "words": ["OAK", "MAPLE", "BIRCH", "WILLOW"],
+                "difficulty": 1
+              },
+              {
+                "title": "Types of Bread",
+                "words": ["BAGUETTE", "RYE", "SOURDOUGH", "CIABATTA"],
+                "difficulty": 2
+              },
+              {
+                "title": "Famous Ships",
+                "words": ["TITANIC", "MAYFLOWER", "ENDEAVOUR", "BOUNTY"],
+                "difficulty": 3
+              },
+              {
+                "title": "Anagrams of POST",
+                "words": ["STOP", "POTS", "TOPS", "SPOT"],
+                "difficulty": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhyu00487df8ggann6ps",
+          "gameSlug": "word-guess",
+          "gameName": "Word Guess",
+          "date": "2026-11-24",
+          "puzzleNumber": 30,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "answer": "STORM"
+          }
+        },
+        {
+          "id": "cmwuewi0t00667df8rgwk5poi",
+          "gameSlug": "number-puzzle",
+          "gameName": "Number Puzzle",
+          "date": "2026-11-24",
+          "puzzleNumber": 30,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "target": 27,
+            "numbers": [2, 2, 9, 9],
+            "solution": "(2 × 9) + 9",
+            "difficulty": "easy"
+          }
+        },
+        {
+          "id": "cmwuewi6o00847df8dr5zpstf",
+          "gameSlug": "logic-puzzle",
+          "gameName": "Logic Puzzle",
+          "date": "2026-11-24",
+          "puzzleNumber": 30,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "puzzle": [
+              [0, 0, 5, 0, 2, 0],
+              [3, 1, 2, 0, 6, 0],
+              [0, 0, 4, 0, 0, 1],
+              [5, 0, 0, 2, 0, 0],
+              [0, 5, 0, 4, 3, 2],
+              [0, 4, 0, 6, 0, 0]
+            ],
+            "solution": [
+              [4, 6, 5, 1, 2, 3],
+              [3, 1, 2, 5, 6, 4],
+              [6, 2, 4, 3, 5, 1],
+              [5, 3, 1, 2, 4, 6],
+              [1, 5, 6, 4, 3, 2],
+              [2, 4, 3, 6, 1, 5]
+            ],
+            "difficulty": "easy"
+          }
+        },
+        {
+          "id": "cmwuewi9y00a27df8v86g2bqo",
+          "gameSlug": "guess-it",
+          "gameName": "Guess It",
+          "date": "2026-11-24",
+          "puzzleNumber": 30,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "clues": [
+              "This is an animal.",
+              "It has three hearts.",
+              "It has blue blood and can change color.",
+              "It has eight arms."
+            ],
+            "answer": "Octopus",
+            "aliases": [],
+            "category": "Animals"
+          }
+        },
+        {
+          "id": "cmwuewiky00c07df8fzz9g72r",
+          "gameSlug": "pathway",
+          "gameName": "Pathway",
+          "date": "2026-11-24",
+          "puzzleNumber": 30,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "size": 5,
+            "walls": [
+              {
+                "a": {
+                  "col": 2,
+                  "row": 1
+                },
+                "b": {
+                  "col": 3,
+                  "row": 1
+                }
+              },
+              {
+                "a": {
+                  "col": 2,
+                  "row": 2
+                },
+                "b": {
+                  "col": 1,
+                  "row": 2
+                }
+              }
+            ],
+            "solution": [
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 4,
+                "row": 3
+              },
+              {
+                "col": 4,
+                "row": 4
+              },
+              {
+                "col": 3,
+                "row": 4
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 1
+              },
+              {
+                "col": 4,
+                "row": 1
+              },
+              {
+                "col": 4,
+                "row": 0
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 2,
+                "row": 0
+              },
+              {
+                "col": 1,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 0,
+                "row": 2
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 0,
+                "row": 4
+              },
+              {
+                "col": 1,
+                "row": 4
+              },
+              {
+                "col": 2,
+                "row": 4
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 2,
+                "row": 2
+              },
+              {
+                "col": 2,
+                "row": 1
+              },
+              {
+                "col": 1,
+                "row": 1
+              },
+              {
+                "col": 1,
+                "row": 2
+              },
+              {
+                "col": 1,
+                "row": 3
+              }
+            ],
+            "difficulty": "easy",
+            "checkpoints": [
+              {
+                "col": 4,
+                "row": 2
+              },
+              {
+                "col": 3,
+                "row": 3
+              },
+              {
+                "col": 3,
+                "row": 0
+              },
+              {
+                "col": 0,
+                "row": 1
+              },
+              {
+                "col": 0,
+                "row": 3
+              },
+              {
+                "col": 2,
+                "row": 3
+              },
+              {
+                "col": 1,
+                "row": 3
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhws00287df8yjmnrt1x",
+          "gameSlug": "connections",
+          "gameName": "Connections",
+          "date": "2026-11-23",
+          "puzzleNumber": 29,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "words": [
+              "MOZART",
+              "CHOPIN",
+              "CHAIRLIFT",
+              "CARDS",
+              "ALFREDO",
+              "POWDER",
+              "PLAYLIST",
+              "BACH",
+              "FEET",
+              "BOLOGNESE",
+              "PESTO",
+              "PAPERS",
+              "SLALOM",
+              "MARINARA",
+              "HANDEL",
+              "MOGUL"
+            ],
+            "categories": [
+              {
+                "title": "Pasta Sauces",
+                "words": ["MARINARA", "ALFREDO", "PESTO", "BOLOGNESE"],
+                "difficulty": 1
+              },
+              {
+                "title": "Composers",
+                "words": ["BACH", "MOZART", "CHOPIN", "HANDEL"],
+                "difficulty": 2
+              },
+              {
+                "title": "Skiing Terms",
+                "words": ["SLALOM", "MOGUL", "CHAIRLIFT", "POWDER"],
+                "difficulty": 3
+              },
+              {
+                "title": "Things You Shuffle",
+                "words": ["CARDS", "FEET", "PLAYLIST", "PAPERS"],
+                "difficulty": 4
+              }
+            ]
+          }
+        },
+        {
+          "id": "cmwuewhys00467df8o2kc1cwk",
+          "gameSlug": "word-guess",
+          "gameName": "Word Guess",
+          "date": "2026-11-23",
+          "puzzleNumber": 29,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "answer": "WRONG"
+          }
+        },
+        {
+          "id": "cmwuewi0s00647df8lbjytn3x",
+          "gameSlug": "number-puzzle",
+          "gameName": "Number Puzzle",
+          "date": "2026-11-23",
+          "puzzleNumber": 29,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "target": 15,
+            "numbers": [2, 11, 1, 5],
+            "solution": "(1 + 2) × 5",
+            "difficulty": "easy"
+          }
+        },
+        {
+          "id": "cmwuewi6m00827df8ok9i55k1",
+          "gameSlug": "logic-puzzle",
+          "gameName": "Logic Puzzle",
+          "date": "2026-11-23",
+          "puzzleNumber": 29,
+          "status": "PUBLISHED",
+          "publishAt": null,
+          "content": {
+            "puzzle": [
+              [4, 0, 0, 1, 3, 0],
+              [0, 0, 1, 0, 4, 5],
+              [0, 0, 3, 0, 0, 1],
+              [6, 0, 0, 2, 0, 0],
+              [3, 4, 0, 5, 0, 0],
+              [0, 6, 5, 0, 0, 4]
+            ],
+            "solution": [
+              [4, 5, 6, 1, 3, 2],
+              [2, 3, 1, 6, 4, 5],
+              [5, 2, 3, 4, 6, 1],
+              [6, 1, 4, 2, 5, 3],
+              [3, 4, 2, 5, 1, 6],
+              [1, 6, 5, 3, 2, 4]
+            ],
+            "difficulty": "easy"
+          }
+        }
+      ]
+    }
+  }
+}

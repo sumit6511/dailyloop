@@ -1,0 +1,71 @@
+{
+  "GET /auth/me": {
+    "status": 200,
+    "body": {
+      "data": {
+        "id": "cmwuewhpx00017df80oqjhi0l",
+        "username": "harry",
+        "displayName": "Harry",
+        "avatarUrl": null,
+        "bio": null,
+        "createdAt": "2026-11-24T08:07:40.726Z",
+        "email": "harry@dailyloop.dev",
+        "role": "ADMIN",
+        "timezone": "Asia/Kathmandu"
+      }
+    }
+  },
+  "GET /friends/requests": {
+    "status": 200,
+    "body": {
+      "data": {
+        "incoming": [],
+        "outgoing": []
+      }
+    }
+  },
+  "GET /games/number-puzzle/today": {
+    "status": 200,
+    "body": {
+      "data": {
+        "slug": "number-puzzle",
+        "name": "Number Puzzle",
+        "description": "Reach the target using numbers and operators.",
+        "icon": "🔢",
+        "difficulty": "medium",
+        "available": true,
+        "puzzleNumber": 30,
+        "status": "in_progress",
+        "score": null,
+        "mistakeCount": 0,
+        "hintsUsed": 0,
+        "activeMs": 0,
+        "content": {
+          "numbers": [2, 2, 9, 9],
+          "target": 27,
+          "pool": [2, 2, 9, 9],
+          "steps": [],
+          "difficulty": "easy",
+          "complete": false
+        },
+        "startedAt": "2026-11-24T08:08:01.861Z"
+      }
+    }
+  },
+  "POST /games/number-puzzle/attempts/start": {
+    "status": 200,
+    "body": {
+      "data": {
+        "status": "IN_PROGRESS",
+        "content": {
+          "numbers": [2, 2, 9, 9],
+          "target": 27,
+          "pool": [2, 2, 9, 9],
+          "steps": [],
+          "difficulty": "easy",
+          "complete": false
+        }
+      }
+    }
+  }
+}

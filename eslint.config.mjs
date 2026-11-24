@@ -20,6 +20,20 @@ export default [
     },
   },
   {
+    // Playwright visual tests: Node, with page.evaluate callbacks running in the browser.
+    files: ["apps/web/visual/**/*.{ts,mjs}", "apps/web/playwright.config.ts"],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+  },
+  {
+    // CLI script — its progress output is the point.
+    files: ["apps/web/visual/record-fixtures.mjs"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+  {
     // Plain browser scripts served as-is from public/.
     files: ["apps/web/public/**/*.js"],
     languageOptions: {
