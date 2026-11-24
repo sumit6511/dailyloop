@@ -234,3 +234,20 @@ a past-puzzle archive and Word Guess hard mode are larger product decisions.
 8. **No way to delete your account.**
 9. **Yesterday's answers** — after the day rolls over, show each game's solution (as daily puzzle
    sites do), so a player who gave up or didn't finish can see how it worked.
+
+**Status:** all 9 done, each with tests. The bug fixes' tests were checked to fail against the old
+code.
+
+- Deployments now create their admin from `ADMIN_EMAIL` / `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
+  `SEED_DEMO_USERS=true` is the explicit opt-in for the demo accounts.
+- Profiles and achievements now need a login, matching the web app.
+- The per-account lockout (10 failures in 15 minutes) means someone who knows a username can lock
+  its owner out for 15 minutes. A successful password reset clears it.
+- The icon font went from 5.4 MB to about 125 kB. Icon names are now typed, which turned up five
+  icons the old regex scan had missed.
+
+Found along the way, not on the list:
+
+- **Logging out kept the previous player's cached data** (friends, leaderboards, stats) in
+  memory, so the next person signing in on the same tab could briefly see it. Logout, password
+  change, account deletion and session expiry now all drop it.
