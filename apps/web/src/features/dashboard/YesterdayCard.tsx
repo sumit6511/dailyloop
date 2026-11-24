@@ -3,6 +3,7 @@ import { useYesterdayAnswers } from "../../lib/games-api";
 import { Card } from "../../components/Card";
 import { GameIcon } from "../../components/GameIcon";
 import { Icon } from "../../components/Icon";
+import { SectionHeader } from "../../components/SectionHeader";
 import { AnswerReveal } from "./AnswerReveal";
 
 function ResultBadge({ result }: { result: YesterdayGameDTO["result"] }) {
@@ -22,14 +23,12 @@ export function YesterdayCard() {
 
   return (
     <Card>
-      <h2 className="mb-3 flex items-center gap-1.5 font-display text-lg font-bold text-white">
-        <Icon name="history" className="text-xl text-brand-300" /> Yesterday&rsquo;s answers
-      </h2>
+      <SectionHeader title="Yesterday’s answers" icon="history" />
       <ul className="flex flex-col gap-2">
         {data.games.map((game) => (
           <li key={game.slug}>
-            <details className="group rounded-xl bg-white/[0.04] open:bg-white/[0.06]">
-              <summary className="flex cursor-pointer list-none items-center gap-3 rounded-xl px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-400 [&::-webkit-details-marker]:hidden">
+            <details className="group rounded-xl border border-white/[0.05] bg-white/[0.025] transition-colors open:border-white/[0.09] open:bg-white/[0.04] hover:border-white/[0.09]">
+              <summary className="flex cursor-pointer list-none items-center gap-3 rounded-xl px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-400 [&::-webkit-details-marker]:hidden">
                 <GameIcon slug={game.slug} size="sm" />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-sm font-semibold text-white">

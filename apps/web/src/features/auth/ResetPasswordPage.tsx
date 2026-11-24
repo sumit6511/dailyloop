@@ -38,7 +38,7 @@ export function ResetPasswordPage() {
   if (!token) {
     return (
       <AuthLayout title="Invalid link" subtitle="This password reset link is missing its token.">
-        <Link to="/forgot-password" className="font-semibold text-brand-300 hover:text-brand-200">
+        <Link to="/forgot-password" className="font-semibold text-accent-300 hover:text-accent-200">
           Request a new link
         </Link>
       </AuthLayout>

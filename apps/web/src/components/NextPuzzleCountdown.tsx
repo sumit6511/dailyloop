@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSchedule } from "../lib/games-api";
-import { Icon } from "./Icon";
 
 function formatRemaining(ms: number): string {
   const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
@@ -47,12 +46,19 @@ export function NextPuzzleCountdown({ className = "" }: { className?: string }) 
 
   if (remaining === null) return null;
   return (
-    <span className={`inline-flex items-center gap-1.5 text-sm text-white/60 ${className}`}>
-      <Icon name="schedule" className="text-base" />
+    <span
+      className={`inline-flex items-center gap-2 text-sm text-white/55 ${className}`}
+      role="timer"
+      aria-live="off"
+    >
+      <span className="relative flex h-2 w-2" aria-hidden="true">
+        <span className="absolute inset-0 animate-ping rounded-full bg-accent-400/60" />
+        <span className="relative h-2 w-2 rounded-full bg-accent-400" />
+      </span>
       {remaining > 0 ? (
         <>
-          New puzzles in{" "}
-          <span className="font-semibold tabular-nums text-white/80">
+          Next puzzles in
+          <span className="tabular font-mono font-semibold text-white/90">
             {formatRemaining(remaining)}
           </span>
         </>

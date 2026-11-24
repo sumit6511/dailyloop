@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { MyStatsDTO } from "@dailyloop/shared";
 import { api } from "../../lib/api-client";
 import { Card } from "../../components/Card";
+import { SectionHeader } from "../../components/SectionHeader";
 import { GameIcon } from "../../components/GameIcon";
 import { Skeleton } from "../../components/Skeleton";
 
@@ -17,7 +18,7 @@ export function MyStatsCard() {
 
   return (
     <Card>
-      <h2 className="mb-4 font-display text-lg font-bold text-white">Your games</h2>
+      <SectionHeader title="Your games" icon="sports_esports" />
       {isLoading || !data ? (
         <div className="flex flex-col gap-2">
           {Array.from({ length: 4 }, (_, i) => (

@@ -9,7 +9,10 @@ import {
 import { Card } from "../../components/Card";
 import { Spinner } from "../../components/Spinner";
 import { Avatar } from "../../components/Avatar";
-import { Button } from "../../components/Button";
+import { buttonClasses } from "../../components/button-styles";
+import { Page } from "../../components/Page";
+import { SectionHeader } from "../../components/SectionHeader";
+import { Stat } from "../../components/Stat";
 import { Icon } from "../../components/Icon";
 import { RelationshipButton } from "./RelationshipButton";
 import { MyStatsCard } from "./MyStatsCard";
@@ -32,15 +35,6 @@ interface ProfileDTO {
   relationship: Relationship | null;
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="text-xl font-bold text-white">{value}</div>
-      <div className="text-xs font-medium uppercase tracking-wide text-white/50">{label}</div>
-    </div>
-  );
-}
-
 export function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { data: profile, isLoading } = useQuery({
@@ -55,87 +49,152 @@ export function ProfilePage() {
   if (isLoading || !profile) {
     return (
       <div className="flex justify-center py-12">
-        <Spinner className="h-8 w-8 text-brand-400" />
+        <Spinner className="h-8 w-8 text-accent-400" />
       </div>
     );
   }
 
+  const joined = new Date(profile.createdAt).toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric",
+  });
+  const unlockedCount = (catalog ?? []).filter((a) => unlockedKeys.has(a.key)).length;
+
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-6">
-      <Card intensity="strong" className="text-center">
-        <div className="mx-auto mb-3">
-          <Avatar name={profile.displayName} size="lg" className="mx-auto" />
-        </div>
-        <h1 className="font-display text-xl font-bold text-white">{profile.displayName}</h1>
-        <p className="text-sm text-white/50">@{profile.username}</p>
-        {profile.bio ? <p className="mt-2 text-sm text-white/70">{profile.bio}</p> : null}
-        {profile.stats.currentStreak > 0 ? (
-          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-flame-400/30 bg-flame-400/10 px-3 py-1 text-sm font-semibold text-flame-400">
-            <Icon name="local_fire_department" className="text-base" filled />{" "}
-            {profile.stats.currentStreak} day streak
+    <Page width="narrow">
+      <section className="glass-strong relative overflow-hidden p-5 sm:p-8">
+        <div
+          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-brand-500/25 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:items-center sm:text-left">
+          <Avatar
+            name={profile.displayName}
+            size="lg"
+            className="h-20 w-20 text-2xl ring-4 ring-white/[0.04]"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="eyebrow text-accent-300/80">Player profile</p>
+            <h1 className="mt-1.5 truncate font-display text-2xl font-bold text-white sm:text-3xl">
+              {profile.displayName}
+            </h1>
+            <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-white/50 sm:justify-start">
+              <span className="font-mono text-white/60">@{profile.username}</span>
+              <span aria-hidden="true">·</span>
+              <span>Joined {joined}</span>
+              {profile.stats.currentStreak > 0 ? (
+                <span className="inline-flex items-center gap-1 font-semibold text-flame-400">
+                  <Icon name="local_fire_department" className="text-base" filled />
+                  {profile.stats.currentStreak} day streak
+                </span>
+              ) : null}
+            </p>
+            {profile.bio ? <p className="mt-3 text-sm text-white/70">{profile.bio}</p> : null}
           </div>
-        ) : null}
-        {profile.relationship === "self" ? (
-          <div className="mt-4 flex justify-center">
-            <Link to="/settings">
-              <Button variant="secondary" size="sm">
-                <Icon name="edit" className="text-base" /> Edit Profile
-              </Button>
+          {profile.relationship === "self" ? (
+            <Link to="/settings" className={buttonClasses({ variant: "secondary", size: "sm" })}>
+              <Icon name="edit" className="text-base" /> Edit profile
             </Link>
-          </div>
-        ) : profile.relationship ? (
-          <div className="mt-4 flex justify-center">
+          ) : profile.relationship ? (
             <RelationshipButton
               username={profile.username}
               userId={profile.id}
               relationship={profile.relationship}
               displayName={profile.displayName}
             />
-          </div>
-        ) : null}
-      </Card>
-
-      <Card>
-        <h2 className="mb-4 font-display text-lg font-bold text-white">Stats</h2>
-        <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-3">
-          <Stat label="Current Streak" value={String(profile.stats.currentStreak)} />
-          <Stat label="Longest Streak" value={String(profile.stats.longestStreak)} />
-          <Stat label="Total Points" value={String(profile.stats.totalPoints)} />
-          <Stat label="Games Played" value={String(profile.stats.gamesPlayed)} />
-          <Stat label="Games Won" value={String(profile.stats.gamesWon)} />
+          ) : null}
         </div>
-      </Card>
+      </section>
+
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+        <Stat
+          variant="tile"
+          label="Streak"
+          icon="local_fire_department"
+          iconClassName="text-flame-400"
+          value={profile.stats.currentStreak}
+        />
+        <Stat
+          variant="tile"
+          label="Best"
+          icon="whatshot"
+          iconClassName="text-flame-400"
+          value={profile.stats.longestStreak}
+        />
+        <Stat
+          variant="tile"
+          label="Points"
+          icon="star"
+          iconClassName="text-yellow-300"
+          value={profile.stats.totalPoints}
+        />
+        <Stat
+          variant="tile"
+          label="Played"
+          icon="sports_esports"
+          value={profile.stats.gamesPlayed}
+        />
+        <Stat
+          variant="tile"
+          label="Won"
+          icon="emoji_events"
+          iconClassName="text-emerald-300"
+          value={profile.stats.gamesWon}
+        />
+      </div>
 
       {profile.relationship === "self" ? <MyStatsCard /> : null}
 
       <Card>
-        <h2 className="mb-4 font-display text-lg font-bold text-white">Achievements</h2>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+        <SectionHeader
+          title="Achievements"
+          icon="military_tech"
+          iconClassName="text-flame-400"
+          action={
+            catalog ? (
+              <span className="eyebrow text-white/40">
+                {unlockedCount}/{catalog.length} unlocked
+              </span>
+            ) : null
+          }
+        />
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {(catalog ?? []).map((achievement) => {
             const isUnlocked = unlockedKeys.has(achievement.key);
             return (
               <div
                 key={achievement.key}
                 title={`${achievement.name} — ${achievement.description}`}
-                className={`flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition-shadow ${
+                className={`flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-center transition-shadow ${
                   isUnlocked
-                    ? "border-flame-400/30 bg-flame-400/10 shadow-[0_0_20px_rgba(255,122,26,0.15)]"
-                    : "border-white/[0.08] bg-white/[0.03] opacity-40"
+                    ? "border-flame-400/30 bg-gradient-to-b from-flame-400/15 to-flame-400/[0.03] shadow-[0_0_24px_-6px_rgb(255_122_26/0.35)]"
+                    : "border-white/[0.06] bg-white/[0.02]"
                 }`}
               >
-                <Icon
-                  name={achievementIcon(achievement.icon)}
-                  className={`text-2xl ${isUnlocked ? "text-flame-400" : "text-white/50"}`}
-                  filled={isUnlocked}
-                />
-                <span className="text-[11px] font-semibold leading-tight text-white/85">
+                <span
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                    isUnlocked ? "bg-flame-400/15" : "bg-white/[0.04]"
+                  }`}
+                >
+                  <Icon
+                    name={achievementIcon(achievement.icon)}
+                    className={`text-2xl ${isUnlocked ? "text-flame-400" : "text-white/25"}`}
+                    filled={isUnlocked}
+                  />
+                </span>
+                <span
+                  className={`text-xs font-semibold leading-tight ${isUnlocked ? "text-white" : "text-white/40"}`}
+                >
                   {achievement.name}
+                </span>
+                <span className="text-[11px] leading-snug text-white/35">
+                  {achievement.description}
                 </span>
               </div>
             );
           })}
         </div>
       </Card>
-    </div>
+    </Page>
   );
 }

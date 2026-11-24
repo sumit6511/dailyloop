@@ -77,7 +77,7 @@ export function RegisterPage() {
       </form>
       <p className="mt-6 text-center text-sm text-white/50">
         Already playing?{" "}
-        <Link to="/login" className="font-semibold text-brand-300 hover:text-brand-200">
+        <Link to="/login" className="font-semibold text-accent-300 hover:text-accent-200">
           Log in
         </Link>
       </p>

@@ -20,7 +20,7 @@ function initialsFor(name: string): string {
 export function Avatar({ name, size = "md", className = "" }: AvatarProps) {
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-full border border-white/[0.14] bg-gradient-to-br from-brand-500/40 to-brand-700/40 font-semibold text-white shadow-inner ${SIZE_CLASSES[size]} ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-full border border-white/[0.14] bg-gradient-to-br from-brand-500/55 via-brand-700/50 to-accent-600/40 font-display font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2)] ${SIZE_CLASSES[size]} ${className}`}
       aria-hidden="true"
     >
       {initialsFor(name)}

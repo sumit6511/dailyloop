@@ -19,6 +19,9 @@ import { Button } from "../../components/Button";
 import { TextField } from "../../components/TextField";
 import { Icon } from "../../components/Icon";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { Page } from "../../components/Page";
+import { PageHeader } from "../../components/PageHeader";
+import { SectionHeader } from "../../components/SectionHeader";
 
 const changePasswordFormSchema = z
   .extend(changePasswordSchema, { confirmPassword: z.string().check(z.minLength(1)) })
@@ -56,7 +59,11 @@ function ProfileSection() {
 
   return (
     <Card>
-      <h2 className="mb-4 font-display text-lg font-bold text-white">Profile</h2>
+      <SectionHeader
+        title="Profile"
+        icon="badge"
+        description="How you appear to friends and on leaderboards."
+      />
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <TextField
           label="Display name"
@@ -105,7 +112,11 @@ function PasswordSection() {
 
   return (
     <Card>
-      <h2 className="mb-4 font-display text-lg font-bold text-white">Change password</h2>
+      <SectionHeader
+        title="Change password"
+        icon="lock_reset"
+        description="You'll be signed out everywhere, including here."
+      />
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <TextField
           label="Current password"
@@ -172,12 +183,13 @@ function DeleteAccountSection() {
   };
 
   return (
-    <Card className="border-red-500/30">
-      <h2 className="mb-1 font-display text-lg font-bold text-white">Delete account</h2>
-      <p className="mb-4 text-sm text-white/60">
-        Permanently removes your account, scores, streak, achievements and friends. This can't be
-        undone.
-      </p>
+    <Card className="!border-rose-500/25">
+      <SectionHeader
+        title="Delete account"
+        icon="delete"
+        iconClassName="text-rose-300"
+        description="Permanently removes your account, scores, streak, achievements and friends. This can't be undone."
+      />
       <form
         onSubmit={handleSubmit((values) => setPending(values))}
         noValidate
@@ -212,11 +224,15 @@ function DeleteAccountSection() {
 
 export function SettingsPage() {
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-6">
-      <h1 className="font-display text-2xl font-bold text-white">Settings</h1>
+    <Page width="narrow">
+      <PageHeader
+        eyebrow="Account"
+        title="Settings"
+        description="Your profile, password and account."
+      />
       <ProfileSection />
       <PasswordSection />
       <DeleteAccountSection />
-    </div>
+    </Page>
   );
 }

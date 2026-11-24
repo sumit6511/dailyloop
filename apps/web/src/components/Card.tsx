@@ -13,5 +13,5 @@ const INTENSITY_CLASSES: Record<NonNullable<CardProps["intensity"]>, string> = {
 };
 
 export function Card({ className = "", intensity = "medium", ...props }: CardProps) {
-  return <div className={`${INTENSITY_CLASSES[intensity]} p-6 ${className}`} {...props} />;
+  return <div className={`${INTENSITY_CLASSES[intensity]} p-5 sm:p-6 ${className}`} {...props} />;
 }

@@ -1,6 +1,7 @@
 import type { IconName } from "@dailyloop/shared";
 import { forwardRef, useId, useState, type InputHTMLAttributes } from "react";
 import { Icon } from "./Icon";
+import { FIELD_BORDER, FIELD_BORDER_ERROR, FIELD_CLASSES } from "./field-styles";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -20,23 +21,23 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 
     return (
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={fieldId} className="text-sm font-medium text-white/80">
+        <label htmlFor={fieldId} className="text-[13px] font-medium text-white/75">
           {label}
         </label>
-        <div className="relative">
+        <div className="group relative">
           {icon ? (
             <Icon
               name={icon}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-white/40"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-white/35 transition-colors group-focus-within:text-accent-300"
             />
           ) : null}
           <input
             ref={ref}
             id={fieldId}
             type={isPassword && revealed ? "text" : type}
-            className={`w-full rounded-xl border bg-white/[0.05] py-2.5 text-sm text-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] outline-none transition-colors placeholder:text-white/35 focus:border-brand-400 focus:ring-2 focus:ring-brand-400/30 ${
-              icon ? "pl-10" : "pl-3.5"
-            } ${isPassword ? "pr-10" : "pr-3.5"} ${error ? "border-rose-400/60" : "border-white/[0.12]"} ${className}`}
+            className={`${FIELD_CLASSES} ${icon ? "pl-10" : "pl-3.5"} ${isPassword ? "pr-11" : "pr-3.5"} ${
+              error ? FIELD_BORDER_ERROR : FIELD_BORDER
+            } ${className}`}
             aria-invalid={!!error}
             aria-describedby={error ? `${fieldId}-error` : undefined}
             {...props}
@@ -46,14 +47,17 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
               type="button"
               onClick={() => setRevealed((r) => !r)}
               aria-label={revealed ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 outline-none transition-colors hover:text-white/70 focus-visible:text-white/70"
+              className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-white/40 outline-none transition-colors hover:bg-white/[0.06] hover:text-white/75 focus-visible:text-white/75 focus-visible:ring-2 focus-visible:ring-accent-400/40"
             >
               <Icon name={revealed ? "visibility_off" : "visibility"} className="text-lg" />
             </button>
           ) : null}
         </div>
         {error ? (
-          <p id={`${fieldId}-error`} className="text-xs font-medium text-rose-400">
+          <p
+            id={`${fieldId}-error`}
+            className="flex items-center gap-1 text-xs font-medium text-rose-300"
+          >
             {error}
           </p>
         ) : null}

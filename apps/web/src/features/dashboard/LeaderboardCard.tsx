@@ -11,11 +11,18 @@ import { Avatar } from "../../components/Avatar";
 import { Skeleton } from "../../components/Skeleton";
 import { EmptyState } from "../../components/EmptyState";
 import { Icon } from "../../components/Icon";
+import { SectionHeader } from "../../components/SectionHeader";
+import { SegmentedControl } from "../../components/SegmentedControl";
 
-const RANGE_TABS: { key: LeaderboardRange; label: string }[] = [
-  { key: "daily", label: "Today" },
-  { key: "weekly", label: "This Week" },
-  { key: "all-time", label: "All Time" },
+const SCOPE_TABS = [
+  { value: "friends", label: "Friends" },
+  { value: "global", label: "Global" },
+] as const;
+
+const RANGE_TABS: { value: LeaderboardRange; label: string }[] = [
+  { value: "daily", label: "Today" },
+  { value: "weekly", label: "This week" },
+  { value: "all-time", label: "All time" },
 ];
 
 const RANK_COLORS = ["text-yellow-400", "text-slate-300", "text-orange-400"];
@@ -48,38 +55,22 @@ export function LeaderboardCard() {
 
   return (
     <Card>
-      <h2 className="mb-3 flex items-center gap-1.5 font-display text-lg font-bold text-white">
-        <Icon name="emoji_events" className="text-xl text-yellow-400" filled /> Leaderboard
-      </h2>
+      <SectionHeader title="Leaderboard" icon="emoji_events" iconClassName="text-yellow-300" />
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-white/[0.06] p-1">
-        {(["friends", "global"] as const).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setScope(s)}
-            className={`flex-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
-              scope === s ? "bg-white/[0.14] text-white" : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            {s === "friends" ? "Friends" : "Global"}
-          </button>
-        ))}
-      </div>
-
-      <div className="mb-4 flex gap-1 rounded-lg bg-white/[0.06] p-1">
-        {RANGE_TABS.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => setRange(tab.key)}
-            className={`flex-1 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
-              range === tab.key ? "bg-white/[0.14] text-white" : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-4 flex flex-col gap-2">
+        <SegmentedControl
+          aria-label="Whose scores"
+          options={SCOPE_TABS}
+          value={scope}
+          onChange={setScope}
+        />
+        <SegmentedControl
+          aria-label="Time range"
+          size="sm"
+          options={RANGE_TABS}
+          value={range}
+          onChange={setRange}
+        />
       </div>
 
       {isLoading ? (
@@ -106,11 +97,13 @@ export function LeaderboardCard() {
           {visible.map((entry) => (
             <li
               key={entry.userId}
-              className={`flex items-center gap-3 rounded-lg px-2 py-2 ${
-                entry.username === user?.username ? "bg-brand-500/15 ring-1 ring-brand-400/30" : ""
+              className={`flex h-11 items-center gap-3 rounded-xl px-2.5 ${
+                entry.username === user?.username
+                  ? "bg-brand-500/[0.14] ring-1 ring-inset ring-brand-400/30"
+                  : "hover:bg-white/[0.03]"
               }`}
             >
-              <span className="flex w-6 shrink-0 items-center justify-center text-sm font-semibold text-white/50">
+              <span className="tabular flex w-6 shrink-0 items-center justify-center font-mono text-xs font-semibold text-white/45">
                 {entry.rank <= 3 ? (
                   <Icon
                     name="emoji_events"
@@ -125,7 +118,9 @@ export function LeaderboardCard() {
               <span className="flex-1 truncate text-sm font-medium text-white/85">
                 {entry.displayName}
               </span>
-              <span className="text-sm font-bold text-brand-300">{entry.score}</span>
+              <span className="tabular font-mono text-sm font-semibold text-accent-200">
+                {entry.score}
+              </span>
             </li>
           ))}
           {myRow && user ? (
@@ -133,15 +128,17 @@ export function LeaderboardCard() {
               <li aria-hidden="true" className="px-2 text-center text-xs leading-3 text-white/30">
                 ⋯
               </li>
-              <li className="flex items-center gap-3 rounded-lg bg-brand-500/15 px-2 py-2 ring-1 ring-brand-400/30">
-                <span className="flex min-w-6 shrink-0 items-center justify-center text-sm font-semibold text-white/60">
+              <li className="flex h-11 items-center gap-3 rounded-xl bg-brand-500/[0.14] px-2.5 ring-1 ring-inset ring-brand-400/30">
+                <span className="tabular flex min-w-6 shrink-0 items-center justify-center font-mono text-xs font-semibold text-white/60">
                   {myRow.rank}
                 </span>
                 <Avatar name={user.displayName} size="sm" />
                 <span className="flex-1 truncate text-sm font-medium text-white/85">
                   {user.displayName} (you)
                 </span>
-                <span className="text-sm font-bold text-brand-300">{myRow.score}</span>
+                <span className="tabular font-mono text-sm font-semibold text-accent-200">
+                  {myRow.score}
+                </span>
               </li>
             </>
           ) : null}

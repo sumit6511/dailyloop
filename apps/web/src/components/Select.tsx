@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
+import { FIELD_BORDER, FIELD_CLASSES } from "./field-styles";
 
 export interface SelectOption {
   value: string;
@@ -90,7 +91,7 @@ export function Select({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
-        className="flex min-w-[9rem] items-center justify-between gap-2 rounded-xl border border-white/[0.12] bg-white/[0.05] px-3.5 py-2.5 text-sm text-white outline-none transition-colors hover:bg-white/[0.08] focus-visible:border-brand-400 focus-visible:ring-2 focus-visible:ring-brand-400/30"
+        className={`${FIELD_CLASSES} ${FIELD_BORDER} flex min-w-[9rem] items-center justify-between gap-2 px-3.5`}
       >
         <span className="truncate">{selected?.label ?? "Select…"}</span>
         <Icon
@@ -118,7 +119,7 @@ export function Select({
                   }}
                   className={`flex w-full items-center justify-between gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                     option.value === value
-                      ? "bg-brand-500/20 text-brand-200"
+                      ? "bg-accent-400/10 text-accent-200"
                       : "text-white/80 hover:bg-white/[0.08]"
                   }`}
                 >

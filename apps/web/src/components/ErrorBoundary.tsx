@@ -1,8 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Card } from "./Card";
 import { Button } from "./Button";
-import { Icon } from "./Icon";
+import { buttonClasses } from "./button-styles";
+import { StatusPanel } from "./StatusPanel";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -41,40 +41,37 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     if (this.props.variant === "page") {
       return (
-        <Card intensity="strong" className="mx-auto max-w-sm text-center" role="alert">
-          <div className="mb-2 flex justify-center text-amber-400">
-            <Icon name="warning" className="text-4xl" filled />
-          </div>
-          <h1 className="font-display text-lg font-bold text-white">
-            This page ran into a problem
-          </h1>
-          <p className="mt-2 text-sm text-white/60">
-            Your progress is saved. Try again, or head back to today's games.
-          </p>
-          <div className="mt-6 flex flex-col gap-2">
-            <Button onClick={() => this.setState({ error: null })}>Try again</Button>
-            <Link to="/" className="text-sm font-medium text-brand-300 hover:text-brand-200">
-              Back to today
-            </Link>
-          </div>
-        </Card>
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <StatusPanel
+            role="alert"
+            icon="warning"
+            tone="warning"
+            title="This page ran into a problem"
+            actions={
+              <>
+                <Button onClick={() => this.setState({ error: null })}>Try again</Button>
+                <Link to="/" className={buttonClasses({ variant: "ghost" })}>
+                  Back to today
+                </Link>
+              </>
+            }
+          >
+            Your progress is saved. Try again, or head back to today&rsquo;s games.
+          </StatusPanel>
+        </div>
       );
     }
 
     return (
       <div className="flex min-h-dvh items-center justify-center px-4">
-        <Card intensity="strong" className="max-w-sm text-center">
-          <div className="mb-2 flex justify-center text-amber-400">
-            <Icon name="warning" className="text-4xl" filled />
-          </div>
-          <h1 className="font-display text-lg font-bold text-white">Something went wrong</h1>
-          <p className="mt-2 text-sm text-white/60">
-            An unexpected error interrupted the page. Reloading usually fixes it.
-          </p>
-          <Button className="mt-6 w-full" onClick={() => window.location.reload()}>
-            Reload
-          </Button>
-        </Card>
+        <StatusPanel
+          icon="warning"
+          tone="warning"
+          title="Something went wrong"
+          actions={<Button onClick={() => window.location.reload()}>Reload</Button>}
+        >
+          An unexpected error interrupted the page. Reloading usually fixes it.
+        </StatusPanel>
       </div>
     );
   }

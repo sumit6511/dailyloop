@@ -59,7 +59,7 @@ export function LoginPage() {
           </p>
         ) : null}
         <div className="flex items-center justify-end text-sm">
-          <Link to="/forgot-password" className="font-medium text-brand-300 hover:text-brand-200">
+          <Link to="/forgot-password" className="font-medium text-accent-300 hover:text-accent-200">
             Forgot password?
           </Link>
         </div>
@@ -69,7 +69,7 @@ export function LoginPage() {
       </form>
       <p className="mt-6 text-center text-sm text-white/50">
         New here?{" "}
-        <Link to="/register" className="font-semibold text-brand-300 hover:text-brand-200">
+        <Link to="/register" className="font-semibold text-accent-300 hover:text-accent-200">
           Create an account
         </Link>
       </p>

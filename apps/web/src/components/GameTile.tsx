@@ -16,14 +16,16 @@ interface GameTileProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  */
 const STATE_CLASSES: Record<GameTileState, string> = {
   default:
-    "border-white/[0.14] bg-white/[0.05] text-white hover:border-white/[0.26] hover:bg-white/[0.09]",
-  selected: "border-brand-400 bg-brand-600 text-white shadow-lg shadow-brand-600/30",
-  correct: "border-emerald-500 bg-emerald-500 text-white",
-  present: "border-amber-400 bg-amber-400 text-white",
-  absent: "border-white/[0.14] bg-white/[0.08] text-white/60",
-  given: "border-white/[0.1] bg-white/[0.03] text-white/50",
-  disabled: "border-white/[0.08] bg-white/[0.02] text-white/25",
-  wrong: "border-rose-500 bg-rose-500/90 text-white",
+    "border-white/[0.1] bg-ink-800/80 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.05)] hover:border-accent-400/45 hover:bg-ink-700/90",
+  selected:
+    "border-brand-300/70 bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_8px_24px_-8px_rgb(124_77_255/0.85)]",
+  correct:
+    "border-emerald-300/70 bg-emerald-500 text-white shadow-[0_8px_24px_-10px_rgb(16_185_129/0.9)]",
+  present: "border-amber-200/70 bg-amber-400 text-ink-950",
+  absent: "border-white/[0.05] bg-white/[0.04] text-white/35",
+  given: "border-white/[0.06] bg-white/[0.02] text-white/45",
+  disabled: "border-white/[0.05] bg-white/[0.02] text-white/25",
+  wrong: "border-rose-300/70 bg-rose-500 text-white shadow-[0_8px_24px_-10px_rgb(244_63_94/0.9)]",
 };
 
 const SIZE_CLASSES: Record<NonNullable<GameTileProps["size"]>, string> = {
@@ -49,7 +51,7 @@ export function GameTile({
       type="button"
       disabled={disabled || state === "disabled" || state === "given"}
       aria-pressed={state === "selected"}
-      className={`flex items-center justify-center rounded-xl border-2 font-bold uppercase transition-[background-color,border-color,color,transform] duration-150 active:scale-90 disabled:cursor-not-allowed disabled:active:scale-100 ${STATE_CLASSES[state]} ${POP_STATES.has(state) ? "animate-pop-in" : ""} ${SIZE_CLASSES[size]} ${className}`}
+      className={`flex items-center justify-center rounded-xl border font-display font-bold uppercase transition-[background-color,border-color,color,transform] duration-150 active:scale-90 disabled:cursor-not-allowed disabled:active:scale-100 ${STATE_CLASSES[state]} ${POP_STATES.has(state) ? "animate-pop-in" : ""} ${SIZE_CLASSES[size]} ${className}`}
       {...props}
     />
   );

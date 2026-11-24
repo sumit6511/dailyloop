@@ -2,11 +2,39 @@ import { Link } from "react-router-dom";
 import type { TodayGameEntryDTO } from "@dailyloop/shared";
 import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
-import { Badge } from "../../components/Badge";
+import { buttonClasses } from "../../components/button-styles";
+import { DifficultyMeter } from "../../components/DifficultyMeter";
 import { Icon } from "../../components/Icon";
 import { GameIcon } from "../../components/GameIcon";
 
-const DIFFICULTY_LABEL: Record<string, string> = { easy: "Easy", medium: "Medium", hard: "Hard" };
+function StatusLine({ game }: { game: TodayGameEntryDTO }) {
+  if (!game.available) {
+    return <span className="text-xs text-white/40">Not available today</span>;
+  }
+  if (game.status === "completed") {
+    return (
+      <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-300">
+        <Icon name="check_circle" className="text-base" filled />
+        Solved
+        <span className="tabular font-mono text-white/80">{game.score ?? 0} pts</span>
+      </span>
+    );
+  }
+  if (game.status === "in_progress") {
+    return (
+      <span className="flex items-center gap-2 text-xs font-medium text-amber-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_rgb(252_211_77/0.9)]" />
+        In progress
+      </span>
+    );
+  }
+  return (
+    <span className="flex items-center gap-2 text-xs text-white/45">
+      <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
+      Not started
+    </span>
+  );
+}
 
 export function GameCard({ game }: { game: TodayGameEntryDTO }) {
   const isCompleted = game.status === "completed";
@@ -14,52 +42,52 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
 
   return (
     <Card
-      className={`flex flex-col gap-3 transition-all duration-200 ${
+      className={`group relative flex h-full flex-col gap-4 overflow-hidden transition-[border-color,transform,box-shadow] duration-200 ${
         game.available
-          ? "hover:-translate-y-0.5 hover:border-white/[0.22] hover:shadow-2xl"
-          : "opacity-50"
+          ? "hover:-translate-y-0.5 hover:border-accent-400/30 hover:shadow-[0_24px_48px_-24px_rgb(0_0_0/0.8),0_0_0_1px_rgb(34_211_238/0.08)]"
+          : "opacity-55"
       }`}
     >
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          <GameIcon slug={game.slug} size="md" />
-          {isCompleted ? (
-            <Icon
-              name="check_circle"
-              className="absolute -top-2 -left-2 text-lg text-emerald-500"
-              filled
-            />
-          ) : null}
-        </div>
-        <div>
-          <h3 className="font-display font-bold text-white">{game.name}</h3>
-          <p className="text-xs text-white/50">{game.description}</p>
+      {isCompleted ? (
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent"
+        />
+      ) : null}
+      <div className="flex items-start gap-3">
+        <GameIcon slug={game.slug} size="md" />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="truncate font-display text-base font-bold text-white">{game.name}</h3>
+            <DifficultyMeter difficulty={game.difficulty} />
+          </div>
+          <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-white/50">
+            {game.description}
+          </p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Badge tone="neutral">{DIFFICULTY_LABEL[game.difficulty] ?? game.difficulty}</Badge>
-        {isCompleted ? (
-          <Badge tone="success">Completed</Badge>
-        ) : isInProgress ? (
-          <Badge tone="warning">In progress</Badge>
-        ) : null}
-      </div>
-
-      <div className="mt-auto pt-1">
+      <div className="mt-auto flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+        <StatusLine game={game} />
         {!game.available ? (
-          <Button variant="secondary" size="sm" disabled className="w-full">
-            <Icon name="block" className="text-base" /> Not available today
+          <Button variant="secondary" size="sm" disabled>
+            <Icon name="block" className="text-base" /> Unavailable
           </Button>
         ) : (
-          <Link to={`/play/${game.slug}`}>
-            <Button variant={isCompleted ? "secondary" : "primary"} size="sm" className="w-full">
-              <Icon
-                name={isCompleted ? "visibility" : isInProgress ? "play_arrow" : "sports_esports"}
-                className="text-base"
-              />
-              {isCompleted ? "View result" : isInProgress ? "Continue" : "Play"}
-            </Button>
+          <Link
+            to={`/play/${game.slug}`}
+            className={buttonClasses({
+              variant: isCompleted ? "secondary" : "primary",
+              size: "sm",
+              className: "min-w-[6.5rem]",
+            })}
+          >
+            <Icon
+              name={isCompleted ? "visibility" : isInProgress ? "play_arrow" : "sports_esports"}
+              className="text-base"
+              filled={!isCompleted}
+            />
+            {isCompleted ? "Result" : isInProgress ? "Continue" : "Play"}
           </Link>
         )}
       </div>

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "../../components/Card";
+import { Page } from "../../components/Page";
+import { PageHeader } from "../../components/PageHeader";
+import { SectionHeader } from "../../components/SectionHeader";
 import { TextField } from "../../components/TextField";
 import { Button } from "../../components/Button";
 import { Spinner } from "../../components/Spinner";
@@ -44,8 +47,12 @@ export function FriendsPage() {
     showToast(err instanceof ApiClientError ? err.message : "Something went wrong", "error");
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <h1 className="font-display text-2xl font-bold text-white">Friends</h1>
+    <Page width="narrow">
+      <PageHeader
+        eyebrow="Social"
+        title="Friends"
+        description="Find people you know, and see how your scores compare on the leaderboard."
+      />
 
       <Card>
         <TextField
@@ -58,7 +65,7 @@ export function FriendsPage() {
         {query.trim().length >= 2 ? (
           <div className="mt-4 flex flex-col gap-2">
             {searching ? (
-              <Spinner className="mx-auto h-5 w-5 text-brand-400" />
+              <Spinner className="mx-auto h-5 w-5 text-accent-400" />
             ) : searchResults && searchResults.length > 0 ? (
               searchResults.map((user) => (
                 <div
@@ -88,7 +95,7 @@ export function FriendsPage() {
 
       {requests && (requests.incoming.length > 0 || requests.outgoing.length > 0) ? (
         <Card>
-          <h2 className="mb-3 font-display text-lg font-bold text-white">Requests</h2>
+          <SectionHeader title="Requests" icon="person_add" iconClassName="text-flame-400" />
           {requests.incoming.length > 0 ? (
             <div className="mb-4 flex flex-col gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
@@ -160,9 +167,17 @@ export function FriendsPage() {
       ) : null}
 
       <Card>
-        <h2 className="mb-3 font-display text-lg font-bold text-white">Your Friends</h2>
+        <SectionHeader
+          title="Your friends"
+          icon="group"
+          action={
+            friends && friends.length > 0 ? (
+              <span className="eyebrow text-white/40">{friends.length} total</span>
+            ) : null
+          }
+        />
         {loadingFriends ? (
-          <Spinner className="mx-auto h-5 w-5 text-brand-400" />
+          <Spinner className="mx-auto h-5 w-5 text-accent-400" />
         ) : friends && friends.length > 0 ? (
           <div className="flex flex-col gap-2">
             {friends.map((friend) => (
@@ -219,6 +234,6 @@ export function FriendsPage() {
         }}
         onCancel={() => setPendingRemoval(null)}
       />
-    </div>
+    </Page>
   );
 }
