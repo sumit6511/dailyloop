@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
+import { useAuth, useForgetSession } from "../../lib/use-auth";
 import { useFriendRequests } from "../../lib/friends-api";
 import { api } from "../../lib/api-client";
 import { Button } from "../../components/Button";
@@ -10,7 +10,7 @@ import { LogoFull } from "../../components/Logo";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const invalidateAuth = useInvalidateAuth();
+  const forgetSession = useForgetSession();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,8 +19,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const handleLogout = async () => {
     await api.post("/auth/logout");
-    await invalidateAuth();
     navigate("/login", { replace: true });
+    forgetSession();
   };
 
   const navLinkClass =

@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { AuthContext, AUTH_QUERY_KEY, type AuthContextValue } from "./auth-context";
+import { AuthContext, AUTH_QUERY_KEY, forgetSession, type AuthContextValue } from "./auth-context";
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
@@ -8,8 +8,14 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
-/** Call after login/register/logout/profile-edit so the rest of the app re-reads the session. */
+/** Call after login/register/profile-edit so the rest of the app re-reads the session. */
 export function useInvalidateAuth() {
   const queryClient = useQueryClient();
   return () => queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+}
+
+/** Call once the session has ended — see forgetSession. */
+export function useForgetSession() {
+  const queryClient = useQueryClient();
+  return () => forgetSession(queryClient);
 }

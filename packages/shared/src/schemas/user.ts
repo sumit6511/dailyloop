@@ -20,6 +20,11 @@ export const updateProfileSchema = z.object({
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 
+export const deleteAccountSchema = z.object({
+  password: z.string().check(z.minLength(1, "Enter your password to confirm"), z.maxLength(72)),
+});
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
+
 export interface PublicUserDTO {
   id: string;
   username: string;

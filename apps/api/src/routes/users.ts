@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   updateProfileSchema,
   changePasswordSchema,
+  deleteAccountSchema,
   SESSION_COOKIE_NAME,
   type UserStatsDTO,
   activeStreak,
@@ -43,6 +44,28 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       prisma.passwordResetToken.deleteMany({ where: { userId: user.id } }),
     ]);
 
+    reply.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
+    return reply.send({ data: { ok: true } });
+  });
+
+  /**
+   * Permanently deletes the signed-in account. Every personal row (sessions, attempts, scores,
+   * streak, achievements, friendships, friend requests, reset links) cascades with it; puzzles an
+   * admin created stay, unattributed. Needs the current password, and refuses to remove the last
+   * admin, which would lock everyone out of the admin panel.
+   */
+  app.delete("/me", { preHandler: app.requireAuth }, async (request, reply) => {
+    const { password } = deleteAccountSchema.parse(request.body);
+    const user = request.currentUser!;
+    if (!(await verifyPassword(user.passwordHash, password))) {
+      throw Errors.badRequest("Password is incorrect");
+    }
+    if (user.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) {
+      throw Errors.conflict(
+        "You're the only admin. Make another account an admin before deleting this one.",
+      );
+    }
+    await prisma.user.delete({ where: { id: user.id } });
     reply.clearCookie(SESSION_COOKIE_NAME, { path: "/" });
     return reply.send({ data: { ok: true } });
   });
