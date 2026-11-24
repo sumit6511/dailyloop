@@ -12,7 +12,8 @@ import {
 import { prisma } from "../lib/prisma.js";
 import { hashPassword, verifyPasswordForUser } from "../lib/password.js";
 import { createSession, destroySessionByToken } from "../lib/session.js";
-import { Errors } from "../lib/errors.js";
+import { ApiError, Errors } from "../lib/errors.js";
+import { loginThrottle } from "../lib/login-throttle.js";
 import { env, webAppUrl } from "../config/env.js";
 import { toMeDTO } from "../lib/dto.js";
 
@@ -92,6 +93,16 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     { config: { rateLimit: { max: 20, timeWindow: "10 minutes" } } },
     async (request, reply) => {
       const body = loginSchema.parse(request.body);
+      const retryAfterMs = loginThrottle.retryAfterMs(body.emailOrUsername);
+      if (retryAfterMs > 0) {
+        const minutes = Math.ceil(retryAfterMs / 60_000);
+        reply.header("Retry-After", String(Math.ceil(retryAfterMs / 1000)));
+        throw new ApiError(
+          429,
+          "TOO_MANY_ATTEMPTS",
+          `Too many failed sign-in attempts for this account. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}, or reset your password.`,
+        );
+      }
       // Emails are stored lowercased (registerSchema); usernames are citext, so both halves of
       // this lookup are case-insensitive.
       const user = await prisma.user.findFirst({
@@ -102,8 +113,10 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       // Deliberately generic message — don't reveal whether the account exists.
       // Runs Argon2 even for an unknown user so timing doesn't reveal whether the account exists.
       if (!(await verifyPasswordForUser(user?.passwordHash, body.password)) || !user) {
+        loginThrottle.recordFailure(body.emailOrUsername);
         throw Errors.badRequest("Invalid email/username or password");
       }
+      loginThrottle.clear(body.emailOrUsername);
       const { token, expiresAt } = await createSession(user.id, {
         userAgent: request.headers["user-agent"],
         ip: request.ip,
@@ -182,6 +195,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         prisma.passwordResetToken.deleteMany({ where: { userId: resetToken.userId } }),
         prisma.session.deleteMany({ where: { userId: resetToken.userId } }),
       ]);
+      // A completed reset proves ownership, so lift any sign-in lockout on the account.
+      const resetUser = await prisma.user.findUnique({ where: { id: resetToken.userId } });
+      if (resetUser) loginThrottle.clear(resetUser.email, resetUser.username);
 
       return reply.send({ data: { ok: true } });
     },

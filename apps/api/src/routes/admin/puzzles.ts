@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import type { FastifyPluginAsync } from "fastify";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -123,6 +124,22 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
       include: { game: true },
     });
     if (!puzzle) throw Errors.notFound("Puzzle not found");
+
+    // Every attempt is replayed against this puzzle's content on its date, so changing either after
+    // someone has played it would silently rewrite their progress and result. Archiving (status)
+    // and deleting stay available — both recompute that day's scores.
+    const contentChanged =
+      body.content !== undefined && !isDeepStrictEqual(body.content, puzzle.content);
+    const dateChanged = body.date !== undefined && body.date !== jsDateToDateKey(puzzle.date);
+    if (contentChanged || dateChanged) {
+      const plays = await prisma.gameAttempt.count({ where: { dailyPuzzleId: puzzle.id } });
+      if (plays > 0) {
+        throw Errors.conflict(
+          `This puzzle has been played ${plays} time${plays === 1 ? "" : "s"}, so its content and date are locked — ` +
+            "changing them would rewrite players' results. Archive or delete it instead.",
+        );
+      }
+    }
 
     if (body.content !== undefined) {
       const module = getGameModule(puzzle.game.slug);

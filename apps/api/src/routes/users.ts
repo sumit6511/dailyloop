@@ -75,55 +75,63 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
     return reply.send({ data });
   });
 
-  app.get<{ Params: { username: string } }>("/:username", async (request, reply) => {
-    const user = await prisma.user.findUnique({
-      where: { username: request.params.username },
-      include: { streak: true },
-    });
-    if (!user) throw Errors.notFound("User not found");
+  // Profiles and achievements are for signed-in players, like everything else player-facing (the
+  // web app's /u/:username is behind login too); anonymous callers could otherwise scrape them.
+  app.get<{ Params: { username: string } }>(
+    "/:username",
+    { preHandler: app.requireAuth },
+    async (request, reply) => {
+      const user = await prisma.user.findUnique({
+        where: { username: request.params.username },
+        include: { streak: true },
+      });
+      if (!user) throw Errors.notFound("User not found");
 
-    const [totalPointsAgg, gamesPlayed, gamesWon] = await Promise.all([
-      prisma.dailyScore.aggregate({ where: { userId: user.id }, _sum: { totalScore: true } }),
-      prisma.gameAttempt.count({ where: { userId: user.id, status: "COMPLETED" } }),
-      prisma.gameAttempt.count({ where: { userId: user.id, status: "COMPLETED", won: true } }),
-    ]);
+      const [totalPointsAgg, gamesPlayed, gamesWon] = await Promise.all([
+        prisma.dailyScore.aggregate({ where: { userId: user.id }, _sum: { totalScore: true } }),
+        prisma.gameAttempt.count({ where: { userId: user.id, status: "COMPLETED" } }),
+        prisma.gameAttempt.count({ where: { userId: user.id, status: "COMPLETED", won: true } }),
+      ]);
 
-    const stats: UserStatsDTO = {
-      currentStreak: activeStreak(
-        user.streak?.currentStreak ?? 0,
-        user.streak?.lastCompletedDate ? jsDateToDateKey(user.streak.lastCompletedDate) : null,
-        getTodayKey(env.DEFAULT_TIMEZONE),
-      ),
-      longestStreak: user.streak?.longestStreak ?? 0,
-      totalPoints: totalPointsAgg._sum.totalScore ?? 0,
-      gamesPlayed,
-      gamesWon,
-    };
+      const stats: UserStatsDTO = {
+        currentStreak: activeStreak(
+          user.streak?.currentStreak ?? 0,
+          user.streak?.lastCompletedDate ? jsDateToDateKey(user.streak.lastCompletedDate) : null,
+          getTodayKey(env.DEFAULT_TIMEZONE),
+        ),
+        longestStreak: user.streak?.longestStreak ?? 0,
+        totalPoints: totalPointsAgg._sum.totalScore ?? 0,
+        gamesPlayed,
+        gamesWon,
+      };
 
-    const relationship = request.currentUser
-      ? await getRelationship(request.currentUser.id, user.id)
-      : null;
+      const relationship = await getRelationship(request.currentUser!.id, user.id);
 
-    return reply.send({ data: { ...toPublicUserDTO(user), stats, relationship } });
-  });
+      return reply.send({ data: { ...toPublicUserDTO(user), stats, relationship } });
+    },
+  );
 
-  app.get<{ Params: { username: string } }>("/:username/achievements", async (request, reply) => {
-    const user = await prisma.user.findUnique({ where: { username: request.params.username } });
-    if (!user) throw Errors.notFound("User not found");
+  app.get<{ Params: { username: string } }>(
+    "/:username/achievements",
+    { preHandler: app.requireAuth },
+    async (request, reply) => {
+      const user = await prisma.user.findUnique({ where: { username: request.params.username } });
+      if (!user) throw Errors.notFound("User not found");
 
-    const unlocked = await prisma.userAchievement.findMany({
-      where: { userId: user.id },
-      include: { achievement: true },
-      orderBy: { unlockedAt: "desc" },
-    });
-    return reply.send({
-      data: unlocked.map((u) => ({
-        key: u.achievement.key,
-        name: u.achievement.name,
-        description: u.achievement.description,
-        icon: u.achievement.icon,
-        unlockedAt: u.unlockedAt,
-      })),
-    });
-  });
+      const unlocked = await prisma.userAchievement.findMany({
+        where: { userId: user.id },
+        include: { achievement: true },
+        orderBy: { unlockedAt: "desc" },
+      });
+      return reply.send({
+        data: unlocked.map((u) => ({
+          key: u.achievement.key,
+          name: u.achievement.name,
+          description: u.achievement.description,
+          icon: u.achievement.icon,
+          unlockedAt: u.unlockedAt,
+        })),
+      });
+    },
+  );
 };

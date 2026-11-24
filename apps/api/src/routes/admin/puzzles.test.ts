@@ -315,4 +315,45 @@ describe("admin puzzle routes", () => {
       addDaysToKey(today, -1),
     ]);
   });
+
+  it("locks a played puzzle's content and date, but still lets an admin archive it", async () => {
+    const adminCookies = await registerAndGetCookies("admin6", "ADMIN");
+    const game = await prisma.game.create({
+      data: { slug: "mock-game", name: "M", description: "d", icon: "🧪", sortOrder: 0 },
+    });
+    const today = getTodayKey("Asia/Kathmandu");
+    const puzzle = await prisma.dailyPuzzle.create({
+      data: {
+        gameId: game.id,
+        date: dateKeyToJSDate(today),
+        puzzleNumber: 1,
+        status: "PUBLISHED",
+        content: { a: 1 },
+      },
+    });
+    const edit = (payload: object) =>
+      app.inject({
+        method: "PUT",
+        url: `/api/admin/puzzles/${puzzle.id}`,
+        cookies: adminCookies,
+        payload,
+      });
+
+    expect((await edit({ content: { a: 2 } })).statusCode).toBe(200); // nobody has played it yet
+
+    const player = await prisma.user.create({
+      data: { email: "p@example.com", username: "player1", passwordHash: "x", displayName: "P" },
+    });
+    await prisma.gameAttempt.create({ data: { userId: player.id, dailyPuzzleId: puzzle.id } });
+
+    const contentEdit = await edit({ content: { a: 3 } });
+    expect(contentEdit.statusCode).toBe(409);
+    expect(contentEdit.json().error.message).toMatch(/played 1 time/);
+    expect((await edit({ date: addDaysToKey(today, 1) })).statusCode).toBe(409);
+    expect((await edit({ content: { a: 2 } })).statusCode).toBe(200); // re-saving identical content is fine
+    expect((await edit({ status: "ARCHIVED" })).statusCode).toBe(200);
+    expect(
+      (await prisma.dailyPuzzle.findUniqueOrThrow({ where: { id: puzzle.id } })).content,
+    ).toEqual({ a: 2 });
+  });
 });

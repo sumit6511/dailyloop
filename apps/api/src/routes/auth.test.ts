@@ -5,6 +5,7 @@ import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
 import { parseTrustProxy } from "../lib/trust-proxy.js";
 import { SESSION_TOUCH_INTERVAL_MS } from "../lib/session.js";
+import { loginThrottle, MAX_FAILURES } from "../lib/login-throttle.js";
 
 describe("auth routes", () => {
   let app: FastifyInstance;
@@ -20,6 +21,7 @@ describe("auth routes", () => {
   });
 
   afterEach(async () => {
+    loginThrottle.reset();
     await prisma.passwordResetToken.deleteMany();
     await prisma.session.deleteMany();
     await prisma.streak.deleteMany();
@@ -77,7 +79,17 @@ describe("auth routes", () => {
     });
     expect(variant.statusCode).toBe(409);
 
-    const profile = await app.inject({ method: "GET", url: "/api/users/HARRY" });
+    const original = await app.inject({
+      method: "POST",
+      url: "/api/auth/login",
+      payload: { emailOrUsername: "harry", password: registerPayload.password },
+    });
+    const session = original.cookies.find((c) => c.name === "dp_session")!;
+    const profile = await app.inject({
+      method: "GET",
+      url: "/api/users/HARRY",
+      cookies: { [session.name]: session.value },
+    });
     expect(profile.statusCode).toBe(200);
     expect(profile.json().data.username).toBe("harry"); // stored casing is preserved
   });
@@ -343,5 +355,45 @@ describe("auth routes", () => {
     await me();
     await new Promise((r) => setTimeout(r, 50));
     expect((await session()).lastUsedAt.getTime()).toBeGreaterThan(stale.getTime());
+  });
+
+  describe("per-account login throttle", () => {
+    const login = (emailOrUsername: string, password: string) =>
+      app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: { emailOrUsername, password },
+      });
+
+    it("refuses even the right password after too many failures for that account", async () => {
+      await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+      for (let i = 0; i < MAX_FAILURES; i++)
+        expect((await login("harry", "wrong-password")).statusCode).toBe(400);
+      const locked = await login("HARRY", registerPayload.password);
+      expect(locked.statusCode).toBe(429);
+      expect(locked.json().error.code).toBe("TOO_MANY_ATTEMPTS");
+      expect(Number(locked.headers["retry-after"])).toBeGreaterThan(0);
+    });
+
+    it("locks an unknown identifier the same way, so the lockout reveals nothing", async () => {
+      for (let i = 0; i < MAX_FAILURES; i++) await login("nobody-here", "wrong-password");
+      expect((await login("nobody-here", "anything")).statusCode).toBe(429);
+    });
+
+    it("forgets earlier failures after a successful sign-in", async () => {
+      await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+      for (let i = 0; i < MAX_FAILURES - 1; i++) await login("harry", "wrong-password");
+      expect((await login("harry", registerPayload.password)).statusCode).toBe(200);
+      expect((await login("harry", "wrong-password")).statusCode).toBe(400); // counting from zero again
+      expect((await login("harry", registerPayload.password)).statusCode).toBe(200);
+    });
+  });
+
+  it("requires login to view a profile or its achievements", async () => {
+    await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    expect((await app.inject({ method: "GET", url: "/api/users/harry" })).statusCode).toBe(401);
+    expect(
+      (await app.inject({ method: "GET", url: "/api/users/harry/achievements" })).statusCode,
+    ).toBe(401);
   });
 });

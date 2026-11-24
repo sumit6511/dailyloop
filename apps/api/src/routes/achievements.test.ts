@@ -139,19 +139,24 @@ describe("achievements", () => {
     expect(res.json().data.some((a: { key: string }) => a.key === "FIRST_WIN")).toBe(true);
   });
 
-  it("GET /users/:username/achievements returns another user's unlocked achievements publicly", async () => {
-    await registerUser("harry");
+  it("GET /users/:username/achievements returns another user's unlocked achievements", async () => {
+    const harry = await registerUser("harry");
     await publishConnectionsToday();
     const { cookies } = await registerUser("sumit");
     await winConnections(cookies);
 
-    const res = await app.inject({ method: "GET", url: "/api/users/sumit/achievements" });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/users/sumit/achievements",
+      cookies: harry.cookies,
+    });
     expect(res.statusCode).toBe(200);
     expect(res.json().data.some((a: { key: string }) => a.key === "FIRST_WIN")).toBe(true);
   });
 
   it("GET /users/:username/achievements 404s for an unknown username", async () => {
-    const res = await app.inject({ method: "GET", url: "/api/users/nobody/achievements" });
+    const { cookies } = await registerUser("harry");
+    const res = await app.inject({ method: "GET", url: "/api/users/nobody/achievements", cookies });
     expect(res.statusCode).toBe(404);
   });
 
