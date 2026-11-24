@@ -11,6 +11,8 @@ services:
     plan: free
     buildCommand: npm install
     startCommand: npm run db:migrate:deploy && npm start -w @dailyloop/api
+    # Fails (503) when the database is unreachable, so a new deploy only takes traffic once it can serve.
+    healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -46,6 +48,23 @@ services:
           type: web
           name: dailyloop-api
           property: host
+    # Keep in sync with apps/web/security-headers.json (apps/api/src/deploy-config.test.ts checks it).
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+      - path: /*
+        name: X-Frame-Options
+        value: "DENY"
+      - path: /*
+        name: X-Content-Type-Options
+        value: "nosniff"
+      - path: /*
+        name: Referrer-Policy
+        value: "strict-origin-when-cross-origin"
+      - path: /*
+        name: Permissions-Policy
+        value: "camera=(), microphone=(), geolocation=(), payment=()"
     routes:
       - type: rewrite
         source: /*

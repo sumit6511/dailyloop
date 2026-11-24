@@ -99,6 +99,16 @@ buildpack — `apps/api` runs on plain Node + npm (`argon2` ships prebuilt binar
 compiler needed for common platforms), and
 `apps/web`'s build output is static files servable by any web server (nginx, Caddy, etc.).
 
+## Health checks, headers and shutdown
+
+- `GET /api/health` returns 503 when the database is unreachable, so use it as the host's health
+  check (`render.yaml` does): a new deploy only takes traffic once it can actually serve.
+- On `SIGTERM` the API stops accepting connections, finishes in-flight requests, disconnects from
+  Postgres and exits (10 s deadline), so deploys don't cut off a player's final move.
+- The API sets its own security headers. The static web app's headers (CSP, framing, sniffing,
+  referrer, permissions) live in `apps/web/security-headers.json`; `render.yaml` mirrors them, and
+  on another host configure the same headers for every path.
+
 ## Checklist before going live
 
 - [ ] Change or remove the seeded dev admin account (`admin@dailyloop.dev` / `DevAdmin123!`)

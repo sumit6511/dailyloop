@@ -34,8 +34,33 @@ export default defineConfig(({ command, mode }) => {
   return config;
 });
 
+/** The production security headers, for `vite preview`. connect-src also allows the configured API
+ * origin so a local preview against http://localhost:4000 works; production uses https only. */
+function previewSecurityHeaders(): Record<string, string> {
+  const headers = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "security-headers.json"), "utf8"),
+  ) as Record<string, string>;
+  delete headers["//"];
+  let apiOrigin = "http://localhost:4000";
+  try {
+    apiOrigin = new URL(process.env.VITE_API_URL ?? "http://localhost:4000/api").origin;
+  } catch {
+    // A bare host (as Render provides) is https anyway, which connect-src already allows.
+  }
+  headers["Content-Security-Policy"] = headers["Content-Security-Policy"]!.replace(
+    "connect-src 'self' https:",
+    `connect-src 'self' https: ${apiOrigin}`,
+  );
+  return headers;
+}
+
 const config = {
   plugins: [react(), tailwindcss()],
+  preview: {
+    port: 5173,
+    strictPort: true,
+    headers: previewSecurityHeaders(),
+  },
   // Vite only reads .env files from its own root (this folder) by default;
   // pointing it at the repo root lets every app share one .env file.
   envDir,

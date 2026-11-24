@@ -46,6 +46,17 @@ export async function buildApp() {
   if (env.NODE_ENV !== "test") {
     await app.register(rateLimit, { max: 300, timeWindow: "1 minute" });
   }
+  // Baseline security headers for every API response. The API only serves JSON, so it should never
+  // be framed, sniffed as another type, cached by intermediaries, or leak a referrer.
+  app.addHook("onSend", async (_request, reply) => {
+    reply.header("X-Content-Type-Options", "nosniff");
+    reply.header("X-Frame-Options", "DENY");
+    reply.header("Referrer-Policy", "no-referrer");
+    reply.header("Cache-Control", "no-store");
+    if (env.NODE_ENV === "production") {
+      reply.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+  });
   await app.register(csrfPlugin);
   await app.register(authPlugin);
 
