@@ -203,3 +203,34 @@ a past-puzzle archive and Word Guess hard mode are larger product decisions.
 - Text fields without an `id`/`name` had **no accessible label**.
 - `npm audit`, production and dev: 0 vulnerabilities (fastify, fast-uri, Prisma's transitive
   deps, zod 3 → 4, vitest 3 → 5, typescript-eslint, shell-quote).
+
+## Backlog — round 5
+
+### Security & correctness
+
+1. **Seeding production creates a publicly known admin.** `docs/deployment.md` says to run
+   `npm run db:seed` on the production database, and the seed always creates
+   `admin@dailyloop.dev` / `DevAdmin123!` (printed in the README) with the ADMIN role, plus demo
+   users with a shared password.
+2. **Streaks never decay on screen.** The streak row only changes when a game is completed, so
+   after a missed day the dashboard, public profile, share text and admin list all keep showing
+   the old streak until the player next plays.
+3. **Editing a puzzle that's been played rewrites history.** Attempts are replayed against the
+   stored content, so changing a played puzzle's content silently changes everyone's progress and
+   result.
+4. **Profiles and achievements are readable without logging in**, unlike every other player
+   endpoint (and the web app, where `/u/:username` is behind login) — easy to scrape.
+5. **No per-account login throttle** — the per-IP limit doesn't stop credential stuffing spread
+   across many IPs against one account.
+
+### Performance
+
+6. **The icon font is 5.4 MB and render-blocking** (`display=block`), for ~65 icons. A subset is
+   119 kB.
+7. **Friend search sends a request per keystroke.**
+
+### Features
+
+8. **No way to delete your account.**
+9. **Yesterday's answers** — after the day rolls over, show each game's solution (as daily puzzle
+   sites do), so a player who gave up or didn't finish can see how it worked.

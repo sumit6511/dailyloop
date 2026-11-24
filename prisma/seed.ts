@@ -5,8 +5,13 @@ import { getTodayKey, addDaysToKey, dateKeyToJSDate, ACHIEVEMENT_CATALOG } from 
 
 const prisma = new PrismaClient();
 
-// Dev-only credentials. Documented here and in the README; must be changed
-// (or removed) before this schema is ever pointed at a production database.
+// Dev-only credentials, documented in the README — which is exactly why they must never exist on
+// a real deployment. In production (NODE_ENV=production) the seed skips them unless
+// SEED_DEMO_USERS=true is set explicitly; a real admin comes from ADMIN_* env vars instead.
+const isProduction = process.env.NODE_ENV === "production";
+const seedDemoUsers = !isProduction || process.env.SEED_DEMO_USERS === "true";
+const MIN_ADMIN_PASSWORD_LENGTH = 12;
+
 const DEV_ADMIN = {
   email: "admin@dailyloop.dev",
   username: "admin",
@@ -181,10 +186,66 @@ async function seedAchievements(): Promise<void> {
   console.log(`${ACHIEVEMENT_CATALOG.length} achievements ready`);
 }
 
+/**
+ * The deployment's real admin, from ADMIN_EMAIL / ADMIN_USERNAME / ADMIN_PASSWORD. An existing
+ * account with that email is promoted (its password left alone); otherwise one is created.
+ */
+async function seedAdminFromEnv(): Promise<void> {
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const username = process.env.ADMIN_USERNAME?.trim();
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email) {
+    console.log(
+      "No admin account created. Set ADMIN_EMAIL (plus ADMIN_USERNAME and ADMIN_PASSWORD for a new\n" +
+        "account) and re-run, or promote an existing user: UPDATE \"User\" SET role = 'ADMIN' WHERE email = '...';",
+    );
+    return;
+  }
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    await prisma.user.update({ where: { id: existing.id }, data: { role: "ADMIN" } });
+    console.log(`Promoted existing user ${email} to admin`);
+    return;
+  }
+  if (!username || !password || password.length < MIN_ADMIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `To create a new admin, set ADMIN_USERNAME and an ADMIN_PASSWORD of at least ${MIN_ADMIN_PASSWORD_LENGTH} characters.`,
+    );
+  }
+  await upsertUser({ email, username, displayName: username, password, role: "ADMIN" });
+  console.log(`Admin ready: ${email}`);
+}
+
 async function main() {
-  console.log("Seeding DailyLoop...\n");
+  console.log(`Seeding DailyLoop${isProduction ? " (production)" : ""}...\n`);
   registerAllGames();
 
+  if (!seedDemoUsers) {
+    console.log("Production: skipping the dev admin and demo users (their passwords are public).");
+    await seedAdminFromEnv();
+  } else {
+    if (isProduction) {
+      console.warn(
+        "WARNING: SEED_DEMO_USERS=true — creating accounts whose passwords are in the README.",
+      );
+    }
+    await seedDevAccounts();
+  }
+
+  const games = await seedGames();
+  await seedPuzzles(games);
+  await seedAchievements();
+
+  if (seedDemoUsers) {
+    console.log("\nDev credentials (local only — see README before deploying anywhere real):");
+    console.log(`  Admin      ${DEV_ADMIN.email} / ${DEV_ADMIN.password}`);
+    console.log(
+      `  Demo users harry / sumit / aayush / sagar @dailyloop.dev, password: ${DEMO_PASSWORD}`,
+    );
+  }
+}
+
+async function seedDevAccounts(): Promise<void> {
   const admin = await upsertUser({ ...DEV_ADMIN, role: "ADMIN" });
   console.log(`Admin ready: ${admin.email}`);
 
@@ -205,16 +266,6 @@ async function main() {
     }
   }
   console.log("Demo friendships ready");
-
-  const games = await seedGames();
-  await seedPuzzles(games);
-  await seedAchievements();
-
-  console.log("\nDev credentials (local only — see README before deploying anywhere real):");
-  console.log(`  Admin      ${DEV_ADMIN.email} / ${DEV_ADMIN.password}`);
-  console.log(
-    `  Demo users harry / sumit / aayush / sagar @dailyloop.dev, password: ${DEMO_PASSWORD}`,
-  );
 }
 
 main()

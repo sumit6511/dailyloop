@@ -16,12 +16,17 @@ pieces — the API, the static web app, and a free Postgres database — in one 
 3. Click **Apply**. First deploy takes a few minutes (it also runs `prisma migrate deploy`
    automatically as part of the API's start command).
 4. Once both services show "Live", open the API service's **Shell** tab and run:
+
    ```bash
-   npm run db:seed
+   ADMIN_EMAIL=you@example.com ADMIN_USERNAME=you ADMIN_PASSWORD='a long passphrase' npm run db:seed
    ```
-   This creates the 6 games, the achievement catalog, and 30 days of daily puzzles — without it
-   the site loads but shows no games. It also creates a dev admin account and demo users; trim
-   `DEV_ADMIN`/`DEMO_USERS` in `prisma/seed.ts` first if you don't want those in a shared deploy.
+
+   This creates the 6 games, the achievement catalog and the daily puzzles — without it the site
+   loads but shows no games — plus your admin account (`ADMIN_PASSWORD` must be at least 12
+   characters; if `ADMIN_EMAIL` already belongs to a registered account, that account is promoted
+   instead and its password left alone). Because `NODE_ENV=production`, the seed does **not**
+   create the dev admin or demo users from the README, whose passwords are public.
+
 5. Open the web service's URL (shown on its Render dashboard page) and register an account.
 
 Render's free tier spins down a web service after 15 minutes idle — the next request wakes it in
@@ -84,9 +89,8 @@ This runs `prisma migrate deploy`, which only applies already-committed migratio
 `npm run db:migrate` (the dev command) in production; it can prompt interactively and is meant
 for authoring new migrations locally.
 
-To seed a **fresh** production database with the admin account and initial games/achievements
-(skip this if you don't want the demo users or dev admin credentials in production — see the
-seed script's `DEV_ADMIN`/`DEMO_USERS` constants to trim it down first):
+To seed a **fresh** production database with the games, achievements and puzzles (and your admin
+via `ADMIN_EMAIL`/`ADMIN_USERNAME`/`ADMIN_PASSWORD`; the dev accounts are skipped in production):
 
 ```bash
 npm run db:seed
@@ -111,7 +115,8 @@ compiler needed for common platforms), and
 
 ## Checklist before going live
 
-- [ ] Change or remove the seeded dev admin account (`admin@dailyloop.dev` / `DevAdmin123!`)
+- [ ] Make sure the dev admin (`admin@dailyloop.dev`) doesn't exist — the production seed never
+      creates it, but a database seeded in development mode (or with `SEED_DEMO_USERS=true`) has it
 - [ ] Generate a fresh `APP_SECRET` — don't reuse the one from `.env.example`
 - [ ] Point `CORS_ORIGIN` / `WEB_APP_URL` at your real domains, not `localhost`
 - [ ] Confirm `DATABASE_URL` uses `sslmode=require` (most managed Postgres providers require this)

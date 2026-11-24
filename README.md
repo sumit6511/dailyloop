@@ -55,7 +55,7 @@ to rebuild when you change them.
 
 ## Prerequisites
 
-- Node.js 22 (see `.nvmrc`; Node 20 is end-of-life)
+- Node.js 22.9+ (see `.nvmrc`; Node 20 is end-of-life)
 - Docker (for local Postgres) — or point `DATABASE_URL` at your own Postgres 14+ instance
 
 ## Getting started
@@ -84,7 +84,9 @@ Created by `npm run db:seed`. **Fake, local-only credentials — never reuse the
 | Demo  | `sagar`  | `sagar@dailyloop.dev`  | `DemoPass123!` |
 
 The four demo users are already friends with each other so the friends leaderboard isn't empty
-on first login. Before deploying anywhere real, change or remove the admin account.
+on first login. With `NODE_ENV=production` the seed skips these accounts entirely and creates your
+admin from `ADMIN_EMAIL` / `ADMIN_USERNAME` / `ADMIN_PASSWORD` instead — see
+[docs/deployment.md](docs/deployment.md).
 
 ## Environment variables
 
