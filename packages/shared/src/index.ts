@@ -5,3 +5,4 @@ export * from "./schemas/auth";
 export * from "./schemas/user";
 export * from "./schemas/games";
 export * from "./achievements";
+export * from "./icons";

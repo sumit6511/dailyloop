@@ -4,6 +4,9 @@ import { parseEnv } from "node:util";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
+// A relative path (not "@dailyloop/shared") so Vite's config bundler inlines it.
+import { ICON_NAMES } from "../../packages/shared/src/icons";
 import tailwindcss from "@tailwindcss/vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,8 +57,20 @@ function previewSecurityHeaders(): Record<string, string> {
   return headers;
 }
 
+/**
+ * Requests only the Material Symbols glyphs the app uses (ICON_NAMES): ~120 kB instead of the
+ * full 5.4 MB variable font, which also blocks icon rendering (display=block) until it arrives.
+ */
+function materialSymbolsSubset(): Plugin {
+  return {
+    name: "dailyloop:material-symbols-subset",
+    transformIndexHtml: (html) =>
+      html.replace("__MATERIAL_SYMBOLS_ICON_NAMES__", [...ICON_NAMES].sort().join(",")),
+  };
+}
+
 const config = {
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), materialSymbolsSubset()],
   preview: {
     port: 5173,
     strictPort: true,

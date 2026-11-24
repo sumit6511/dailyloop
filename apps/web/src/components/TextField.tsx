@@ -1,3 +1,4 @@
+import type { IconName } from "@dailyloop/shared";
 import { forwardRef, useId, useState, type InputHTMLAttributes } from "react";
 import { Icon } from "./Icon";
 
@@ -5,7 +6,7 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
   /** Optional Material Symbols icon name, shown inside the field on the left. */
-  icon?: string;
+  icon?: IconName;
 }
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(

@@ -1,3 +1,4 @@
+import type { IconName } from "@dailyloop/shared";
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import { ToastContext, type ToastVariant } from "./toast-context";
 import { Icon } from "../components/Icon";
@@ -20,7 +21,7 @@ const VARIANT_CLASSES: Record<ToastVariant, string> = {
   info: "border-brand-400/30 text-brand-200",
 };
 
-const VARIANT_ICON: Record<ToastVariant, string> = {
+const VARIANT_ICON: Record<ToastVariant, IconName> = {
   success: "check_circle",
   error: "error",
   info: "info",

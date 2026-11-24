@@ -1,9 +1,11 @@
+import type { IconName } from "./icons";
+
 export interface AchievementDefinition {
   key: string;
   name: string;
   description: string;
   /** A Material Symbols icon name (rendered via the frontend's `<Icon>` component). */
-  icon: string;
+  icon: IconName;
 }
 
 export const ACHIEVEMENT_CATALOG: AchievementDefinition[] = [

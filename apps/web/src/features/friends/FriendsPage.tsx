@@ -20,13 +20,18 @@ import {
   useCancelFriendRequest,
   useRemoveFriend,
 } from "../../lib/friends-api";
+import { useDebouncedValue } from "../../lib/use-debounced-value";
+
+const SEARCH_DEBOUNCE_MS = 250;
 
 export function FriendsPage() {
   const [query, setQuery] = useState("");
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; displayName: string } | null>(
     null,
   );
-  const { data: searchResults, isLoading: searching } = useUserSearch(query);
+  // Search once typing pauses rather than on every keystroke.
+  const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
+  const { data: searchResults, isLoading: searching } = useUserSearch(debouncedQuery);
   const { data: friends, isLoading: loadingFriends } = useFriends();
   const { data: requests } = useFriendRequests();
   const acceptRequest = useAcceptFriendRequest();

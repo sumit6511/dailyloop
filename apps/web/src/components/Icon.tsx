@@ -1,5 +1,8 @@
+import type { IconName } from "@dailyloop/shared";
+
 interface IconProps {
-  name: string;
+  /** Only names in ICON_NAMES (@dailyloop/shared) — the font is subset to exactly those. */
+  name: IconName;
   className?: string;
   filled?: boolean;
 }

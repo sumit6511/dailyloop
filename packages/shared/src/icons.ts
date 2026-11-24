@@ -1,0 +1,88 @@
+/**
+ * Every Material Symbols icon the web app renders. The <Icon> component only accepts these
+ * names (so TypeScript catches a typo or an unlisted icon), and the web build requests a font
+ * subset containing exactly these glyphs (~120 kB instead of the full 5.4 MB font). Adding an
+ * icon = adding its name here. Keep the list sorted; Google Fonts requires sorted icon_names.
+ */
+export const ICON_NAMES = [
+  "abc",
+  "add",
+  "adjust",
+  "admin_panel_settings",
+  "alternate_email",
+  "arrow_back",
+  "auto_awesome",
+  "backspace",
+  "badge",
+  "block",
+  "bolt",
+  "calculate",
+  "celebration",
+  "check",
+  "check_circle",
+  "close",
+  "dashboard",
+  "delete",
+  "diamond",
+  "edit",
+  "edit_note",
+  "emoji_events",
+  "error",
+  "expand_more",
+  "extension",
+  "flag",
+  "grid_view",
+  "group",
+  "group_add",
+  "home",
+  "how_to_reg",
+  "info",
+  "lightbulb",
+  "local_fire_department",
+  "lock",
+  "lock_reset",
+  "login",
+  "logout",
+  "mail",
+  "menu",
+  "military_tech",
+  "notes",
+  "person",
+  "person_add",
+  "person_remove",
+  "play_arrow",
+  "psychology",
+  "publish",
+  "restart_alt",
+  "route",
+  "save",
+  "schedule",
+  "schedule_send",
+  "search",
+  "send",
+  "sentiment_dissatisfied",
+  "settings",
+  "share",
+  "shuffle",
+  "sports_esports",
+  "star",
+  "timer",
+  "undo",
+  "unpublished",
+  "verified",
+  "visibility",
+  "visibility_off",
+  "warning",
+  "waving_hand",
+  "whatshot",
+  "workspace_premium",
+] as const;
+
+export type IconName = (typeof ICON_NAMES)[number];
+
+const ICON_SET: ReadonlySet<string> = new Set(ICON_NAMES);
+
+/** For icon names that arrive as plain strings (e.g. from the API). */
+export function isIconName(name: string): name is IconName {
+  return ICON_SET.has(name);
+}

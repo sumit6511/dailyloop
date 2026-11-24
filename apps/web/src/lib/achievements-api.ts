@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { isIconName, type IconName } from "@dailyloop/shared";
 import { api } from "./api-client";
 
 export interface AchievementDTO {
@@ -6,6 +7,12 @@ export interface AchievementDTO {
   name: string;
   description: string;
   icon: string;
+}
+
+/** Achievement icons arrive from the API as plain strings; anything outside the font subset
+ * would render as its raw name, so fall back to a trophy. */
+export function achievementIcon(icon: string): IconName {
+  return isIconName(icon) ? icon : "emoji_events";
 }
 
 export function useAchievementCatalog() {

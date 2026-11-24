@@ -1,8 +1,9 @@
+import type { IconName } from "@dailyloop/shared";
 import { Icon } from "./Icon";
 
 // New hues, deliberately distinct from colors already meaningful elsewhere in the app (brand
 // purple = primary actions, flame orange = streaks, rose = errors/wrong-tile state).
-const GAME_ICONS: Record<string, { icon: string; className: string }> = {
+const GAME_ICONS: Record<string, { icon: IconName; className: string }> = {
   connections: { icon: "grid_view", className: "bg-emerald-500/20 text-emerald-300" },
   "word-guess": { icon: "abc", className: "bg-amber-500/20 text-amber-300" },
   "number-puzzle": { icon: "calculate", className: "bg-sky-500/20 text-sky-300" },

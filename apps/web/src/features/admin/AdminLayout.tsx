@@ -1,8 +1,9 @@
+import type { IconName } from "@dailyloop/shared";
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { Icon } from "../../components/Icon";
 
-const TABS = [
+const TABS: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: "/admin", label: "Overview", icon: "dashboard", end: true },
   { to: "/admin/puzzles", label: "Puzzles", icon: "extension" },
   { to: "/admin/games", label: "Games", icon: "sports_esports" },

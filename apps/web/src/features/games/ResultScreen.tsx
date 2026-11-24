@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "../../components/Card";
 import { Button } from "../../components/Button";
-import { useAchievementCatalog } from "../../lib/achievements-api";
+import { achievementIcon, useAchievementCatalog } from "../../lib/achievements-api";
 import { ShareButton } from "./ShareButton";
 import { NextPuzzleCountdown } from "../../components/NextPuzzleCountdown";
 import { Icon } from "../../components/Icon";
@@ -82,7 +82,11 @@ export function ResultScreen({
               key={achievement.key}
               className="flex items-center gap-3 rounded-xl border border-flame-400/30 bg-flame-400/10 px-4 py-2.5 text-left"
             >
-              <Icon name={achievement.icon} className="text-2xl text-flame-400" filled />
+              <Icon
+                name={achievementIcon(achievement.icon)}
+                className="text-2xl text-flame-400"
+                filled
+              />
               <div>
                 <div className="text-xs font-bold uppercase tracking-wide text-flame-400">
                   Achievement unlocked!

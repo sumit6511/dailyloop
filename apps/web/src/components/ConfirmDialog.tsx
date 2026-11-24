@@ -1,3 +1,4 @@
+import type { IconName } from "@dailyloop/shared";
 import { useEffect, useRef } from "react";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
@@ -10,7 +11,7 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   danger?: boolean;
   /** Material Symbols name for the confirm button; defaults to a bin for danger, else a tick. */
-  confirmIcon?: string;
+  confirmIcon?: IconName;
   isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;

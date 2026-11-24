@@ -1,7 +1,11 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../lib/api-client";
-import { useAchievementCatalog, useUserAchievements } from "../../lib/achievements-api";
+import {
+  achievementIcon,
+  useAchievementCatalog,
+  useUserAchievements,
+} from "../../lib/achievements-api";
 import { Card } from "../../components/Card";
 import { Spinner } from "../../components/Spinner";
 import { Avatar } from "../../components/Avatar";
@@ -120,7 +124,7 @@ export function ProfilePage() {
                 }`}
               >
                 <Icon
-                  name={achievement.icon}
+                  name={achievementIcon(achievement.icon)}
                   className={`text-2xl ${isUnlocked ? "text-flame-400" : "text-white/50"}`}
                   filled={isUnlocked}
                 />
