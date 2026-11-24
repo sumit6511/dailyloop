@@ -2,7 +2,7 @@
   "name": "dailyloop",
   "private": true,
   "version": "0.1.0",
-  "description": "DailyLoop \u2014 a daily puzzle platform with streaks, scoring, and friends.",
+  "description": "DailyLoop — a daily puzzle platform with streaks, scoring, and friends.",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -47,7 +47,7 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.19.1",
-    "vitest": "^3.0.4"
+    "vitest": "^5.1.1"
   },
   "prisma": {
     "schema": "prisma/schema.prisma",
