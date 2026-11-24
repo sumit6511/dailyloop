@@ -190,3 +190,16 @@ a past-puzzle archive and Word Guess hard mode are larger product decisions.
 
 9. **Formatting has drifted** — 112 files fail the repo's own Prettier config, and nothing checks it.
 10. **The web app has 16 tests** — none for Pathway, Number Puzzle, Logic Puzzle or Guess It.
+
+**Status:** all 10 done. Findings along the way that weren't on the list:
+
+- Malformed JSON and oversized bodies returned **500** instead of 400/413.
+- npm had installed **four copies of zod**; and classic zod 4 alone would have added ~450 kB to
+  the web bundle, so the browser-side schemas moved to `zod/mini` (bundle 416 kB → 397 kB).
+- `NODE_ENV=development` in the shared `.env` (as `.env.example` shipped it) silently made
+  production web builds bundle **React's development build** (657 kB). Removed from the example,
+  and the build now refuses to run with it.
+- Number Puzzle's Submit answer **forfeited the day on one stray tap**; it now asks first.
+- Text fields without an `id`/`name` had **no accessible label**.
+- `npm audit`, production and dev: 0 vulnerabilities (fastify, fast-uri, Prisma's transitive
+  deps, zod 3 → 4, vitest 3 → 5, typescript-eslint, shell-quote).
