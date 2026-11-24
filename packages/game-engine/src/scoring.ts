@@ -21,7 +21,12 @@ export function buildScoreBreakdown(parts: {
 }
 
 /** Linear falloff from `maxBonus` at/before `bestMs` down to 0 at/after `worstMs`. */
-export function speedBonus(durationMs: number, bestMs: number, worstMs: number, maxBonus: number): number {
+export function speedBonus(
+  durationMs: number,
+  bestMs: number,
+  worstMs: number,
+  maxBonus: number,
+): number {
   if (durationMs <= bestMs) return maxBonus;
   if (durationMs >= worstMs) return 0;
   const fraction = 1 - (durationMs - bestMs) / (worstMs - bestMs);

@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { createRng } from "../../rng.js";
-import { buildHamiltonianPath, edgeKey, generatePathwayPuzzle, solvePathway, type Cell } from "./generator.js";
+import {
+  buildHamiltonianPath,
+  edgeKey,
+  generatePathwayPuzzle,
+  solvePathway,
+  type Cell,
+} from "./generator.js";
 
 function isValidHamiltonianPath(path: Cell[], size: number): boolean {
   if (path.length !== size * size) return false;
@@ -63,17 +69,26 @@ describe("generatePathwayPuzzle", () => {
     }
   });
 
-  it.each([5, 6, 7])("always has exactly one solution — the stored one — on a %dx%d board", (size) => {
-    for (const seed of ["u1", "u2", "u3", "u4"]) {
-      const puzzle = generatePathwayPuzzle(createRng(`${seed}-${size}`), { size, checkpointCount: 6 });
-      const solutions = solvePathway(puzzle, 2);
-      expect(solutions).toHaveLength(1);
-      expect(solutions[0]).toEqual(puzzle.solution);
-    }
-  });
+  it.each([5, 6, 7])(
+    "always has exactly one solution — the stored one — on a %dx%d board",
+    (size) => {
+      for (const seed of ["u1", "u2", "u3", "u4"]) {
+        const puzzle = generatePathwayPuzzle(createRng(`${seed}-${size}`), {
+          size,
+          checkpointCount: 6,
+        });
+        const solutions = solvePathway(puzzle, 2);
+        expect(solutions).toHaveLength(1);
+        expect(solutions[0]).toEqual(puzzle.solution);
+      }
+    },
+  );
 
   it("keeps only walls that are actually needed for uniqueness", () => {
-    const puzzle = generatePathwayPuzzle(createRng("minimal-walls"), { size: 6, checkpointCount: 5 });
+    const puzzle = generatePathwayPuzzle(createRng("minimal-walls"), {
+      size: 6,
+      checkpointCount: 5,
+    });
     for (const wall of puzzle.walls) {
       const without = puzzle.walls.filter((w) => w !== wall);
       expect(solvePathway({ ...puzzle, walls: without }, 2).length).toBeGreaterThan(1);
@@ -81,7 +96,12 @@ describe("generatePathwayPuzzle", () => {
   });
 
   it("places exactly `wallCount` random walls when uniqueness isn't requested", () => {
-    const puzzle = generatePathwayPuzzle(createRng("random-walls"), { size: 5, checkpointCount: 5, unique: false, wallCount: 6 });
+    const puzzle = generatePathwayPuzzle(createRng("random-walls"), {
+      size: 5,
+      checkpointCount: 5,
+      unique: false,
+      wallCount: 6,
+    });
     expect(puzzle.walls).toHaveLength(6);
   });
 });
@@ -94,7 +114,11 @@ describe("buildHamiltonianPath", () => {
   });
 
   it("doesn't just return the starting snake pattern", () => {
-    const shapes = new Set(["a", "b", "c", "d", "e"].map((seed) => JSON.stringify(buildHamiltonianPath(createRng(seed), 6))));
+    const shapes = new Set(
+      ["a", "b", "c", "d", "e"].map((seed) =>
+        JSON.stringify(buildHamiltonianPath(createRng(seed), 6)),
+      ),
+    );
     expect(shapes.size).toBe(5);
   });
 });
@@ -102,12 +126,41 @@ describe("buildHamiltonianPath", () => {
 describe("solvePathway", () => {
   it("finds every solution of a tiny unconstrained board up to the limit", () => {
     // 2x2 starting top-left and ending bottom-left: only the clockwise loop works.
-    const solutions = solvePathway({ size: 2, checkpoints: [{ row: 0, col: 0 }, { row: 1, col: 0 }], walls: [] }, 5);
-    expect(solutions).toEqual([[{ row: 0, col: 0 }, { row: 0, col: 1 }, { row: 1, col: 1 }, { row: 1, col: 0 }]]);
+    const solutions = solvePathway(
+      {
+        size: 2,
+        checkpoints: [
+          { row: 0, col: 0 },
+          { row: 1, col: 0 },
+        ],
+        walls: [],
+      },
+      5,
+    );
+    expect(solutions).toEqual([
+      [
+        { row: 0, col: 0 },
+        { row: 0, col: 1 },
+        { row: 1, col: 1 },
+        { row: 1, col: 0 },
+      ],
+    ]);
   });
 
   it("respects walls", () => {
     const walls = [{ a: { row: 0, col: 0 }, b: { row: 0, col: 1 } }];
-    expect(solvePathway({ size: 2, checkpoints: [{ row: 0, col: 0 }, { row: 1, col: 0 }], walls }, 5)).toEqual([]);
+    expect(
+      solvePathway(
+        {
+          size: 2,
+          checkpoints: [
+            { row: 0, col: 0 },
+            { row: 1, col: 0 },
+          ],
+          walls,
+        },
+        5,
+      ),
+    ).toEqual([]);
   });
 });

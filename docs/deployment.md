@@ -43,23 +43,23 @@ just don't let it sit unused that long) if you want this to stay up long-term.
 
 Set these on the API host:
 
-| Variable            | Example                                          | Notes                                             |
-| ------------------- | ------------------------------------------------- | -------------------------------------------------- |
-| `DATABASE_URL`         | `postgresql://user:pass@host:5432/db?sslmode=require` | From your managed Postgres provider           |
-| `NODE_ENV`             | `production`                                       |                                                    |
-| `PORT`                 | (usually set by the host itself)                   | Falls back to `4000` if unset                     |
-| `CORS_ORIGIN`          | `https://your-web-domain.com`                      | Comma-separate multiple origins                   |
-| `WEB_APP_URL`          | `https://your-web-domain.com`                      | Used to build the password-reset link              |
-| `APP_SECRET`           | output of `openssl rand -hex 32`                   | Never reuse the dev value                         |
-| `DEFAULT_TIMEZONE`     | `Asia/Kathmandu`                                   | Optional — this is already the default            |
-| `CRON_SECRET`          | output of `openssl rand -hex 32`                   | Bearer token for `POST /api/cron/generate-tomorrow` (pre-generates puzzles, purges expired sessions). Unset disables the endpoint |
-| `TRUST_PROXY`          | `1`                                                | Number of proxies in front of the API, so rate limits see the real client IP. Default `1`; never `true` unless every hop strips client-supplied `X-Forwarded-For` |
+| Variable           | Example                                               | Notes                                                                                                                                                             |
+| ------------------ | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`     | `postgresql://user:pass@host:5432/db?sslmode=require` | From your managed Postgres provider                                                                                                                               |
+| `NODE_ENV`         | `production`                                          |                                                                                                                                                                   |
+| `PORT`             | (usually set by the host itself)                      | Falls back to `4000` if unset                                                                                                                                     |
+| `CORS_ORIGIN`      | `https://your-web-domain.com`                         | Comma-separate multiple origins                                                                                                                                   |
+| `WEB_APP_URL`      | `https://your-web-domain.com`                         | Used to build the password-reset link                                                                                                                             |
+| `APP_SECRET`       | output of `openssl rand -hex 32`                      | Never reuse the dev value                                                                                                                                         |
+| `DEFAULT_TIMEZONE` | `Asia/Kathmandu`                                      | Optional — this is already the default                                                                                                                            |
+| `CRON_SECRET`      | output of `openssl rand -hex 32`                      | Bearer token for `POST /api/cron/generate-tomorrow` (pre-generates puzzles, purges expired sessions). Unset disables the endpoint                                 |
+| `TRUST_PROXY`      | `1`                                                   | Number of proxies in front of the API, so rate limits see the real client IP. Default `1`; never `true` unless every hop strips client-supplied `X-Forwarded-For` |
 
 Set this on the web host (build-time):
 
-| Variable        | Example                          |
-| ---------------- | --------------------------------- |
-| `VITE_API_URL`      | `https://your-api-domain.com/api` |
+| Variable       | Example                           |
+| -------------- | --------------------------------- |
+| `VITE_API_URL` | `https://your-api-domain.com/api` |
 
 ## Build & start commands
 

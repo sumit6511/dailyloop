@@ -22,7 +22,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               end={tab.end}
               className={({ isActive }) =>
                 `flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-semibold transition-colors ${
-                  isActive ? "border-brand-400 text-brand-300" : "border-transparent text-white/50 hover:text-white/80"
+                  isActive
+                    ? "border-brand-400 text-brand-300"
+                    : "border-transparent text-white/50 hover:text-white/80"
                 }`
               }
             >

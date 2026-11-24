@@ -10,6 +10,7 @@ export function useUpdateProfile() {
 
 export function useChangePassword() {
   return useMutation({
-    mutationFn: (data: ChangePasswordInput) => api.patch<{ ok: boolean }>("/users/me/password", data),
+    mutationFn: (data: ChangePasswordInput) =>
+      api.patch<{ ok: boolean }>("/users/me/password", data),
   });
 }

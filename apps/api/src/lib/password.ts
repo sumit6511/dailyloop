@@ -20,7 +20,10 @@ let dummyHash: Promise<string> | null = null;
  * verification (against a throwaway hash) before returning false, so a login for an unknown
  * account takes as long as a wrong password — response timing can't reveal which accounts exist.
  */
-export async function verifyPasswordForUser(hash: string | null | undefined, password: string): Promise<boolean> {
+export async function verifyPasswordForUser(
+  hash: string | null | undefined,
+  password: string,
+): Promise<boolean> {
   if (hash) return verifyPassword(hash, password);
   dummyHash ??= hashPassword(randomBytes(16).toString("hex"));
   await verifyPassword(await dummyHash, password);

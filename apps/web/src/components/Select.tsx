@@ -20,7 +20,13 @@ interface SelectProps {
  * themed at all (no glass surface, no dark colors we control), so it always looks like a
  * jarring light-mode box dropped onto this otherwise fully dark/glass UI.
  */
-export function Select({ value, onChange, options, className = "", "aria-label": ariaLabel }: SelectProps) {
+export function Select({
+  value,
+  onChange,
+  options,
+  className = "",
+  "aria-label": ariaLabel,
+}: SelectProps) {
   const [open, setOpen] = useState(false);
   const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -111,7 +117,9 @@ export function Select({ value, onChange, options, className = "", "aria-label":
                     setOpen(false);
                   }}
                   className={`flex w-full items-center justify-between gap-3 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    option.value === value ? "bg-brand-500/20 text-brand-200" : "text-white/80 hover:bg-white/[0.08]"
+                    option.value === value
+                      ? "bg-brand-500/20 text-brand-200"
+                      : "text-white/80 hover:bg-white/[0.08]"
                   }`}
                 >
                   {option.label}

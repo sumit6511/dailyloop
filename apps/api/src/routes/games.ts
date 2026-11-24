@@ -6,7 +6,14 @@ import { Errors } from "../lib/errors.js";
 import { env } from "../config/env.js";
 import { getTodayLineup, getTodayEntryForSlug } from "../services/games-today.js";
 import { sharePattern } from "../services/share-patterns.js";
-import { startAttempt, submitMove, checkAttempt, undoLastMove, getHint, recordHeartbeat } from "../services/attempts.js";
+import {
+  startAttempt,
+  submitMove,
+  checkAttempt,
+  undoLastMove,
+  getHint,
+  recordHeartbeat,
+} from "../services/attempts.js";
 
 // Undo is only safe where reversing a move doesn't erase a genuine mistake's scoring impact —
 // see the doc comment on `undoLastMove` for why this isn't offered to every game.
@@ -16,7 +23,10 @@ const submitBodySchema = z.object({ move: z.unknown() });
 
 export const gameRoutes: FastifyPluginAsync = async (app) => {
   app.get("/", async (_request, reply) => {
-    const games = await prisma.game.findMany({ where: { isEnabled: true }, orderBy: { sortOrder: "asc" } });
+    const games = await prisma.game.findMany({
+      where: { isEnabled: true },
+      orderBy: { sortOrder: "asc" },
+    });
     const data: GameDTO[] = games.map((g) => ({
       slug: g.slug,
       name: g.name,
@@ -95,11 +105,13 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const result = await checkAttempt(request.currentUser!.id, request.params.slug);
       if (result.kind === "no_module_or_game") throw Errors.notFound("Game not found");
-      if (result.kind === "not_supported") throw Errors.badRequest("This game doesn't support checking progress");
+      if (result.kind === "not_supported")
+        throw Errors.badRequest("This game doesn't support checking progress");
       if (result.kind === "not_available") {
         throw Errors.badRequest("No puzzle is available for this game today");
       }
-      if (result.kind === "not_started") throw Errors.badRequest("Start the game before checking your progress");
+      if (result.kind === "not_started")
+        throw Errors.badRequest("Start the game before checking your progress");
       return reply.send({ data: result.result });
     },
   );
@@ -110,12 +122,15 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const result = await getHint(request.currentUser!.id, request.params.slug);
       if (result.kind === "no_module_or_game") throw Errors.notFound("Game not found");
-      if (result.kind === "not_supported") throw Errors.badRequest("This game doesn't support hints");
+      if (result.kind === "not_supported")
+        throw Errors.badRequest("This game doesn't support hints");
       if (result.kind === "not_available") {
         throw Errors.badRequest("No puzzle is available for this game today");
       }
-      if (result.kind === "not_started") throw Errors.badRequest("Start the game before asking for a hint");
-      if (result.kind === "already_completed") throw Errors.badRequest("This puzzle is already complete");
+      if (result.kind === "not_started")
+        throw Errors.badRequest("Start the game before asking for a hint");
+      if (result.kind === "already_completed")
+        throw Errors.badRequest("This puzzle is already complete");
       return reply.send({ data: { hint: result.hint, hintsUsed: result.hintsUsed } });
     },
   );
@@ -146,8 +161,10 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
       if (result.kind === "not_available") {
         throw Errors.badRequest("No puzzle is available for this game today");
       }
-      if (result.kind === "not_started") throw Errors.badRequest("Start the game before undoing a move");
-      if (result.kind === "already_completed") throw Errors.badRequest("This puzzle is already complete");
+      if (result.kind === "not_started")
+        throw Errors.badRequest("Start the game before undoing a move");
+      if (result.kind === "already_completed")
+        throw Errors.badRequest("This puzzle is already complete");
       if (result.kind === "nothing_to_undo") throw Errors.badRequest("There's nothing to undo yet");
       return reply.send({ data: { content: result.content } });
     },
@@ -164,10 +181,13 @@ export const gameRoutes: FastifyPluginAsync = async (app) => {
       if (result.kind === "not_available") {
         throw Errors.badRequest("No puzzle is available for this game today");
       }
-      if (result.kind === "not_started") throw Errors.badRequest("Start the game before submitting a move");
+      if (result.kind === "not_started")
+        throw Errors.badRequest("Start the game before submitting a move");
       if (result.kind === "invalid_move") throw Errors.badRequest("Invalid move", result.details);
       if (result.kind === "already_completed") {
-        return reply.send({ data: { complete: true, alreadyCompleted: true, content: result.content } });
+        return reply.send({
+          data: { complete: true, alreadyCompleted: true, content: result.content },
+        });
       }
       return reply.send({
         data: {

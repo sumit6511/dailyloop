@@ -4,7 +4,14 @@ import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { createRng } from "../../rng.js";
 import { tierForDate, type PuzzleTier } from "../../difficulty.js";
-import { SIZE, generateGradedPuzzle, isValidPlacement, isValidCompleteGrid, findHint, type Grid } from "./sudoku.js";
+import {
+  SIZE,
+  generateGradedPuzzle,
+  isValidPlacement,
+  isValidCompleteGrid,
+  findHint,
+  type Grid,
+} from "./sudoku.js";
 
 export interface LogicPuzzleContent {
   /** Server-only — never sent to the client except via the read-only hint endpoint's fallback. */
@@ -40,7 +47,10 @@ export interface LogicPuzzleResult {
  * every constraint is necessarily *the* solution — so win detection never needs to compare
  * against it either.
  */
-function replay(content: LogicPuzzleContent, moves: LogicPuzzleMove[]): ValidationResult<LogicPuzzleResult> {
+function replay(
+  content: LogicPuzzleContent,
+  moves: LogicPuzzleMove[],
+): ValidationResult<LogicPuzzleResult> {
   const grid = content.puzzle.map((row) => [...row]);
   let mistakes = 0;
 
@@ -68,7 +78,11 @@ function replay(content: LogicPuzzleContent, moves: LogicPuzzleMove[]): Validati
   return { won, complete: won, mistakes, result: { grid, mistakes, won } };
 }
 
-export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMove, LogicPuzzleResult> = {
+export const logicPuzzleGame: DailyGameModule<
+  LogicPuzzleContent,
+  LogicPuzzleMove,
+  LogicPuzzleResult
+> = {
   id: "logic-puzzle",
   name: "Logic Puzzle",
   description: "Solve a daily 6×6 mini logic grid.",
@@ -84,8 +98,16 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
   }),
 
   moveSchema: z.object({
-    row: z.number().int().min(0).max(SIZE - 1),
-    col: z.number().int().min(0).max(SIZE - 1),
+    row: z
+      .number()
+      .int()
+      .min(0)
+      .max(SIZE - 1),
+    col: z
+      .number()
+      .int()
+      .min(0)
+      .max(SIZE - 1),
     value: z.number().int().min(0).max(SIZE),
   }),
 
@@ -93,7 +115,10 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
     // Easy days keep ~16 givens and need only singles; hard days drop to ~10 givens and may
     // need locked candidates or pairs — always unique, and always solvable without guessing.
     const difficulty = tierForDate(dateKey);
-    const { solution, puzzle } = generateGradedPuzzle(createRng(`logic-puzzle-${dateKey}`), difficulty);
+    const { solution, puzzle } = generateGradedPuzzle(
+      createRng(`logic-puzzle-${dateKey}`),
+      difficulty,
+    );
     return { solution, puzzle, difficulty };
   },
 
@@ -116,7 +141,12 @@ export const logicPuzzleGame: DailyGameModule<LogicPuzzleContent, LogicPuzzleMov
 
   sanitizeForClient(content, attempt) {
     if (!attempt) {
-      return { puzzle: content.puzzle, grid: content.puzzle, difficulty: content.difficulty, complete: false };
+      return {
+        puzzle: content.puzzle,
+        grid: content.puzzle,
+        difficulty: content.difficulty,
+        complete: false,
+      };
     }
     const { result } = replay(content, attempt.moves);
     const complete = attempt.status === "COMPLETED";

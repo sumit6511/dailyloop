@@ -34,7 +34,11 @@ describe("auth routes", () => {
   };
 
   it("registers a new user, creates a streak row, and sets a session cookie", async () => {
-    const response = await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      payload: registerPayload,
+    });
     expect(response.statusCode).toBe(201);
     const body = response.json();
     expect(body.data.username).toBe("harry");
@@ -132,7 +136,11 @@ describe("auth routes", () => {
   });
 
   it("returns the current user from /auth/me when authenticated, 401 otherwise", async () => {
-    const registerRes = await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const registerRes = await app.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      payload: registerPayload,
+    });
     const cookie = registerRes.cookies.find((c) => c.name === "dp_session")!;
 
     const authed = await app.inject({
@@ -148,10 +156,18 @@ describe("auth routes", () => {
   });
 
   it("logs out and invalidates the session", async () => {
-    const registerRes = await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const registerRes = await app.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      payload: registerPayload,
+    });
     const cookie = registerRes.cookies.find((c) => c.name === "dp_session")!;
 
-    await app.inject({ method: "POST", url: "/api/auth/logout", cookies: { [cookie.name]: cookie.value } });
+    await app.inject({
+      method: "POST",
+      url: "/api/auth/logout",
+      cookies: { [cookie.name]: cookie.value },
+    });
 
     const afterLogout = await app.inject({
       method: "GET",
@@ -187,7 +203,9 @@ describe("auth routes", () => {
         payload: registerPayload,
         headers: { "x-forwarded-for": "6.6.6.6, 203.0.113.9" }, // spoofed, then what the proxy saw
       });
-      const session = await prisma.session.findFirstOrThrow({ where: { userId: res.json().data.id } });
+      const session = await prisma.session.findFirstOrThrow({
+        where: { userId: res.json().data.id },
+      });
       expect(session.ip).toBe("203.0.113.9");
     });
 
@@ -207,7 +225,11 @@ describe("auth routes", () => {
     await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
     const timeLogin = async (emailOrUsername: string) => {
       const start = performance.now();
-      const res = await app.inject({ method: "POST", url: "/api/auth/login", payload: { emailOrUsername, password: "wrong-password-123" } });
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        payload: { emailOrUsername, password: "wrong-password-123" },
+      });
       expect(res.statusCode).toBe(400);
       return performance.now() - start;
     };
@@ -222,10 +244,19 @@ describe("auth routes", () => {
     const RAW = "a".repeat(64);
     const hashOf = (raw: string) => createHash("sha256").update(raw).digest("hex");
     const seedToken = async (userId: string, raw = RAW) =>
-      prisma.passwordResetToken.create({ data: { userId, tokenHash: hashOf(raw), expiresAt: new Date(Date.now() + 3_600_000) } });
+      prisma.passwordResetToken.create({
+        data: { userId, tokenHash: hashOf(raw), expiresAt: new Date(Date.now() + 3_600_000) },
+      });
     const confirm = (token: string) =>
-      app.inject({ method: "POST", url: "/api/auth/password-reset/confirm", payload: { token, newPassword: "brand-new-password" } });
-    const register = async () => (await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload })).json().data.id as string;
+      app.inject({
+        method: "POST",
+        url: "/api/auth/password-reset/confirm",
+        payload: { token, newPassword: "brand-new-password" },
+      });
+    const register = async () =>
+      (
+        await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload })
+      ).json().data.id as string;
 
     it("resets the password once with a valid link, then refuses to reuse it", async () => {
       await seedToken(await register());
@@ -241,7 +272,11 @@ describe("auth routes", () => {
 
     it("revokes an earlier link when a new one is requested", async () => {
       await seedToken(await register());
-      await app.inject({ method: "POST", url: "/api/auth/password-reset/request", payload: { email: registerPayload.email } });
+      await app.inject({
+        method: "POST",
+        url: "/api/auth/password-reset/request",
+        payload: { email: registerPayload.email },
+      });
       expect((await confirm(RAW)).statusCode).toBe(400);
     });
 
@@ -266,10 +301,19 @@ describe("auth routes", () => {
   });
 
   it("only accepts an https avatar URL (or empty to clear it)", async () => {
-    const res = await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      payload: registerPayload,
+    });
     const cookie = res.cookies.find((c) => c.name === "dp_session")!;
     const update = (avatarUrl: string) =>
-      app.inject({ method: "PATCH", url: "/api/users/me", cookies: { [cookie.name]: cookie.value }, payload: { avatarUrl } });
+      app.inject({
+        method: "PATCH",
+        url: "/api/users/me",
+        cookies: { [cookie.name]: cookie.value },
+        payload: { avatarUrl },
+      });
     expect((await update("javascript:alert(1)")).statusCode).toBe(400);
     expect((await update("http://example.com/a.png")).statusCode).toBe(400);
     expect((await update("https://example.com/a.png")).statusCode).toBe(200);
@@ -277,10 +321,16 @@ describe("auth routes", () => {
   });
 
   it("slides a session's expiry at most every few minutes, not on every request", async () => {
-    const res = await app.inject({ method: "POST", url: "/api/auth/register", payload: registerPayload });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      payload: registerPayload,
+    });
     const cookie = res.cookies.find((c) => c.name === "dp_session")!;
-    const me = () => app.inject({ method: "GET", url: "/api/auth/me", cookies: { [cookie.name]: cookie.value } });
-    const session = () => prisma.session.findFirstOrThrow({ where: { userId: res.json().data.id } });
+    const me = () =>
+      app.inject({ method: "GET", url: "/api/auth/me", cookies: { [cookie.name]: cookie.value } });
+    const session = () =>
+      prisma.session.findFirstOrThrow({ where: { userId: res.json().data.id } });
 
     const before = await session();
     await me();

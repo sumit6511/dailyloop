@@ -52,7 +52,9 @@ export function OverviewPage() {
                 <tr key={game.slug} className="border-b border-white/[0.06]">
                   <td className="py-2 font-medium text-white/85">{game.name}</td>
                   <td className="py-2 text-center">
-                    <Badge tone={game.isEnabled ? "success" : "neutral"}>{game.isEnabled ? "Enabled" : "Disabled"}</Badge>
+                    <Badge tone={game.isEnabled ? "success" : "neutral"}>
+                      {game.isEnabled ? "Enabled" : "Disabled"}
+                    </Badge>
                   </td>
                   <td className="py-2 text-center text-white/60">{game.puzzleCount}</td>
                   <td className="py-2 text-center text-white/60">{game.completedCount}</td>
@@ -65,7 +67,9 @@ export function OverviewPage() {
       </Card>
 
       <Card intensity="subtle">
-        <h2 className="mb-4 font-display text-lg font-bold text-white">Today's Activity ({activity.date})</h2>
+        <h2 className="mb-4 font-display text-lg font-bold text-white">
+          Today's Activity ({activity.date})
+        </h2>
         <div className="mb-4 grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
           <div>
             <div className="text-lg font-bold text-white">{activity.activeUsers}</div>
@@ -87,10 +91,15 @@ export function OverviewPage() {
         {activity.topScores.length > 0 ? (
           <div className="flex flex-col gap-1">
             {activity.topScores.map((s, i) => (
-              <div key={s.username} className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm">
+              <div
+                key={s.username}
+                className="flex items-center justify-between rounded-lg px-2 py-1.5 text-sm"
+              >
                 <span className="inline-flex items-center gap-1 text-white/80">
                   {i + 1}. {s.username}
-                  {s.isPerfectDay ? <Icon name="emoji_events" className="text-sm text-yellow-400" filled /> : null}
+                  {s.isPerfectDay ? (
+                    <Icon name="emoji_events" className="text-sm text-yellow-400" filled />
+                  ) : null}
                 </span>
                 <span className="font-semibold text-brand-300">{s.score}</span>
               </div>

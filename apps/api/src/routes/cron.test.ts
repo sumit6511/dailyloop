@@ -61,7 +61,14 @@ describe("POST /api/cron/generate-tomorrow", () => {
       data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 0 },
     });
     await prisma.game.create({
-      data: { slug: "disabled-game", name: "Disabled", description: "d", icon: "❌", sortOrder: 1, isEnabled: false },
+      data: {
+        slug: "disabled-game",
+        name: "Disabled",
+        description: "d",
+        icon: "❌",
+        sortOrder: 1,
+        isEnabled: false,
+      },
     });
 
     const res = await app.inject({
@@ -105,7 +112,9 @@ describe("POST /api/cron/generate-tomorrow", () => {
     });
     expect(res.json().data.purged).toEqual({ sessions: 1, resetTokens: 1 });
     expect((await prisma.session.findMany()).map((s) => s.tokenHash)).toEqual(["live-session"]);
-    expect((await prisma.passwordResetToken.findMany()).map((t) => t.tokenHash)).toEqual(["live-reset"]);
+    expect((await prisma.passwordResetToken.findMany()).map((t) => t.tokenHash)).toEqual([
+      "live-reset",
+    ]);
     await prisma.user.delete({ where: { id: user.id } });
   });
 });

@@ -59,8 +59,14 @@ export function ConfirmDialog({
         <Button variant="ghost" onClick={onCancel} type="button">
           <Icon name="close" className="text-lg" /> {cancelLabel}
         </Button>
-        <Button variant={danger ? "danger" : "primary"} onClick={onConfirm} isLoading={isLoading} type="button">
-          <Icon name={confirmIcon ?? (danger ? "delete" : "check")} className="text-lg" /> {confirmLabel}
+        <Button
+          variant={danger ? "danger" : "primary"}
+          onClick={onConfirm}
+          isLoading={isLoading}
+          type="button"
+        >
+          <Icon name={confirmIcon ?? (danger ? "delete" : "check")} className="text-lg" />{" "}
+          {confirmLabel}
         </Button>
       </div>
     </dialog>

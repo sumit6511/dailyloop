@@ -9,7 +9,9 @@ function normalizePair(idA: string, idB: string): [string, string] {
 
 export async function areFriends(idA: string, idB: string): Promise<boolean> {
   const [userAId, userBId] = normalizePair(idA, idB);
-  const friendship = await prisma.friendship.findUnique({ where: { userAId_userBId: { userAId, userBId } } });
+  const friendship = await prisma.friendship.findUnique({
+    where: { userAId_userBId: { userAId, userBId } },
+  });
   return !!friendship;
 }
 
@@ -63,7 +65,10 @@ export async function getRelationship(viewerId: string, targetId: string): Promi
 }
 
 /** getRelationship for many targets at once — three queries total instead of three per target. */
-export async function getRelationships(viewerId: string, targetIds: string[]): Promise<Map<string, Relationship>> {
+export async function getRelationships(
+  viewerId: string,
+  targetIds: string[],
+): Promise<Map<string, Relationship>> {
   const [friendIds, sent, received] = await Promise.all([
     getFriendIds(viewerId),
     prisma.friendRequest.findMany({
@@ -97,7 +102,8 @@ export async function getRelationships(viewerId: string, targetIds: string[]): P
 export async function sendFriendRequest(senderId: string, targetUsername: string) {
   const target = await prisma.user.findUnique({ where: { username: targetUsername } });
   if (!target) throw Errors.notFound("User not found");
-  if (target.id === senderId) throw Errors.badRequest("You can't send a friend request to yourself");
+  if (target.id === senderId)
+    throw Errors.badRequest("You can't send a friend request to yourself");
 
   if (await areFriends(senderId, target.id)) throw Errors.conflict("You're already friends");
 
@@ -123,7 +129,9 @@ export async function sendFriendRequest(senderId: string, targetUsername: string
       data: { status: "PENDING", respondedAt: null },
     });
   }
-  return prisma.friendRequest.create({ data: { senderId, receiverId: target.id, status: "PENDING" } });
+  return prisma.friendRequest.create({
+    data: { senderId, receiverId: target.id, status: "PENDING" },
+  });
 }
 
 export async function acceptFriendRequest(userId: string, requestId: string) {
@@ -133,8 +141,13 @@ export async function acceptFriendRequest(userId: string, requestId: string) {
 
   const [userAId, userBId] = normalizePair(request.senderId, request.receiverId);
   return prisma.$transaction(async (tx) => {
-    await tx.friendRequest.update({ where: { id: request.id }, data: { status: "ACCEPTED", respondedAt: new Date() } });
-    const existingFriendship = await tx.friendship.findUnique({ where: { userAId_userBId: { userAId, userBId } } });
+    await tx.friendRequest.update({
+      where: { id: request.id },
+      data: { status: "ACCEPTED", respondedAt: new Date() },
+    });
+    const existingFriendship = await tx.friendship.findUnique({
+      where: { userAId_userBId: { userAId, userBId } },
+    });
     if (existingFriendship) return existingFriendship;
     return tx.friendship.create({ data: { userAId, userBId } });
   });

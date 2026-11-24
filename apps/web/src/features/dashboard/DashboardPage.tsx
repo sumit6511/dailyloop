@@ -42,7 +42,8 @@ function getGreeting(): string {
 function getHeroSubtitle(completedCount: number, availableCount: number): string {
   if (availableCount === 0) return "No puzzles available today. Check back soon!";
   if (completedCount === 0) return "Today's puzzles are waiting.";
-  if (completedCount < availableCount) return `${completedCount} of ${availableCount} done — keep going!`;
+  if (completedCount < availableCount)
+    return `${completedCount} of ${availableCount} done — keep going!`;
   return "All of today's puzzles are done. Nice work!";
 }
 
@@ -68,10 +69,13 @@ export function DashboardPage() {
         />
         <div className="relative">
           <h1 className="flex flex-wrap items-center gap-2 font-display text-3xl font-bold sm:text-4xl">
-            {getGreeting()}, {user?.displayName} <Icon name="waving_hand" className="text-3xl text-amber-300" filled />
+            {getGreeting()}, {user?.displayName}{" "}
+            <Icon name="waving_hand" className="text-3xl text-amber-300" filled />
           </h1>
           <p className="mt-2 max-w-md text-white/70">
-            {isLoading || !games ? "Today's puzzles are waiting." : getHeroSubtitle(completedCount, availableCount)}
+            {isLoading || !games
+              ? "Today's puzzles are waiting."
+              : getHeroSubtitle(completedCount, availableCount)}
           </p>
           <NextPuzzleCountdown className="mt-1" />
           <div className="mt-6 flex flex-wrap items-start gap-6">
@@ -118,7 +122,11 @@ export function DashboardPage() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {games.map((game, i) => (
-                  <div key={game.slug} className="animate-pop-in" style={{ animationDelay: `${i * 60}ms` }}>
+                  <div
+                    key={game.slug}
+                    className="animate-pop-in"
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
                     <GameCard game={game} />
                   </div>
                 ))}

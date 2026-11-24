@@ -103,25 +103,39 @@ describe("getNextRolloverAt", () => {
 
   it("moves to the following midnight right after a rollover", () => {
     const justAfter = new Date("2026-11-23T18:15:01.000Z");
-    expect(getNextRolloverAt("Asia/Kathmandu", justAfter).toISOString()).toBe("2026-11-24T18:15:00.000Z");
+    expect(getNextRolloverAt("Asia/Kathmandu", justAfter).toISOString()).toBe(
+      "2026-11-24T18:15:00.000Z",
+    );
   });
 
   it("follows daylight saving changes", () => {
     // New York leaves DST on 2026-11-01: midnight Nov 1 is still EDT (UTC-4), Nov 2 is EST (UTC-5).
-    expect(getNextRolloverAt("America/New_York", new Date("2026-10-31T12:00:00Z")).toISOString()).toBe(
-      "2026-11-01T04:00:00.000Z",
-    );
-    expect(getNextRolloverAt("America/New_York", new Date("2026-11-01T12:00:00Z")).toISOString()).toBe(
-      "2026-11-02T05:00:00.000Z",
-    );
+    expect(
+      getNextRolloverAt("America/New_York", new Date("2026-10-31T12:00:00Z")).toISOString(),
+    ).toBe("2026-11-01T04:00:00.000Z");
+    expect(
+      getNextRolloverAt("America/New_York", new Date("2026-11-01T12:00:00Z")).toISOString(),
+    ).toBe("2026-11-02T05:00:00.000Z");
   });
 
   it("always lands exactly where getTodayKey changes", () => {
-    for (const zone of ["Asia/Kathmandu", "UTC", "America/New_York", "Australia/Lord_Howe", "Pacific/Chatham"]) {
-      for (let t = Date.UTC(2026, 0, 1); t < Date.UTC(2027, 0, 1); t += 7 * 3_600_000 + 13 * 60_000) {
+    for (const zone of [
+      "Asia/Kathmandu",
+      "UTC",
+      "America/New_York",
+      "Australia/Lord_Howe",
+      "Pacific/Chatham",
+    ]) {
+      for (
+        let t = Date.UTC(2026, 0, 1);
+        t < Date.UTC(2027, 0, 1);
+        t += 7 * 3_600_000 + 13 * 60_000
+      ) {
         const rollover = getNextRolloverAt(zone, new Date(t)).getTime();
         expect(getTodayKey(zone, new Date(rollover - 1))).toBe(getTodayKey(zone, new Date(t)));
-        expect(getTodayKey(zone, new Date(rollover))).toBe(addDaysToKey(getTodayKey(zone, new Date(t)), 1));
+        expect(getTodayKey(zone, new Date(rollover))).toBe(
+          addDaysToKey(getTodayKey(zone, new Date(t)), 1),
+        );
       }
     }
   });

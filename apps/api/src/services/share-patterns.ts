@@ -11,7 +11,9 @@ const CONNECTIONS_EMOJI: Record<number, string> = { 1: "🟨", 2: "🟩", 3: "�
 function wordGuessPattern(content: unknown): string | undefined {
   const view = content as { guesses?: { feedback: { status: string }[] }[] } | null;
   if (!view?.guesses?.length) return undefined;
-  return view.guesses.map((g) => g.feedback.map((f) => WORD_GUESS_EMOJI[f.status] ?? "⬜").join("")).join("\n");
+  return view.guesses
+    .map((g) => g.feedback.map((f) => WORD_GUESS_EMOJI[f.status] ?? "⬜").join(""))
+    .join("\n");
 }
 
 /** One row per counted guess, each square coloured by that word's real category. */
@@ -26,7 +28,11 @@ function connectionsPattern(content: unknown): string | undefined {
     for (const word of category.words) difficultyOf.set(word.toUpperCase(), category.difficulty);
   }
   return view.guesses
-    .map((guess) => guess.words.map((w) => CONNECTIONS_EMOJI[difficultyOf.get(w.toUpperCase()) ?? 0] ?? "⬜").join(""))
+    .map((guess) =>
+      guess.words
+        .map((w) => CONNECTIONS_EMOJI[difficultyOf.get(w.toUpperCase()) ?? 0] ?? "⬜")
+        .join(""),
+    )
     .join("\n");
 }
 

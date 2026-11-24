@@ -40,7 +40,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         {requestBadge}
       </Link>
       {user ? (
-        <Link to={`/u/${user.username}`} onClick={() => setMenuOpen(false)} className={navLinkClass}>
+        <Link
+          to={`/u/${user.username}`}
+          onClick={() => setMenuOpen(false)}
+          className={navLinkClass}
+        >
           <Icon name="person" className="text-lg" /> Profile
         </Link>
       ) : null}

@@ -76,7 +76,8 @@ export interface SubmitMoveResponse {
 export function useSubmitMove(slug: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (move: unknown) => api.post<SubmitMoveResponse>(`/games/${slug}/attempts/submit`, { move }),
+    mutationFn: (move: unknown) =>
+      api.post<SubmitMoveResponse>(`/games/${slug}/attempts/submit`, { move }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["games", "today"] });
       void queryClient.invalidateQueries({ queryKey: ["games", slug, "today"] });

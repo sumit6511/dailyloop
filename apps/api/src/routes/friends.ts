@@ -30,8 +30,16 @@ export const friendRoutes: FastifyPluginAsync = async (app) => {
     const { incoming, outgoing } = await listFriendRequests(request.currentUser!.id);
     return reply.send({
       data: {
-        incoming: incoming.map((r) => ({ id: r.id, createdAt: r.createdAt, user: toPublicUserDTO(r.sender) })),
-        outgoing: outgoing.map((r) => ({ id: r.id, createdAt: r.createdAt, user: toPublicUserDTO(r.receiver) })),
+        incoming: incoming.map((r) => ({
+          id: r.id,
+          createdAt: r.createdAt,
+          user: toPublicUserDTO(r.sender),
+        })),
+        outgoing: outgoing.map((r) => ({
+          id: r.id,
+          createdAt: r.createdAt,
+          user: toPublicUserDTO(r.receiver),
+        })),
       },
     });
   });

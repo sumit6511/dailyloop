@@ -124,7 +124,8 @@ describe("word-guess: moveSchema", () => {
   });
 
   it("accepts every possible answer", () => {
-    for (const guess of ANSWER_WORDS) expect(wordGuessGame.moveSchema.safeParse({ guess }).success).toBe(true);
+    for (const guess of ANSWER_WORDS)
+      expect(wordGuessGame.moveSchema.safeParse({ guess }).success).toBe(true);
   });
 
   it("still rejects non-words and the wrong length", () => {

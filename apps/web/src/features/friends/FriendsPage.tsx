@@ -23,7 +23,9 @@ import {
 
 export function FriendsPage() {
   const [query, setQuery] = useState("");
-  const [pendingRemoval, setPendingRemoval] = useState<{ id: string; displayName: string } | null>(null);
+  const [pendingRemoval, setPendingRemoval] = useState<{ id: string; displayName: string } | null>(
+    null,
+  );
   const { data: searchResults, isLoading: searching } = useUserSearch(query);
   const { data: friends, isLoading: loadingFriends } = useFriends();
   const { data: requests } = useFriendRequests();
@@ -33,7 +35,8 @@ export function FriendsPage() {
   const removeFriend = useRemoveFriend();
   const { showToast } = useToast();
 
-  const onError = (err: unknown) => showToast(err instanceof ApiClientError ? err.message : "Something went wrong", "error");
+  const onError = (err: unknown) =>
+    showToast(err instanceof ApiClientError ? err.message : "Something went wrong", "error");
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -53,7 +56,10 @@ export function FriendsPage() {
               <Spinner className="mx-auto h-5 w-5 text-brand-400" />
             ) : searchResults && searchResults.length > 0 ? (
               searchResults.map((user) => (
-                <div key={user.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2">
+                <div
+                  key={user.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2"
+                >
                   <Link to={`/u/${user.username}`} className="flex min-w-0 items-center gap-2.5">
                     <Avatar name={user.displayName} size="sm" />
                     <span className="truncate text-sm font-medium text-white/85 hover:text-white">
@@ -80,12 +86,19 @@ export function FriendsPage() {
           <h2 className="mb-3 font-display text-lg font-bold text-white">Requests</h2>
           {requests.incoming.length > 0 ? (
             <div className="mb-4 flex flex-col gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-white/50">Incoming</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
+                Incoming
+              </p>
               {requests.incoming.map((r) => (
-                <div key={r.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2">
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2"
+                >
                   <Link to={`/u/${r.user.username}`} className="flex min-w-0 items-center gap-2.5">
                     <Avatar name={r.user.displayName} size="sm" />
-                    <span className="truncate text-sm font-medium text-white/85 hover:text-white">{r.user.displayName}</span>
+                    <span className="truncate text-sm font-medium text-white/85 hover:text-white">
+                      {r.user.displayName}
+                    </span>
                   </Link>
                   <div className="flex gap-2">
                     <Button
@@ -93,14 +106,19 @@ export function FriendsPage() {
                       isLoading={acceptRequest.isPending}
                       onClick={() =>
                         acceptRequest.mutate(r.id, {
-                          onSuccess: () => showToast(`You're now friends with ${r.user.displayName}`, "success"),
+                          onSuccess: () =>
+                            showToast(`You're now friends with ${r.user.displayName}`, "success"),
                           onError,
                         })
                       }
                     >
                       <Icon name="how_to_reg" className="text-base" /> Accept
                     </Button>
-                    <Button size="sm" variant="secondary" onClick={() => rejectRequest.mutate(r.id, { onError })}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => rejectRequest.mutate(r.id, { onError })}
+                    >
                       <Icon name="close" className="text-base" /> Reject
                     </Button>
                   </div>
@@ -112,12 +130,21 @@ export function FriendsPage() {
             <div className="flex flex-col gap-2">
               <p className="text-xs font-semibold uppercase tracking-wide text-white/50">Sent</p>
               {requests.outgoing.map((r) => (
-                <div key={r.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2">
+                <div
+                  key={r.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2"
+                >
                   <Link to={`/u/${r.user.username}`} className="flex min-w-0 items-center gap-2.5">
                     <Avatar name={r.user.displayName} size="sm" />
-                    <span className="truncate text-sm font-medium text-white/85 hover:text-white">{r.user.displayName}</span>
+                    <span className="truncate text-sm font-medium text-white/85 hover:text-white">
+                      {r.user.displayName}
+                    </span>
                   </Link>
-                  <Button size="sm" variant="secondary" onClick={() => cancelRequest.mutate(r.id, { onError })}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => cancelRequest.mutate(r.id, { onError })}
+                  >
                     <Icon name="close" className="text-base" /> Cancel
                   </Button>
                 </div>
@@ -134,7 +161,10 @@ export function FriendsPage() {
         ) : friends && friends.length > 0 ? (
           <div className="flex flex-col gap-2">
             {friends.map((friend) => (
-              <div key={friend.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2">
+              <div
+                key={friend.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-3 py-2"
+              >
                 <Link to={`/u/${friend.username}`} className="flex min-w-0 items-center gap-2.5">
                   <Avatar name={friend.displayName} size="sm" />
                   <span className="truncate text-sm font-medium text-white/85 hover:text-white">
@@ -147,7 +177,9 @@ export function FriendsPage() {
                   className="!h-11 !w-11 !px-0"
                   aria-label={`Remove ${friend.displayName}`}
                   title="Remove friend"
-                  onClick={() => setPendingRemoval({ id: friend.id, displayName: friend.displayName })}
+                  onClick={() =>
+                    setPendingRemoval({ id: friend.id, displayName: friend.displayName })
+                  }
                 >
                   <Icon name="person_remove" className="text-base text-rose-400" />
                 </Button>
@@ -155,7 +187,11 @@ export function FriendsPage() {
             ))}
           </div>
         ) : (
-          <EmptyState icon={<Icon name="group_add" />} title="No friends yet" description="Search above to find people you know." />
+          <EmptyState
+            icon={<Icon name="group_add" />}
+            title="No friends yet"
+            description="Search above to find people you know."
+          />
         )}
       </Card>
 

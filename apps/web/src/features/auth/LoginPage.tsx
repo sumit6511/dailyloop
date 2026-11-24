@@ -29,7 +29,9 @@ export function LoginPage() {
       const redirectTo = (location.state as { from?: string } | null)?.from ?? "/";
       navigate(redirectTo, { replace: true });
     } catch (error) {
-      setFormError(error instanceof ApiClientError ? error.message : "Something went wrong. Try again.");
+      setFormError(
+        error instanceof ApiClientError ? error.message : "Something went wrong. Try again.",
+      );
     }
   };
 

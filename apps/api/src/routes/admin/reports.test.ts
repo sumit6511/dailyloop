@@ -57,7 +57,11 @@ describe("admin reporting routes", () => {
     const admin = await registerAndGetCookies("admin1", "ADMIN");
     await registerAndGetCookies("harry", "USER");
 
-    const res = await app.inject({ method: "GET", url: "/api/admin/users", cookies: admin.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/admin/users",
+      cookies: admin.cookies,
+    });
     expect(res.statusCode).toBe(200);
     const usernames = res.json().data.map((u: { username: string }) => u.username);
     expect(usernames).toEqual(expect.arrayContaining(["admin1", "harry"]));
@@ -74,27 +78,60 @@ describe("admin reporting routes", () => {
         { userId: harry.userId, date: yesterday, totalScore: 30, gamesCompleted: 1 },
       ],
     });
-    const game = await prisma.game.create({ data: { slug: "g", name: "G", description: "d", icon: "🧪", sortOrder: 0 } });
+    const game = await prisma.game.create({
+      data: { slug: "g", name: "G", description: "d", icon: "🧪", sortOrder: 0 },
+    });
     for (const [i, status] of (["COMPLETED", "COMPLETED", "IN_PROGRESS"] as const).entries()) {
       const puzzle = await prisma.dailyPuzzle.create({
-        data: { gameId: game.id, date: dateKeyToJSDate(addDaysToKey(getTodayKey("Asia/Kathmandu"), -i)), puzzleNumber: i + 1, content: {} },
+        data: {
+          gameId: game.id,
+          date: dateKeyToJSDate(addDaysToKey(getTodayKey("Asia/Kathmandu"), -i)),
+          puzzleNumber: i + 1,
+          content: {},
+        },
       });
-      await prisma.gameAttempt.create({ data: { userId: harry.userId, dailyPuzzleId: puzzle.id, status } });
+      await prisma.gameAttempt.create({
+        data: { userId: harry.userId, dailyPuzzleId: puzzle.id, status },
+      });
     }
 
-    const res = await app.inject({ method: "GET", url: "/api/admin/users", cookies: admin.cookies });
-    const rows = res.json().data as { username: string; gamesPlayed: number; totalPoints: number }[];
-    expect(rows.find((u) => u.username === "harry")).toMatchObject({ gamesPlayed: 2, totalPoints: 150 });
-    expect(rows.find((u) => u.username === "admin1")).toMatchObject({ gamesPlayed: 0, totalPoints: 0 });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/admin/users",
+      cookies: admin.cookies,
+    });
+    const rows = res.json().data as {
+      username: string;
+      gamesPlayed: number;
+      totalPoints: number;
+    }[];
+    expect(rows.find((u) => u.username === "harry")).toMatchObject({
+      gamesPlayed: 2,
+      totalPoints: 150,
+    });
+    expect(rows.find((u) => u.username === "admin1")).toMatchObject({
+      gamesPlayed: 0,
+      totalPoints: 0,
+    });
   });
 
   it("summarizes per-game stats in the overview", async () => {
     const admin = await registerAndGetCookies("admin1", "ADMIN");
     await prisma.game.create({
-      data: { slug: "connections", name: "Connections", description: "d", icon: "🟩", sortOrder: 0 },
+      data: {
+        slug: "connections",
+        name: "Connections",
+        description: "d",
+        icon: "🟩",
+        sortOrder: 0,
+      },
     });
 
-    const res = await app.inject({ method: "GET", url: "/api/admin/stats/overview", cookies: admin.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/admin/stats/overview",
+      cookies: admin.cookies,
+    });
     expect(res.statusCode).toBe(200);
     const body = res.json().data;
     expect(body.totalUsers).toBeGreaterThanOrEqual(1);
@@ -106,10 +143,20 @@ describe("admin reporting routes", () => {
     const harry = await registerAndGetCookies("harry", "USER");
     const today = dateKeyToJSDate(getTodayKey("Asia/Kathmandu"));
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: today, totalScore: 120, gamesCompleted: 5, isPerfectDay: true },
+      data: {
+        userId: harry.userId,
+        date: today,
+        totalScore: 120,
+        gamesCompleted: 5,
+        isPerfectDay: true,
+      },
     });
 
-    const res = await app.inject({ method: "GET", url: "/api/admin/activity", cookies: admin.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/admin/activity",
+      cookies: admin.cookies,
+    });
     expect(res.statusCode).toBe(200);
     const body = res.json().data;
     expect(body.activeUsers).toBe(1);

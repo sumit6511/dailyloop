@@ -43,7 +43,10 @@ export function normalizeGuess(value: string): string {
 
 /** Optimal-string-alignment distance: insertions, deletions, substitutions and adjacent swaps. */
 function editDistance(a: string, b: string): number {
-  const d: number[][] = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array<number>(b.length).fill(0)]);
+  const d: number[][] = Array.from({ length: a.length + 1 }, (_, i) => [
+    i,
+    ...Array<number>(b.length).fill(0),
+  ]);
   for (let j = 1; j <= b.length; j++) d[0]![j] = j;
   for (let i = 1; i <= a.length; i++) {
     for (let j = 1; j <= b.length; j++) {
@@ -70,7 +73,10 @@ function isMatch(guess: string, content: GuessItContent): boolean {
   if (normalizedGuess.length === 0) return false;
   return [content.answer, ...content.aliases].some((candidate) => {
     const target = normalizeGuess(candidate);
-    return target === normalizedGuess || editDistance(target, normalizedGuess) <= allowedTypos(target.length);
+    return (
+      target === normalizedGuess ||
+      editDistance(target, normalizedGuess) <= allowedTypos(target.length)
+    );
   });
 }
 
@@ -124,8 +130,19 @@ export const guessItGame: DailyGameModule<GuessItContent, GuessItMove, GuessItRe
 
   generatePuzzle(_seed, dateKey, recentlyUsed = []) {
     const rng = createRng(`guess-it-${dateKey}`);
-    const entry = pickLeastRecentlyUsed(rng, GUESS_IT_ENTRIES, (e) => e.answer, recentlyUsed, 1)[0]!;
-    return { category: entry.category, answer: entry.answer, aliases: entry.aliases, clues: entry.clues };
+    const entry = pickLeastRecentlyUsed(
+      rng,
+      GUESS_IT_ENTRIES,
+      (e) => e.answer,
+      recentlyUsed,
+      1,
+    )[0]!;
+    return {
+      category: entry.category,
+      answer: entry.answer,
+      aliases: entry.aliases,
+      clues: entry.clues,
+    };
   },
 
   contentIdentity(content) {
@@ -139,12 +156,21 @@ export const guessItGame: DailyGameModule<GuessItContent, GuessItMove, GuessItRe
   calculateScore(_content, result, meta) {
     if (!result.won) return buildScoreBreakdown({ base: 0 });
     const base = CLUES_BASE_SCORE[result.guesses.length] ?? 30;
-    return buildScoreBreakdown({ base, speedBonus: speedBonus(meta.durationMs, 10_000, 120_000, 10) });
+    return buildScoreBreakdown({
+      base,
+      speedBonus: speedBonus(meta.durationMs, 10_000, 120_000, 10),
+    });
   },
 
   sanitizeForClient(content, attempt) {
     if (!attempt) {
-      return { category: content.category, clues: content.clues.slice(0, 1), cluesRevealed: 1, guesses: [], complete: false };
+      return {
+        category: content.category,
+        clues: content.clues.slice(0, 1),
+        cluesRevealed: 1,
+        guesses: [],
+        complete: false,
+      };
     }
     const { result } = replay(content, attempt.moves);
     const complete = attempt.status === "COMPLETED";

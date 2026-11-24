@@ -16,7 +16,13 @@ export async function createSession(userId: string, meta: { userAgent?: string; 
   const token = randomBytes(32).toString("hex");
   const expiresAt = newExpiry();
   await prisma.session.create({
-    data: { userId, tokenHash: hashToken(token), expiresAt, userAgent: meta.userAgent, ip: meta.ip },
+    data: {
+      userId,
+      tokenHash: hashToken(token),
+      expiresAt,
+      userAgent: meta.userAgent,
+      ip: meta.ip,
+    },
   });
   return { token, expiresAt };
 }
@@ -26,7 +32,10 @@ export async function createSession(userId: string, meta: { userAgent?: string; 
  * mid-session while idle ones still expire after SESSION_DURATION_DAYS. */
 export async function getUserBySessionToken(token: string) {
   const tokenHash = hashToken(token);
-  const session = await prisma.session.findUnique({ where: { tokenHash }, include: { user: true } });
+  const session = await prisma.session.findUnique({
+    where: { tokenHash },
+    include: { user: true },
+  });
   if (!session) return null;
   if (session.expiresAt < new Date()) {
     await prisma.session.delete({ where: { id: session.id } }).catch(() => undefined);
@@ -36,7 +45,10 @@ export async function getUserBySessionToken(token: string) {
   // minutes per session is plenty for an expiry measured in days.
   if (Date.now() - session.lastUsedAt.getTime() > SESSION_TOUCH_INTERVAL_MS) {
     void prisma.session
-      .update({ where: { id: session.id }, data: { lastUsedAt: new Date(), expiresAt: newExpiry() } })
+      .update({
+        where: { id: session.id },
+        data: { lastUsedAt: new Date(), expiresAt: newExpiry() },
+      })
       .catch(() => undefined);
   }
   return session.user;

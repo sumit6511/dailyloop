@@ -46,7 +46,9 @@ function cellIndex(cells: Cell[], target: Cell): number {
 }
 
 function hasWall(walls: Wall[], a: Cell, b: Cell): boolean {
-  return walls.some((w) => (sameCell(w.a, a) && sameCell(w.b, b)) || (sameCell(w.a, b) && sameCell(w.b, a)));
+  return walls.some(
+    (w) => (sameCell(w.a, a) && sameCell(w.b, b)) || (sameCell(w.a, b) && sameCell(w.b, a)),
+  );
 }
 
 function highestCheckpointInPath(path: Cell[], checkpoints: Cell[]): number {
@@ -91,7 +93,8 @@ function applyLocalStep(view: PathwayView, path: Cell[], move: Cell): Cell[] | n
   if (checkpointIdx >= 0) {
     const checkpointNumber = checkpointIdx + 1;
     if (checkpointNumber !== highestCheckpointInPath(path, view.checkpoints) + 1) return null;
-    if (checkpointNumber === view.checkpoints.length && path.length + 1 !== view.size * view.size) return null;
+    if (checkpointNumber === view.checkpoints.length && path.length + 1 !== view.size * view.size)
+      return null;
   }
 
   return [...path, move];
@@ -284,7 +287,9 @@ export function PathwayPage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
-        <p className="text-center text-white/50">No Pathway puzzle is available today. Check back soon!</p>
+        <p className="text-center text-white/50">
+          No Pathway puzzle is available today. Check back soon!
+        </p>
       </GameShell>
     );
   }
@@ -324,7 +329,11 @@ export function PathwayPage() {
   }
 
   return (
-    <GameShell icon={<GameIcon slug="pathway" size="lg" />} title="Pathway" subtitle="Draw one line through every cell, in number order.">
+    <GameShell
+      icon={<GameIcon slug="pathway" size="lg" />}
+      title="Pathway"
+      subtitle="Draw one line through every cell, in number order."
+    >
       <div
         ref={gridRef}
         onPointerDown={onPointerDown}
@@ -338,17 +347,24 @@ export function PathwayPage() {
         aria-describedby="pathway-progress"
         className="relative mx-auto aspect-square w-full max-w-sm touch-none select-none rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
       >
-        <div className="glass-subtle absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}>
+        <div
+          className="glass-subtle absolute inset-0 grid"
+          style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
+        >
           {cells.map((cell) => {
             const checkpointIdx = cellIndex(checkpoints, cell);
             const onPath = localPath.some((c) => sameCell(c, cell));
             const isHead = localPath.length > 0 && sameCell(localPath[localPath.length - 1]!, cell);
             const isBlocked = blockedCell !== null && sameCell(blockedCell, cell);
             const isHintTarget = hintSuggestion !== null && sameCell(hintSuggestion.cell, cell);
-            const wallRight = cell.col + 1 < size && hasWall(walls, cell, { row: cell.row, col: cell.col + 1 });
-            const wallBottom = cell.row + 1 < size && hasWall(walls, cell, { row: cell.row + 1, col: cell.col });
-            const wallLeft = cell.col > 0 && hasWall(walls, cell, { row: cell.row, col: cell.col - 1 });
-            const wallTop = cell.row > 0 && hasWall(walls, cell, { row: cell.row - 1, col: cell.col });
+            const wallRight =
+              cell.col + 1 < size && hasWall(walls, cell, { row: cell.row, col: cell.col + 1 });
+            const wallBottom =
+              cell.row + 1 < size && hasWall(walls, cell, { row: cell.row + 1, col: cell.col });
+            const wallLeft =
+              cell.col > 0 && hasWall(walls, cell, { row: cell.row, col: cell.col - 1 });
+            const wallTop =
+              cell.row > 0 && hasWall(walls, cell, { row: cell.row - 1, col: cell.col });
             return (
               <div
                 key={`${cell.row}-${cell.col}`}
@@ -379,7 +395,10 @@ export function PathwayPage() {
             );
           })}
         </div>
-        <svg viewBox={`0 0 ${size} ${size}`} className="pointer-events-none absolute inset-0 h-full w-full">
+        <svg
+          viewBox={`0 0 ${size} ${size}`}
+          className="pointer-events-none absolute inset-0 h-full w-full"
+        >
           <polyline
             points={localPath.map((c) => `${c.col + 0.5},${c.row + 0.5}`).join(" ")}
             fill="none"
@@ -402,7 +421,12 @@ export function PathwayPage() {
           <Button size="sm" variant="secondary" onClick={acceptHint}>
             {hintSuggestion.kind === "extend" ? "Draw it" : "Back up"}
           </Button>
-          <Button size="sm" variant="ghost" aria-label="Dismiss hint" onClick={() => setHintSuggestion(null)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label="Dismiss hint"
+            onClick={() => setHintSuggestion(null)}
+          >
             <Icon name="close" className="text-base" />
           </Button>
         </div>
@@ -429,8 +453,8 @@ export function PathwayPage() {
       </p>
 
       <p className="mt-4 text-center text-xs text-white/40">
-        Press and drag from 1, through every cell, ending on {checkpoints.length}. Tap a cell on your trail to back
-        up to it. On a keyboard, use the arrow keys and Backspace.
+        Press and drag from 1, through every cell, ending on {checkpoints.length}. Tap a cell on
+        your trail to back up to it. On a keyboard, use the arrow keys and Backspace.
       </p>
     </GameShell>
   );

@@ -2,7 +2,15 @@ import type { ReactNode } from "react";
 import { Card } from "../../components/Card";
 import { LogoMark } from "../../components/Logo";
 
-export function AuthLayout({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+export function AuthLayout({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: ReactNode;
+}) {
   return (
     <div className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="animate-pop-in w-full max-w-sm">

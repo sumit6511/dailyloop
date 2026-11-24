@@ -80,7 +80,8 @@ function replay(content: PathwayContent, moves: PathwayMove[]): ValidationResult
   let mistakes = 0;
 
   for (const move of moves) {
-    if (move.row < 0 || move.row >= content.size || move.col < 0 || move.col >= content.size) continue;
+    if (move.row < 0 || move.row >= content.size || move.col < 0 || move.col >= content.size)
+      continue;
     const key = cellKey(move);
 
     if (path.length === 0) {

@@ -16,7 +16,9 @@ export function parseTrustProxy(value: string | undefined): boolean | TrustProxy
   if (v === "true") return true;
   if (v === "false") return false;
   if (v !== "" && !/^\d+$/.test(v)) {
-    throw new Error(`TRUST_PROXY must be "true", "false" or a number of proxy hops, got "${value}"`);
+    throw new Error(
+      `TRUST_PROXY must be "true", "false" or a number of proxy hops, got "${value}"`,
+    );
   }
   const hops = v === "" ? 1 : Number(v);
   if (hops === 0) return false;

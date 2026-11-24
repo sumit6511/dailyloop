@@ -45,7 +45,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       });
       if (existing) {
         throw Errors.conflict(
-          existing.email === body.email ? "Email is already registered" : "Username is already taken",
+          existing.email === body.email
+            ? "Email is already registered"
+            : "Username is already taken",
         );
       }
 
@@ -67,7 +69,11 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
           // Lost a race with a simultaneous registration that passed the same check above.
           if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
             const target = String((err.meta as { target?: unknown } | undefined)?.target ?? "");
-            throw Errors.conflict(target.includes("email") ? "Email is already registered" : "Username is already taken");
+            throw Errors.conflict(
+              target.includes("email")
+                ? "Email is already registered"
+                : "Username is already taken",
+            );
           }
           throw err;
         });
@@ -89,7 +95,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       // Emails are stored lowercased (registerSchema); usernames are citext, so both halves of
       // this lookup are case-insensitive.
       const user = await prisma.user.findFirst({
-        where: { OR: [{ email: body.emailOrUsername.toLowerCase() }, { username: body.emailOrUsername }] },
+        where: {
+          OR: [{ email: body.emailOrUsername.toLowerCase() }, { username: body.emailOrUsername }],
+        },
       });
       // Deliberately generic message — don't reveal whether the account exists.
       // Runs Argon2 even for an unknown user so timing doesn't reveal whether the account exists.
@@ -139,9 +147,15 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         // No email provider is wired up yet. In development the link is logged as a stand-in for
         // sending it; in production a live reset link must never reach the logs.
         if (isProduction) {
-          request.log.warn({ userId: user.id }, "Password reset requested but no email delivery is configured");
+          request.log.warn(
+            { userId: user.id },
+            "Password reset requested but no email delivery is configured",
+          );
         } else {
-          request.log.info({ email: user.email, resetLink }, "Password reset requested (dev: link logged, not emailed)");
+          request.log.info(
+            { email: user.email, resetLink },
+            "Password reset requested (dev: link logged, not emailed)",
+          );
         }
       }
 

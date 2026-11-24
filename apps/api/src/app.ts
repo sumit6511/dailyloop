@@ -28,7 +28,12 @@ export async function buildApp() {
       env.NODE_ENV === "test"
         ? false
         : env.NODE_ENV === "development"
-          ? { transport: { target: "pino-pretty", options: { colorize: true, translateTime: "HH:MM:ss" } } }
+          ? {
+              transport: {
+                target: "pino-pretty",
+                options: { colorize: true, translateTime: "HH:MM:ss" },
+              },
+            }
           : true,
     // Never `true` by default: that trusts a client-supplied X-Forwarded-For outright, so anyone
     // could claim a fresh IP per request and walk straight past the login/register rate limits.
@@ -70,13 +75,19 @@ export async function buildApp() {
     // schemas); mini's errors are not instances of classic ZodError.
     if (error instanceof z.core.$ZodError) {
       return reply.status(400).send({
-        error: { code: "VALIDATION_ERROR", message: "Invalid request", details: z.flattenError(error) },
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid request",
+          details: z.flattenError(error),
+        },
       });
     }
     // A unique-constraint race (two requests creating the same thing at once) or a write to a row
     // that was deleted in between is the client's conflict, not a server fault.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return reply.status(409).send({ error: { code: "CONFLICT", message: "That already exists" } });
+      return reply
+        .status(409)
+        .send({ error: { code: "CONFLICT", message: "That already exists" } });
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
       return reply.status(404).send({ error: { code: "NOT_FOUND", message: "Not found" } });
@@ -95,13 +106,15 @@ export async function buildApp() {
       return reply.status(clientStatus).send({ error: { code, message } });
     }
     request.log.error(error);
-    return reply.status(500).send({ error: { code: "INTERNAL_ERROR", message: "Something went wrong" } });
+    return reply
+      .status(500)
+      .send({ error: { code: "INTERNAL_ERROR", message: "Something went wrong" } });
   });
 
   app.setNotFoundHandler((request, reply) => {
-    return reply
-      .status(404)
-      .send({ error: { code: "NOT_FOUND", message: `Route ${request.method} ${request.url} not found` } });
+    return reply.status(404).send({
+      error: { code: "NOT_FOUND", message: `Route ${request.method} ${request.url} not found` },
+    });
   });
 
   await app.register(healthRoutes, { prefix: "/api" });

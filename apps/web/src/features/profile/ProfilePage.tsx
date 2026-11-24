@@ -67,7 +67,8 @@ export function ProfilePage() {
         {profile.bio ? <p className="mt-2 text-sm text-white/70">{profile.bio}</p> : null}
         {profile.stats.currentStreak > 0 ? (
           <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-flame-400/30 bg-flame-400/10 px-3 py-1 text-sm font-semibold text-flame-400">
-            <Icon name="local_fire_department" className="text-base" filled /> {profile.stats.currentStreak} day streak
+            <Icon name="local_fire_department" className="text-base" filled />{" "}
+            {profile.stats.currentStreak} day streak
           </div>
         ) : null}
         {profile.relationship === "self" ? (
@@ -118,8 +119,14 @@ export function ProfilePage() {
                     : "border-white/[0.08] bg-white/[0.03] opacity-40"
                 }`}
               >
-                <Icon name={achievement.icon} className={`text-2xl ${isUnlocked ? "text-flame-400" : "text-white/50"}`} filled={isUnlocked} />
-                <span className="text-[11px] font-semibold leading-tight text-white/85">{achievement.name}</span>
+                <Icon
+                  name={achievement.icon}
+                  className={`text-2xl ${isUnlocked ? "text-flame-400" : "text-white/50"}`}
+                  filled={isUnlocked}
+                />
+                <span className="text-[11px] font-semibold leading-tight text-white/85">
+                  {achievement.name}
+                </span>
               </div>
             );
           })}

@@ -62,6 +62,8 @@ export function pickLeastRecentlyUsed<T>(
   const lastSeenIndex = new Map<string, number>();
   recentlyUsedOldestFirst.forEach((id, i) => lastSeenIndex.set(id, i)); // later overwrites earlier
   return shuffle(rng, items)
-    .sort((a, b) => (lastSeenIndex.get(identityOf(a)) ?? -1) - (lastSeenIndex.get(identityOf(b)) ?? -1))
+    .sort(
+      (a, b) => (lastSeenIndex.get(identityOf(a)) ?? -1) - (lastSeenIndex.get(identityOf(b)) ?? -1),
+    )
     .slice(0, count);
 }

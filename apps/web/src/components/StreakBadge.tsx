@@ -9,13 +9,22 @@ interface StreakBadgeProps {
   className?: string;
 }
 
-function isDayInStreak(day: DateKey, lastCompletedDate: DateKey | null, currentStreak: number): boolean {
+function isDayInStreak(
+  day: DateKey,
+  lastCompletedDate: DateKey | null,
+  currentStreak: number,
+): boolean {
   if (!lastCompletedDate || currentStreak <= 0) return false;
   const streakStart = addDaysToKey(lastCompletedDate, -(currentStreak - 1));
   return compareDateKeys(day, streakStart) >= 0 && compareDateKeys(day, lastCompletedDate) <= 0;
 }
 
-export function StreakBadge({ currentStreak, lastCompletedDate, todayKey, className = "" }: StreakBadgeProps) {
+export function StreakBadge({
+  currentStreak,
+  lastCompletedDate,
+  todayKey,
+  className = "",
+}: StreakBadgeProps) {
   const today = todayKey ?? getTodayKey();
   const days = Array.from({ length: 7 }, (_, i) => addDaysToKey(today, i - 6));
 
@@ -25,7 +34,10 @@ export function StreakBadge({ currentStreak, lastCompletedDate, todayKey, classN
         <span className="inline-flex items-center gap-1 text-lg font-bold text-white">
           <span className="relative inline-flex">
             {currentStreak > 0 ? (
-              <span className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-flame-500/50 blur-sm" aria-hidden="true" />
+              <span
+                className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-flame-500/50 blur-sm"
+                aria-hidden="true"
+              />
             ) : null}
             <Icon name="local_fire_department" className="text-lg text-flame-400" filled />
           </span>{" "}
@@ -33,7 +45,11 @@ export function StreakBadge({ currentStreak, lastCompletedDate, todayKey, classN
         </span>
         <span className="text-sm text-white/70">day streak</span>
       </div>
-      <div className="flex gap-1.5" role="img" aria-label={`${currentStreak} day streak, last 7 days shown`}>
+      <div
+        className="flex gap-1.5"
+        role="img"
+        aria-label={`${currentStreak} day streak, last 7 days shown`}
+      >
         {days.map((day, i) => {
           const filled = isDayInStreak(day, lastCompletedDate as DateKey | null, currentStreak);
           return (

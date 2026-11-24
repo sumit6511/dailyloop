@@ -24,7 +24,10 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         </label>
         <div className="relative">
           {icon ? (
-            <Icon name={icon} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-white/40" />
+            <Icon
+              name={icon}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-white/40"
+            />
           ) : null}
           <input
             ref={ref}

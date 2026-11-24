@@ -15,14 +15,20 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
   return (
     <Card
       className={`flex flex-col gap-3 transition-all duration-200 ${
-        game.available ? "hover:-translate-y-0.5 hover:border-white/[0.22] hover:shadow-2xl" : "opacity-50"
+        game.available
+          ? "hover:-translate-y-0.5 hover:border-white/[0.22] hover:shadow-2xl"
+          : "opacity-50"
       }`}
     >
       <div className="flex items-center gap-2">
         <div className="relative">
           <GameIcon slug={game.slug} size="md" />
           {isCompleted ? (
-            <Icon name="check_circle" className="absolute -top-2 -left-2 text-lg text-emerald-500" filled />
+            <Icon
+              name="check_circle"
+              className="absolute -top-2 -left-2 text-lg text-emerald-500"
+              filled
+            />
           ) : null}
         </div>
         <div>
@@ -48,7 +54,10 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
         ) : (
           <Link to={`/play/${game.slug}`}>
             <Button variant={isCompleted ? "secondary" : "primary"} size="sm" className="w-full">
-              <Icon name={isCompleted ? "visibility" : isInProgress ? "play_arrow" : "sports_esports"} className="text-base" />
+              <Icon
+                name={isCompleted ? "visibility" : isInProgress ? "play_arrow" : "sports_esports"}
+                className="text-base"
+              />
               {isCompleted ? "View result" : isInProgress ? "Continue" : "Play"}
             </Button>
           </Link>

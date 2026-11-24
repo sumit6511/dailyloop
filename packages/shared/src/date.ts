@@ -34,7 +34,11 @@ function keyFromUTCDate(date: Date): DateKey {
  * client sends, so changing your device timezone can't fetch a new puzzle.
  */
 export function getTodayKey(timezone: string = DEFAULT_TIMEZONE, now: Date = new Date()): DateKey {
-  const parts = Object.fromEntries(formatterFor(timezone).formatToParts(now).map((p) => [p.type, p.value]));
+  const parts = Object.fromEntries(
+    formatterFor(timezone)
+      .formatToParts(now)
+      .map((p) => [p.type, p.value]),
+  );
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
@@ -65,7 +69,10 @@ export function compareDateKeys(a: DateKey, b: DateKey): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-export function isConsecutiveDay(previousKey: DateKey | null | undefined, currentKey: DateKey): boolean {
+export function isConsecutiveDay(
+  previousKey: DateKey | null | undefined,
+  currentKey: DateKey,
+): boolean {
   if (!previousKey) return false;
   return addDaysToKey(previousKey, 1) === currentKey;
 }
@@ -95,7 +102,9 @@ function zoneOffsetMs(timezone: string, t: number): number {
     });
     offsetFormatters.set(timezone, formatter);
   }
-  const p = Object.fromEntries(formatter.formatToParts(new Date(t)).map((part) => [part.type, Number(part.value)]));
+  const p = Object.fromEntries(
+    formatter.formatToParts(new Date(t)).map((part) => [part.type, Number(part.value)]),
+  );
   const wallClockAsUTC = Date.UTC(p.year!, p.month! - 1, p.day!, p.hour!, p.minute!, p.second!);
   return wallClockAsUTC - Math.floor(t / 1000) * 1000;
 }
@@ -104,8 +113,13 @@ function zoneOffsetMs(timezone: string, t: number): number {
  * The instant the next day's puzzles go live — local midnight starting tomorrow in `timezone`.
  * (Correct across DST changes: the offset is re-read at the resulting instant.)
  */
-export function getNextRolloverAt(timezone: string = DEFAULT_TIMEZONE, now: Date = new Date()): Date {
-  const tomorrowMidnightAsUTC = dateKeyToJSDate(addDaysToKey(getTodayKey(timezone, now), 1)).getTime();
+export function getNextRolloverAt(
+  timezone: string = DEFAULT_TIMEZONE,
+  now: Date = new Date(),
+): Date {
+  const tomorrowMidnightAsUTC = dateKeyToJSDate(
+    addDaysToKey(getTodayKey(timezone, now), 1),
+  ).getTime();
   let instant = tomorrowMidnightAsUTC - zoneOffsetMs(timezone, tomorrowMidnightAsUTC);
   instant = tomorrowMidnightAsUTC - zoneOffsetMs(timezone, instant);
   return new Date(instant);

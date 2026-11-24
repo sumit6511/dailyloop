@@ -41,7 +41,11 @@ async function upsertUser(input: {
       role: input.role ?? "USER",
     },
   });
-  await prisma.streak.upsert({ where: { userId: user.id }, update: {}, create: { userId: user.id } });
+  await prisma.streak.upsert({
+    where: { userId: user.id },
+    update: {},
+    create: { userId: user.id },
+  });
   return user;
 }
 
@@ -137,7 +141,9 @@ async function seedPuzzles(games: { id: string; slug: string }[]): Promise<void>
     for (let offset = -PUZZLE_HISTORY_DAYS; offset <= PUZZLE_FUTURE_DAYS; offset++) {
       const dateKey = addDaysToKey(todayKey, offset);
       const date = dateKeyToJSDate(dateKey);
-      const existing = await prisma.dailyPuzzle.findUnique({ where: { gameId_date: { gameId: game.id, date } } });
+      const existing = await prisma.dailyPuzzle.findUnique({
+        where: { gameId_date: { gameId: game.id, date } },
+      });
       if (existing) {
         // Feed the accumulator even when skipping, or re-running seed on a partially-seeded DB
         // loses LRU memory for already-seeded days and the next newly-generated day repeats them.
@@ -158,7 +164,9 @@ async function seedPuzzles(games: { id: string; slug: string }[]): Promise<void>
       });
       created++;
     }
-    console.log(`${game.slug}: ${created} puzzles created (${PUZZLE_HISTORY_DAYS + 1} published, ${PUZZLE_FUTURE_DAYS} scheduled)`);
+    console.log(
+      `${game.slug}: ${created} puzzles created (${PUZZLE_HISTORY_DAYS + 1} published, ${PUZZLE_FUTURE_DAYS} scheduled)`,
+    );
   }
 }
 
@@ -184,7 +192,9 @@ async function main() {
   for (const demo of DEMO_USERS) {
     demoUsers.push(await upsertUser({ ...demo, password: DEMO_PASSWORD }));
   }
-  console.log(`${demoUsers.length} demo users ready: ${demoUsers.map((u) => u.username).join(", ")}`);
+  console.log(
+    `${demoUsers.length} demo users ready: ${demoUsers.map((u) => u.username).join(", ")}`,
+  );
 
   // Befriend every demo user with every other one so the leaderboard isn't empty on first login.
   for (let i = 0; i < demoUsers.length; i++) {
@@ -202,7 +212,9 @@ async function main() {
 
   console.log("\nDev credentials (local only — see README before deploying anywhere real):");
   console.log(`  Admin      ${DEV_ADMIN.email} / ${DEV_ADMIN.password}`);
-  console.log(`  Demo users harry / sumit / aayush / sagar @dailyloop.dev, password: ${DEMO_PASSWORD}`);
+  console.log(
+    `  Demo users harry / sumit / aayush / sagar @dailyloop.dev, password: ${DEMO_PASSWORD}`,
+  );
 }
 
 main()

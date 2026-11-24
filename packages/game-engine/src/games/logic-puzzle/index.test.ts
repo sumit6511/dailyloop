@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { addDaysToKey } from "@dailyloop/shared";
-import { HINT_PENALTY, logicPuzzleGame, type LogicPuzzleContent, type LogicPuzzleMove } from "./index.js";
+import {
+  HINT_PENALTY,
+  logicPuzzleGame,
+  type LogicPuzzleContent,
+  type LogicPuzzleMove,
+} from "./index.js";
 import { countSolutions, gradePuzzle } from "./sudoku.js";
 import { tierForDate } from "../../difficulty.js";
 
@@ -35,7 +40,9 @@ describe("logic-puzzle: generatePuzzle", () => {
     const givensByTier: Record<string, number[]> = {};
     for (const dateKey of week) {
       const content = logicPuzzleGame.generatePuzzle("s", dateKey);
-      (givensByTier[content.difficulty!] ??= []).push(content.puzzle.flat().filter((v) => v !== 0).length);
+      (givensByTier[content.difficulty!] ??= []).push(
+        content.puzzle.flat().filter((v) => v !== 0).length,
+      );
     }
     expect(Math.min(...givensByTier.easy!)).toBeGreaterThan(Math.max(...givensByTier.medium!));
     expect(Math.min(...givensByTier.medium!)).toBeGreaterThan(Math.max(...givensByTier.hard!));
@@ -58,7 +65,9 @@ describe("logic-puzzle: validateAttempt", () => {
   const content: LogicPuzzleContent = { solution: VALID_GRID, puzzle: BLANK_PUZZLE };
 
   it("wins when every cell is filled with a globally valid arrangement", () => {
-    const moves: LogicPuzzleMove[] = VALID_GRID.flatMap((row, r) => row.map((value, c) => ({ row: r, col: c, value })));
+    const moves: LogicPuzzleMove[] = VALID_GRID.flatMap((row, r) =>
+      row.map((value, c) => ({ row: r, col: c, value })),
+    );
     const result = logicPuzzleGame.validateAttempt(content, moves);
     expect(result.won).toBe(true);
     expect(result.complete).toBe(true);
@@ -117,7 +126,10 @@ describe("logic-puzzle: validateAttempt", () => {
   });
 
   it("ignores an attempt to overwrite a given (non-blank) clue", () => {
-    const withGiven: LogicPuzzleContent = { solution: VALID_GRID, puzzle: VALID_GRID.map((row, r) => row.map((v, c) => (r === 1 && c === 0 ? 0 : v))) };
+    const withGiven: LogicPuzzleContent = {
+      solution: VALID_GRID,
+      puzzle: VALID_GRID.map((row, r) => row.map((v, c) => (r === 1 && c === 0 ? 0 : v))),
+    };
     const result = logicPuzzleGame.validateAttempt(withGiven, [{ row: 0, col: 0, value: 5 }]); // (0,0) is a given clue, value 1
     expect(result.result.grid[0]![0]).toBe(1);
     expect(result.mistakes).toBe(0);
@@ -134,8 +146,18 @@ describe("logic-puzzle: hint", () => {
     // Every cell given except (2,2) — a guaranteed naked single.
     const puzzle = VALID_GRID.map((row, r) => row.map((v, c) => (r === 2 && c === 2 ? 0 : v)));
     const content: LogicPuzzleContent = { solution: VALID_GRID, puzzle };
-    const suggestion = logicPuzzleGame.hint!(content, []) as { row: number; col: number; value: number } | null;
-    expect(suggestion).toMatchObject({ row: 2, col: 2, value: VALID_GRID[2]![2], kind: "place", technique: "naked-single" });
+    const suggestion = logicPuzzleGame.hint!(content, []) as {
+      row: number;
+      col: number;
+      value: number;
+    } | null;
+    expect(suggestion).toMatchObject({
+      row: 2,
+      col: 2,
+      value: VALID_GRID[2]![2],
+      kind: "place",
+      technique: "naked-single",
+    });
   });
 
   it("points out a legal-but-wrong placement before suggesting anything built on top of it", () => {
@@ -143,14 +165,23 @@ describe("logic-puzzle: hint", () => {
     // 2 at (0,0) duplicates nothing on an empty board, so replay accepts it — but the solution has 1.
     const moves: LogicPuzzleMove[] = [{ row: 0, col: 0, value: 2 }];
     expect(logicPuzzleGame.validateAttempt(content, moves).result.grid[0]![0]).toBe(2);
-    expect(logicPuzzleGame.hint!(content, moves)).toEqual({ row: 0, col: 0, value: 0, kind: "fix" });
+    expect(logicPuzzleGame.hint!(content, moves)).toEqual({
+      row: 0,
+      col: 0,
+      value: 0,
+      kind: "fix",
+    });
   });
 
   it("only ever suggests placements that agree with the solution", () => {
     const content = logicPuzzleGame.generatePuzzle("s", "2026-08-29");
     const moves: LogicPuzzleMove[] = [];
     for (let step = 0; step < 36; step++) {
-      const hint = logicPuzzleGame.hint!(content, moves) as { row: number; col: number; value: number } | null;
+      const hint = logicPuzzleGame.hint!(content, moves) as {
+        row: number;
+        col: number;
+        value: number;
+      } | null;
       if (!hint) break;
       expect(hint.value).toBe(content.solution[hint.row]![hint.col]);
       moves.push(hint);
@@ -168,18 +199,34 @@ describe("logic-puzzle: calculateScore", () => {
   const content: LogicPuzzleContent = { solution: VALID_GRID, puzzle: BLANK_PUZZLE };
 
   it("scores a flawless fast solve at the maximum", () => {
-    const score = logicPuzzleGame.calculateScore(content, { grid: VALID_GRID, mistakes: 0, won: true }, { durationMs: 10_000 });
+    const score = logicPuzzleGame.calculateScore(
+      content,
+      { grid: VALID_GRID, mistakes: 0, won: true },
+      { durationMs: 10_000 },
+    );
     expect(score.total).toBe(100);
   });
 
   it("scores 0 for an unfinished attempt", () => {
-    const score = logicPuzzleGame.calculateScore(content, { grid: BLANK_PUZZLE, mistakes: 0, won: false }, { durationMs: 10_000 });
+    const score = logicPuzzleGame.calculateScore(
+      content,
+      { grid: BLANK_PUZZLE, mistakes: 0, won: false },
+      { durationMs: 10_000 },
+    );
     expect(score.total).toBe(0);
   });
 
   it("penalizes mistakes below a flawless solve", () => {
-    const perfect = logicPuzzleGame.calculateScore(content, { grid: VALID_GRID, mistakes: 0, won: true }, { durationMs: 10_000 });
-    const flawed = logicPuzzleGame.calculateScore(content, { grid: VALID_GRID, mistakes: 3, won: true }, { durationMs: 10_000 });
+    const perfect = logicPuzzleGame.calculateScore(
+      content,
+      { grid: VALID_GRID, mistakes: 0, won: true },
+      { durationMs: 10_000 },
+    );
+    const flawed = logicPuzzleGame.calculateScore(
+      content,
+      { grid: VALID_GRID, mistakes: 3, won: true },
+      { durationMs: 10_000 },
+    );
     expect(flawed.total).toBeLessThan(perfect.total);
     expect(flawed.mistakePenalty).toBe(24);
     expect(flawed.accuracyBonus).toBe(0);
@@ -187,8 +234,16 @@ describe("logic-puzzle: calculateScore", () => {
 
   it("deducts for each hint and withholds the flawless bonus when any hint was used", () => {
     const meta = { durationMs: 10_000 };
-    const unaided = logicPuzzleGame.calculateScore(content, { grid: VALID_GRID, mistakes: 0, won: true }, meta);
-    const twoHints = logicPuzzleGame.calculateScore(content, { grid: VALID_GRID, mistakes: 0, won: true }, { ...meta, hintsUsed: 2 });
+    const unaided = logicPuzzleGame.calculateScore(
+      content,
+      { grid: VALID_GRID, mistakes: 0, won: true },
+      meta,
+    );
+    const twoHints = logicPuzzleGame.calculateScore(
+      content,
+      { grid: VALID_GRID, mistakes: 0, won: true },
+      { ...meta, hintsUsed: 2 },
+    );
     expect(twoHints.hintPenalty).toBe(2 * HINT_PENALTY);
     expect(twoHints.accuracyBonus).toBe(0);
     expect(twoHints.total).toBe(unaided.total - unaided.accuracyBonus - 2 * HINT_PENALTY);

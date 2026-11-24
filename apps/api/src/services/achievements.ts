@@ -34,7 +34,11 @@ async function unlock(tx: Tx, userId: string, key: string): Promise<string | nul
  * numbers it evaluates (streak, perfect day) can't be stale relative to what was just written.
  * Returns the keys of achievements newly unlocked by this call (already-unlocked ones are skipped).
  */
-export async function evaluateAchievements(tx: Tx, userId: string, context: AchievementContext): Promise<string[]> {
+export async function evaluateAchievements(
+  tx: Tx,
+  userId: string,
+  context: AchievementContext,
+): Promise<string[]> {
   const newlyUnlocked: string[] = [];
 
   const maybeUnlock = async (key: string) => {
@@ -48,10 +52,13 @@ export async function evaluateAchievements(tx: Tx, userId: string, context: Achi
   if (context.currentStreak >= 100) await maybeUnlock("STREAK_100");
   if (context.isPerfectDay) await maybeUnlock("PERFECT_DAY");
   // A win only — otherwise giving up instantly (e.g. submitting Number Puzzle unsolved) would count.
-  if (context.won && context.durationMs < SPEED_DEMON_THRESHOLD_MS) await maybeUnlock("SPEED_DEMON");
+  if (context.won && context.durationMs < SPEED_DEMON_THRESHOLD_MS)
+    await maybeUnlock("SPEED_DEMON");
 
   if (context.won) {
-    const totalWins = await tx.gameAttempt.count({ where: { userId, won: true, status: "COMPLETED" } });
+    const totalWins = await tx.gameAttempt.count({
+      where: { userId, won: true, status: "COMPLETED" },
+    });
     if (totalWins === 1) await maybeUnlock("FIRST_WIN");
     if (context.mistakeCount === 0 && context.hintsUsed === 0) await maybeUnlock("FLAWLESS");
 
@@ -65,7 +72,8 @@ export async function evaluateAchievements(tx: Tx, userId: string, context: Achi
       }),
     ]);
     const wonGameIds = new Set(gamesWon.map((p) => p.gameId));
-    if (enabledGames.length > 0 && enabledGames.every((g) => wonGameIds.has(g.id))) await maybeUnlock("ALL_ROUNDER");
+    if (enabledGames.length > 0 && enabledGames.every((g) => wonGameIds.has(g.id)))
+      await maybeUnlock("ALL_ROUNDER");
   }
 
   const totalCompleted = await tx.gameAttempt.count({ where: { userId, status: "COMPLETED" } });
@@ -81,6 +89,10 @@ export async function evaluateAchievements(tx: Tx, userId: string, context: Achi
  */
 export async function syncAchievementCatalog(db: Tx): Promise<void> {
   for (const achievement of ACHIEVEMENT_CATALOG) {
-    await db.achievement.upsert({ where: { key: achievement.key }, update: achievement, create: achievement });
+    await db.achievement.upsert({
+      where: { key: achievement.key },
+      update: achievement,
+      create: achievement,
+    });
   }
 }

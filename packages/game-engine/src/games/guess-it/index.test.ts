@@ -21,9 +21,14 @@ describe("guess-it: generatePuzzle", () => {
 
 describe("guess-it: contentIdentity", () => {
   it("returns the answer", () => {
-    expect(guessItGame.contentIdentity!({ category: "c", answer: "Facebook", aliases: [], clues: ["1", "2", "3", "4"] })).toEqual([
-      "Facebook",
-    ]);
+    expect(
+      guessItGame.contentIdentity!({
+        category: "c",
+        answer: "Facebook",
+        aliases: [],
+        clues: ["1", "2", "3", "4"],
+      }),
+    ).toEqual(["Facebook"]);
   });
 });
 
@@ -71,7 +76,12 @@ describe("guess-it: validateAttempt", () => {
   });
 
   it("requires an exact match for short answers, where one letter makes a different word", () => {
-    const mars: GuessItContent = { category: "Space", answer: "Mars", aliases: [], clues: ["1", "2", "3", "4"] };
+    const mars: GuessItContent = {
+      category: "Space",
+      answer: "Mars",
+      aliases: [],
+      clues: ["1", "2", "3", "4"],
+    };
     expect(guessItGame.validateAttempt(mars, [{ guess: "mars" }]).won).toBe(true);
     expect(guessItGame.validateAttempt(mars, [{ guess: "mary" }]).won).toBe(false);
   });
@@ -87,7 +97,9 @@ describe("guess-it: validateAttempt", () => {
 
 describe("guess-it: GUESS_IT_ENTRIES", () => {
   it("has unique answers with exactly 4 non-empty clues each", () => {
-    expect(new Set(GUESS_IT_ENTRIES.map((e) => normalizeGuess(e.answer))).size).toBe(GUESS_IT_ENTRIES.length);
+    expect(new Set(GUESS_IT_ENTRIES.map((e) => normalizeGuess(e.answer))).size).toBe(
+      GUESS_IT_ENTRIES.length,
+    );
     for (const entry of GUESS_IT_ENTRIES) {
       expect(entry.clues).toHaveLength(4);
       for (const clue of entry.clues) expect(clue.trim().length).toBeGreaterThan(0);
@@ -110,7 +122,10 @@ describe("guess-it: GUESS_IT_ENTRIES", () => {
     for (const entry of GUESS_IT_ENTRIES) {
       for (const clue of entry.clues) {
         for (const name of [entry.answer, ...entry.aliases]) {
-          expect(normalizeGuess(clue).includes(normalizeGuess(name)), `${entry.answer}: "${clue}"`).toBe(false);
+          expect(
+            normalizeGuess(clue).includes(normalizeGuess(name)),
+            `${entry.answer}: "${clue}"`,
+          ).toBe(false);
         }
       }
     }
@@ -127,14 +142,23 @@ describe("guess-it: calculateScore", () => {
 
   it("scores guessing right on clue 1 higher than guessing right on clue 3", () => {
     const first = guessItGame.validateAttempt(content, [{ guess: "Facebook" }]);
-    const third = guessItGame.validateAttempt(content, [{ guess: "a" }, { guess: "b" }, { guess: "Facebook" }]);
+    const third = guessItGame.validateAttempt(content, [
+      { guess: "a" },
+      { guess: "b" },
+      { guess: "Facebook" },
+    ]);
     const firstScore = guessItGame.calculateScore(content, first.result, { durationMs: 5_000 });
     const thirdScore = guessItGame.calculateScore(content, third.result, { durationMs: 5_000 });
     expect(thirdScore.total).toBeLessThan(firstScore.total);
   });
 
   it("scores a loss at 0", () => {
-    const lost = guessItGame.validateAttempt(content, [{ guess: "a" }, { guess: "b" }, { guess: "c" }, { guess: "d" }]);
+    const lost = guessItGame.validateAttempt(content, [
+      { guess: "a" },
+      { guess: "b" },
+      { guess: "c" },
+      { guess: "d" },
+    ]);
     const score = guessItGame.calculateScore(content, lost.result, { durationMs: 5_000 });
     expect(score.total).toBe(0);
   });
@@ -149,13 +173,19 @@ describe("guess-it: sanitizeForClient", () => {
   };
 
   it("shows only one clue and no answer before the player has started", () => {
-    const view = guessItGame.sanitizeForClient(content, null) as { clues: string[]; answer?: string };
+    const view = guessItGame.sanitizeForClient(content, null) as {
+      clues: string[];
+      answer?: string;
+    };
     expect(view.clues).toEqual(["clue1"]);
     expect(view.answer).toBeUndefined();
   });
 
   it("never reveals the answer while still in progress", () => {
-    const view = guessItGame.sanitizeForClient(content, { status: "IN_PROGRESS", moves: [{ guess: "wrong" }] }) as {
+    const view = guessItGame.sanitizeForClient(content, {
+      status: "IN_PROGRESS",
+      moves: [{ guess: "wrong" }],
+    }) as {
       clues: string[];
       answer?: string;
     };

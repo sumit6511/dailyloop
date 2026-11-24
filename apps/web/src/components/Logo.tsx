@@ -38,7 +38,9 @@ export function LogoFull({ className = "", markClassName = "h-7 w-7" }: LogoFull
       <LogoMark className={markClassName} />
       <span className="font-display text-lg font-bold tracking-tight text-white">
         Daily
-        <span className="bg-gradient-to-r from-brand-400 to-teal-400 bg-clip-text text-transparent">Loop</span>
+        <span className="bg-gradient-to-r from-brand-400 to-teal-400 bg-clip-text text-transparent">
+          Loop
+        </span>
       </span>
     </span>
   );

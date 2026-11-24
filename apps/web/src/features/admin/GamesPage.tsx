@@ -33,7 +33,9 @@ export function GamesPage() {
             <input
               type="checkbox"
               checked={game.isEnabled}
-              onChange={(e) => updateGame.mutate({ id: game.id, data: { isEnabled: e.target.checked } })}
+              onChange={(e) =>
+                updateGame.mutate({ id: game.id, data: { isEnabled: e.target.checked } })
+              }
               className="relative h-5 w-9 cursor-pointer appearance-none rounded-full bg-white/[0.14] transition-colors checked:bg-brand-600 before:absolute before:left-0.5 before:top-0.5 before:h-4 before:w-4 before:rounded-full before:bg-white before:transition-transform checked:before:translate-x-4"
             />
           </label>

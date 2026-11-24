@@ -20,11 +20,16 @@ function movesOf(attemptLog: Prisma.JsonValue | null): unknown[] {
 const MAX_WRITE_ATTEMPTS = 10;
 
 function loadAttempt(userId: string, dailyPuzzleId: string) {
-  return prisma.gameAttempt.findUnique({ where: { userId_dailyPuzzleId: { userId, dailyPuzzleId } } });
+  return prisma.gameAttempt.findUnique({
+    where: { userId_dailyPuzzleId: { userId, dailyPuzzleId } },
+  });
 }
 
 /** Applies `data` only if the attempt is still in progress at the version we read. */
-async function compareAndSet(attempt: GameAttempt, data: Prisma.GameAttemptUpdateManyMutationInput): Promise<boolean> {
+async function compareAndSet(
+  attempt: GameAttempt,
+  data: Prisma.GameAttemptUpdateManyMutationInput,
+): Promise<boolean> {
   const { count } = await prisma.gameAttempt.updateMany({
     where: { id: attempt.id, status: "IN_PROGRESS", version: attempt.version },
     data: { ...data, version: { increment: 1 } },
@@ -67,7 +72,13 @@ export async function startAttempt(userId: string, gameSlug: string): Promise<St
   if (!attempt) {
     try {
       attempt = await prisma.gameAttempt.create({
-        data: { userId, dailyPuzzleId: puzzle.id, status: "IN_PROGRESS", attemptLog: [], lastActiveAt: new Date() },
+        data: {
+          userId,
+          dailyPuzzleId: puzzle.id,
+          status: "IN_PROGRESS",
+          attemptLog: [],
+          lastActiveAt: new Date(),
+        },
       });
     } catch (err) {
       // Two starts raced (e.g. a double-mounted page) and the other one created the row first.
@@ -142,9 +153,14 @@ export async function getHint(userId: string, gameSlug: string): Promise<HintRes
     }
     // Normalise through JSON so it compares equal to what comes back out of the jsonb column.
     const hint = JSON.parse(JSON.stringify(suggestion)) as Prisma.InputJsonValue;
-    if (isDeepStrictEqual(attempt.lastHint, hint)) return { kind: "ok", hint, hintsUsed: attempt.hintsUsed };
+    if (isDeepStrictEqual(attempt.lastHint, hint))
+      return { kind: "ok", hint, hintsUsed: attempt.hintsUsed };
 
-    const charge = { hintsUsed: { increment: 1 }, lastHint: hint, ...activity(attempt, new Date()) };
+    const charge = {
+      hintsUsed: { increment: 1 },
+      lastHint: hint,
+      ...activity(attempt, new Date()),
+    };
     if (await compareAndSet(attempt, charge)) {
       return { kind: "ok", hint, hintsUsed: attempt.hintsUsed + 1 };
     }
@@ -193,7 +209,10 @@ export async function undoLastMove(userId: string, gameSlug: string): Promise<Un
     if (written) {
       return {
         kind: "ok",
-        content: module.sanitizeForClient(puzzle.content, { status: "IN_PROGRESS", moves: newMoves }),
+        content: module.sanitizeForClient(puzzle.content, {
+          status: "IN_PROGRESS",
+          moves: newMoves,
+        }),
       };
     }
   }
@@ -215,7 +234,11 @@ export type SubmitMoveResult =
       newlyUnlockedAchievements: string[];
     };
 
-export async function submitMove(userId: string, gameSlug: string, rawMove: unknown): Promise<SubmitMoveResult> {
+export async function submitMove(
+  userId: string,
+  gameSlug: string,
+  rawMove: unknown,
+): Promise<SubmitMoveResult> {
   const module = getGameModule(gameSlug);
   const game = await prisma.game.findUnique({ where: { slug: gameSlug } });
   if (!module || !game || !game.isEnabled) return { kind: "no_module_or_game" };
@@ -321,10 +344,12 @@ export async function recordHeartbeat(userId: string, gameSlug: string): Promise
   for (let tries = 0; tries < MAX_WRITE_ATTEMPTS; tries++) {
     const attempt = await loadAttempt(userId, puzzle.id);
     if (!attempt) return { kind: "not_started" };
-    if (attempt.status === "COMPLETED") return { kind: "ok", activeMs: attempt.activeMs, complete: true };
+    if (attempt.status === "COMPLETED")
+      return { kind: "ok", activeMs: attempt.activeMs, complete: true };
 
     const active = activity(attempt, new Date());
-    if (await compareAndSet(attempt, active)) return { kind: "ok", activeMs: active.activeMs, complete: false };
+    if (await compareAndSet(attempt, active))
+      return { kind: "ok", activeMs: active.activeMs, complete: false };
   }
   throw new TooMuchContentionError();
 }

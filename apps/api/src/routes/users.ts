@@ -1,6 +1,11 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
-import { updateProfileSchema, changePasswordSchema, SESSION_COOKIE_NAME, type UserStatsDTO } from "@dailyloop/shared";
+import {
+  updateProfileSchema,
+  changePasswordSchema,
+  SESSION_COOKIE_NAME,
+  type UserStatsDTO,
+} from "@dailyloop/shared";
 import { prisma } from "../lib/prisma.js";
 import { toMeDTO, toPublicUserDTO } from "../lib/dto.js";
 import { Errors } from "../lib/errors.js";
@@ -59,7 +64,10 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       request.currentUser!.id,
       users.map((u) => u.id),
     );
-    const data = users.map((user) => ({ ...toPublicUserDTO(user), relationship: relationships.get(user.id)! }));
+    const data = users.map((user) => ({
+      ...toPublicUserDTO(user),
+      relationship: relationships.get(user.id)!,
+    }));
     return reply.send({ data });
   });
 
@@ -84,7 +92,9 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       gamesWon,
     };
 
-    const relationship = request.currentUser ? await getRelationship(request.currentUser.id, user.id) : null;
+    const relationship = request.currentUser
+      ? await getRelationship(request.currentUser.id, user.id)
+      : null;
 
     return reply.send({ data: { ...toPublicUserDTO(user), stats, relationship } });
   });

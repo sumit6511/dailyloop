@@ -8,7 +8,11 @@ import { DICTIONARY_GUESSES } from "./valid-guesses.js";
 const MAX_GUESSES = 6;
 // Answers stay curated and common; *guesses* accept any real 5-letter word (~12.6k), so a
 // player is never told an ordinary word like SLATE or BRAKE "isn't in our dictionary".
-const ALL_VALID_GUESSES = new Set<string>([...ANSWER_WORDS, ...EXTRA_VALID_GUESSES, ...DICTIONARY_GUESSES]);
+const ALL_VALID_GUESSES = new Set<string>([
+  ...ANSWER_WORDS,
+  ...EXTRA_VALID_GUESSES,
+  ...DICTIONARY_GUESSES,
+]);
 
 export interface WordGuessContent {
   /** Server-only — never sent to the client until the attempt is complete. */
@@ -68,7 +72,10 @@ function computeFeedback(guess: string, answer: string): LetterFeedback[] {
   return guessLetters.map((letter, i) => ({ letter, status: statuses[i]! }));
 }
 
-function replay(content: WordGuessContent, moves: WordGuessMove[]): ValidationResult<WordGuessResult> {
+function replay(
+  content: WordGuessContent,
+  moves: WordGuessMove[],
+): ValidationResult<WordGuessResult> {
   const guesses: WordGuessGuess[] = moves.map((move) => ({
     word: move.guess,
     feedback: computeFeedback(move.guess, content.answer),
@@ -117,7 +124,10 @@ export const wordGuessGame: DailyGameModule<WordGuessContent, WordGuessMove, Wor
   calculateScore(_content, result, meta) {
     if (!result.won) return buildScoreBreakdown({ base: 0 });
     const base = GUESSES_BASE_SCORE[result.guesses.length] ?? 30;
-    return buildScoreBreakdown({ base, speedBonus: speedBonus(meta.durationMs, 20_000, 300_000, 10) });
+    return buildScoreBreakdown({
+      base,
+      speedBonus: speedBonus(meta.durationMs, 20_000, 300_000, 10),
+    });
   },
 
   sanitizeForClient(content, attempt) {

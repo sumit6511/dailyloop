@@ -55,11 +55,17 @@ async function buildEntry(game: Game, userId: string): Promise<TodayGameEntryDTO
 }
 
 export async function getTodayLineup(userId: string): Promise<TodayGameEntryDTO[]> {
-  const games = await prisma.game.findMany({ where: { isEnabled: true }, orderBy: { sortOrder: "asc" } });
+  const games = await prisma.game.findMany({
+    where: { isEnabled: true },
+    orderBy: { sortOrder: "asc" },
+  });
   return Promise.all(games.map((game) => buildEntry(game, userId)));
 }
 
-export async function getTodayEntryForSlug(userId: string, slug: string): Promise<TodayGameEntryDTO | null> {
+export async function getTodayEntryForSlug(
+  userId: string,
+  slug: string,
+): Promise<TodayGameEntryDTO | null> {
   const game = await prisma.game.findUnique({ where: { slug } });
   if (!game || !game.isEnabled) return null;
   return buildEntry(game, userId);

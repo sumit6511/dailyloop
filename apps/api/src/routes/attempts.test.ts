@@ -14,8 +14,22 @@ const CONNECTIONS_CONTENT = {
     { title: "D", difficulty: 4, words: ["RED", "BLUE", "GREEN", "PINK"] },
   ],
   words: [
-    "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT",
-    "NINE", "TEN", "ELEVEN", "TWELVE", "RED", "BLUE", "GREEN", "PINK",
+    "ONE",
+    "TWO",
+    "THREE",
+    "FOUR",
+    "FIVE",
+    "SIX",
+    "SEVEN",
+    "EIGHT",
+    "NINE",
+    "TEN",
+    "ELEVEN",
+    "TWELVE",
+    "RED",
+    "BLUE",
+    "GREEN",
+    "PINK",
   ],
 };
 
@@ -77,10 +91,18 @@ describe("attempt lifecycle", () => {
   }
 
   async function publishToday(slug: string, name: string, icon: string, content: unknown) {
-    const game = await prisma.game.create({ data: { slug, name, description: "d", icon, sortOrder: 0 } });
+    const game = await prisma.game.create({
+      data: { slug, name, description: "d", icon, sortOrder: 0 },
+    });
     const date = dateKeyToJSDate(getTodayKey("Asia/Kathmandu"));
     await prisma.dailyPuzzle.create({
-      data: { gameId: game.id, date, puzzleNumber: 1, status: "PUBLISHED", content: content as Prisma.InputJsonValue },
+      data: {
+        gameId: game.id,
+        date,
+        puzzleNumber: 1,
+        status: "PUBLISHED",
+        content: content as Prisma.InputJsonValue,
+      },
     });
     return game;
   }
@@ -89,7 +111,11 @@ describe("attempt lifecycle", () => {
     const { cookies } = await registerUser("harry");
     await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);
 
-    const started = await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
+    const started = await app.inject({
+      method: "POST",
+      url: "/api/games/connections/attempts/start",
+      cookies,
+    });
     expect(started.statusCode).toBe(200);
     expect(started.json().data.content.words).toHaveLength(16);
 
@@ -137,10 +163,19 @@ describe("attempt lifecycle", () => {
     await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
     await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
 
-    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/games/logic-puzzle/attempts/hint",
+      cookies,
+    });
     expect(res.statusCode).toBe(200);
     const body = res.json().data;
-    expect(body.hint).toMatchObject({ row: 0, col: 0, value: LOGIC_PUZZLE_SOLUTION[0]![0], kind: "place" });
+    expect(body.hint).toMatchObject({
+      row: 0,
+      col: 0,
+      value: LOGIC_PUZZLE_SOLUTION[0]![0],
+      kind: "place",
+    });
     expect(body.hintsUsed).toBe(1);
     // The other blank's solved value shouldn't leak just because a hint was requested.
     expect(JSON.stringify(body.hint)).not.toContain(String(LOGIC_PUZZLE_SOLUTION[5]![5]));
@@ -151,9 +186,16 @@ describe("attempt lifecycle", () => {
     await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
     await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
     const askForHint = async () =>
-      (await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies })).json().data;
+      (
+        await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies })
+      ).json().data;
     const play = (move: { row: number; col: number; value: number }) =>
-      app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/submit", cookies, payload: { move } });
+      app.inject({
+        method: "POST",
+        url: "/api/games/logic-puzzle/attempts/submit",
+        cookies,
+        payload: { move },
+      });
 
     const first = await askForHint();
     expect(first.hintsUsed).toBe(1);
@@ -164,7 +206,11 @@ describe("attempt lifecycle", () => {
     expect(second.hint).toMatchObject({ row: 5, col: 5 });
     expect(second.hintsUsed).toBe(2);
 
-    const today = await app.inject({ method: "GET", url: "/api/games/logic-puzzle/today", cookies });
+    const today = await app.inject({
+      method: "GET",
+      url: "/api/games/logic-puzzle/today",
+      cookies,
+    });
     expect(today.json().data.hintsUsed).toBe(2);
 
     const done = (await play(second.hint)).json().data;
@@ -174,7 +220,11 @@ describe("attempt lifecycle", () => {
     expect(breakdown.hintPenalty).toBe(2 * SCORE.HINT_PENALTY);
     expect(breakdown.accuracyBonus).toBe(0);
 
-    const afterwards = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
+    const afterwards = await app.inject({
+      method: "POST",
+      url: "/api/games/logic-puzzle/attempts/hint",
+      cookies,
+    });
     expect(afterwards.statusCode).toBe(400);
   });
 
@@ -184,7 +234,9 @@ describe("attempt lifecycle", () => {
     await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/start", cookies });
 
     const responses = await Promise.all(
-      Array.from({ length: 5 }, () => app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies })),
+      Array.from({ length: 5 }, () =>
+        app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies }),
+      ),
     );
     for (const res of responses) expect(res.statusCode).toBe(200);
     const attempt = await prisma.gameAttempt.findFirstOrThrow();
@@ -196,7 +248,11 @@ describe("attempt lifecycle", () => {
     await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);
     await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
 
-    const res = await app.inject({ method: "POST", url: "/api/games/connections/attempts/check", cookies });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/games/connections/attempts/check",
+      cookies,
+    });
     expect(res.statusCode).toBe(400);
   });
 
@@ -205,7 +261,11 @@ describe("attempt lifecycle", () => {
     await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);
     await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
 
-    const res = await app.inject({ method: "POST", url: "/api/games/connections/attempts/hint", cookies });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/games/connections/attempts/hint",
+      cookies,
+    });
     expect(res.statusCode).toBe(400);
   });
 
@@ -213,7 +273,11 @@ describe("attempt lifecycle", () => {
     const { cookies } = await registerUser("harry");
     await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
 
-    const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/hint", cookies });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/games/logic-puzzle/attempts/hint",
+      cookies,
+    });
     expect(res.statusCode).toBe(400);
   });
 
@@ -230,7 +294,11 @@ describe("attempt lifecycle", () => {
     });
     expect(combined.json().data.content.pool).toEqual([11, 4, 23]);
 
-    const undone = await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/undo", cookies });
+    const undone = await app.inject({
+      method: "POST",
+      url: "/api/games/number-puzzle/attempts/undo",
+      cookies,
+    });
     expect(undone.statusCode).toBe(200);
     expect(undone.json().data.content.pool.sort()).toEqual([4, 11, 11, 12].sort());
   });
@@ -240,7 +308,11 @@ describe("attempt lifecycle", () => {
     await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);
     await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
 
-    const res = await app.inject({ method: "POST", url: "/api/games/connections/attempts/undo", cookies });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/games/connections/attempts/undo",
+      cookies,
+    });
     expect(res.statusCode).toBe(400);
   });
 
@@ -249,7 +321,11 @@ describe("attempt lifecycle", () => {
     await publishToday("number-puzzle", "Number Puzzle", "🔢", NUMBER_PUZZLE_CONTENT);
     await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/start", cookies });
 
-    const res = await app.inject({ method: "POST", url: "/api/games/number-puzzle/attempts/undo", cookies });
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/games/number-puzzle/attempts/undo",
+      cookies,
+    });
     expect(res.statusCode).toBe(400);
   });
 
@@ -396,14 +472,21 @@ describe("attempt lifecycle", () => {
   });
   describe("concurrent requests", () => {
     const submit = (cookies: Record<string, string>, guess: string) =>
-      app.inject({ method: "POST", url: "/api/games/word-guess/attempts/submit", cookies, payload: { move: { guess } } });
+      app.inject({
+        method: "POST",
+        url: "/api/games/word-guess/attempts/submit",
+        cookies,
+        payload: { move: { guess } },
+      });
 
     it("records every move when several are submitted at once", async () => {
       const { cookies } = await registerUser("harry");
       await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
       await app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies });
 
-      const responses = await Promise.all(["STORM", "PLANT", "MOUSE", "BRICK"].map((g) => submit(cookies, g)));
+      const responses = await Promise.all(
+        ["STORM", "PLANT", "MOUSE", "BRICK"].map((g) => submit(cookies, g)),
+      );
       for (const res of responses) expect(res.statusCode).toBe(200);
 
       const attempt = await prisma.gameAttempt.findFirstOrThrow();
@@ -422,15 +505,21 @@ describe("attempt lifecycle", () => {
       });
       await app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies });
 
-      const responses = await Promise.all(Array.from({ length: 4 }, () => submit(cookies, "CRANE")));
+      const responses = await Promise.all(
+        Array.from({ length: 4 }, () => submit(cookies, "CRANE")),
+      );
       for (const res of responses) expect(res.statusCode).toBe(200);
-      expect(responses.filter((r) => r.json().data.score != null && !r.json().data.alreadyCompleted)).toHaveLength(1);
+      expect(
+        responses.filter((r) => r.json().data.score != null && !r.json().data.alreadyCompleted),
+      ).toHaveLength(1);
 
       const attempt = await prisma.gameAttempt.findFirstOrThrow();
       expect(attempt.status).toBe("COMPLETED");
       expect(attempt.attemptLog).toEqual([{ guess: "CRANE" }]);
       expect((await prisma.streak.findUniqueOrThrow({ where: { userId } })).currentStreak).toBe(6);
-      expect((await prisma.dailyScore.findFirstOrThrow({ where: { userId } })).gamesCompleted).toBe(1);
+      expect((await prisma.dailyScore.findFirstOrThrow({ where: { userId } })).gamesCompleted).toBe(
+        1,
+      );
     });
 
     it("creates a single attempt when start is called several times at once", async () => {
@@ -438,7 +527,9 @@ describe("attempt lifecycle", () => {
       await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
 
       const responses = await Promise.all(
-        Array.from({ length: 4 }, () => app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies })),
+        Array.from({ length: 4 }, () =>
+          app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies }),
+        ),
       );
       for (const res of responses) expect(res.statusCode).toBe(200);
       expect(await prisma.gameAttempt.count()).toBe(1);
@@ -457,7 +548,13 @@ describe("attempt lifecycle", () => {
       vi.useFakeTimers({ toFake: ["Date"], now: t0 });
       const at = (ms: number) => vi.setSystemTime(t0 + ms);
       const heartbeat = async () =>
-        (await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/heartbeat", cookies })).json().data;
+        (
+          await app.inject({
+            method: "POST",
+            url: "/api/games/logic-puzzle/attempts/heartbeat",
+            cookies,
+          })
+        ).json().data;
       const play = (row: number, col: number) =>
         app.inject({
           method: "POST",
@@ -475,7 +572,11 @@ describe("attempt lifecycle", () => {
       expect((await heartbeat()).activeMs).toBe(20_000);
       at(35_000 + 10 * 60_000);
       await play(0, 0);
-      const today = await app.inject({ method: "GET", url: "/api/games/logic-puzzle/today", cookies });
+      const today = await app.inject({
+        method: "GET",
+        url: "/api/games/logic-puzzle/today",
+        cookies,
+      });
       expect(today.json().data.activeMs).toBe(35_000);
       at(40_000 + 10 * 60_000);
       expect((await play(5, 5)).json().data.complete).toBe(true);
@@ -488,13 +589,18 @@ describe("attempt lifecycle", () => {
     it("rejects a heartbeat before the attempt has started", async () => {
       const { cookies } = await registerUser("harry");
       await publishToday("logic-puzzle", "Logic Puzzle", "🧠", LOGIC_PUZZLE_CONTENT);
-      const res = await app.inject({ method: "POST", url: "/api/games/logic-puzzle/attempts/heartbeat", cookies });
+      const res = await app.inject({
+        method: "POST",
+        url: "/api/games/logic-puzzle/attempts/heartbeat",
+        cookies,
+      });
       expect(res.statusCode).toBe(400);
     });
 
     it("credits a gap only up to the away threshold", () => {
       const last = new Date(1_000_000);
-      const after = (ms: number) => activity({ activeMs: 500, lastActiveAt: last }, new Date(last.getTime() + ms)).activeMs;
+      const after = (ms: number) =>
+        activity({ activeMs: 500, lastActiveAt: last }, new Date(last.getTime() + ms)).activeMs;
       expect(after(ACTIVE_TIME.MAX_GAP_MS)).toBe(500 + ACTIVE_TIME.MAX_GAP_MS);
       expect(after(ACTIVE_TIME.MAX_GAP_MS + 1)).toBe(500);
       expect(after(-5_000)).toBe(500); // clock skew never subtracts time
@@ -507,7 +613,12 @@ describe("attempt lifecycle", () => {
     await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
     await publishToday("number-puzzle", "Number Puzzle", "🔢", NUMBER_PUZZLE_CONTENT);
     const play = (slug: string, move: unknown) =>
-      app.inject({ method: "POST", url: `/api/games/${slug}/attempts/submit`, cookies, payload: { move } });
+      app.inject({
+        method: "POST",
+        url: `/api/games/${slug}/attempts/submit`,
+        cookies,
+        payload: { move },
+      });
 
     await app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies });
     await play("word-guess", { guess: "STORM" });
@@ -521,7 +632,12 @@ describe("attempt lifecycle", () => {
     const bySlug = Object.fromEntries(body.games.map((g: { slug: string }) => [g.slug, g]));
     expect(bySlug["word-guess"]).toMatchObject({ played: 1, won: 1, winRate: 100 });
     expect(bySlug["word-guess"].bestScore).toBeGreaterThan(0);
-    expect(bySlug["number-puzzle"]).toMatchObject({ played: 1, won: 0, winRate: 0, averageScore: 0 });
+    expect(bySlug["number-puzzle"]).toMatchObject({
+      played: 1,
+      won: 0,
+      winRate: 0,
+      averageScore: 0,
+    });
     expect(body.wordGuessDistribution).toEqual([0, 1, 0, 0, 0, 0]);
   });
 });

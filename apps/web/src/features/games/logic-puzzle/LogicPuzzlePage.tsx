@@ -103,7 +103,12 @@ function groupIsFilled(grid: number[][], cells: [number, number][]): boolean {
 
 // Figures out *why* a placement was rejected, purely from the grid as it stood right before
 // submitting — cheap and solution-free, just for a friendlier inline message.
-function conflictReason(grid: number[][], row: number, col: number, value: number): "row" | "column" | "box" {
+function conflictReason(
+  grid: number[][],
+  row: number,
+  col: number,
+  value: number,
+): "row" | "column" | "box" {
   const conflicts = (cells: [number, number][]) =>
     cells.some(([r, c]) => !(r === row && c === col) && grid[r]![c] === value);
   if (conflicts(rowCells(row))) return "row";
@@ -121,7 +126,15 @@ function formatElapsed(totalSeconds: number): string {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function SettingRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
+function SettingRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
   return (
     <label className="flex cursor-pointer items-center justify-between gap-3 text-sm text-white/80">
       {label}
@@ -268,7 +281,10 @@ export function LogicPuzzlePage() {
     running: entry?.status === "in_progress" && !view?.complete,
   });
 
-  const isGiven = useCallback((row: number, col: number) => (view ? view.puzzle[row]![col] !== 0 : false), [view]);
+  const isGiven = useCallback(
+    (row: number, col: number) => (view ? view.puzzle[row]![col] !== 0 : false),
+    [view],
+  );
 
   const clearNotes = useCallback(
     (row: number, col: number) => {
@@ -315,7 +331,9 @@ export function LogicPuzzlePage() {
           // Rejected — the placement duplicated a value already in this row/column/box, so
           // nothing was committed and the grid is exactly as it was before this attempt.
           setRejectedCell(cell);
-          setRejectMessage(`That number's already in this ${conflictReason(view.grid, cell.row, cell.col, value)}.`);
+          setRejectMessage(
+            `That number's already in this ${conflictReason(view.grid, cell.row, cell.col, value)}.`,
+          );
           setTimeout(() => setRejectedCell((prev) => (prev === cell ? null : prev)), SHAKE_MS);
           return;
         }
@@ -374,7 +392,11 @@ export function LogicPuzzlePage() {
     }
     setError(null);
     try {
-      const response = await submitMove.mutateAsync({ row: last.row, col: last.col, value: last.priorValue });
+      const response = await submitMove.mutateAsync({
+        row: last.row,
+        col: last.col,
+        value: last.priorValue,
+      });
       const newView = response.content as LogicPuzzleView;
       if (newView.grid[last.row]![last.col] !== last.priorValue) {
         showToast("Couldn't undo — that number's no longer valid there", "error");
@@ -459,7 +481,18 @@ export function LogicPuzzlePage() {
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [view, selected, notesMode, resetting, fillCell, toggleNote, clearNotes, isGiven, requestHint, undo]);
+  }, [
+    view,
+    selected,
+    notesMode,
+    resetting,
+    fillCell,
+    toggleNote,
+    clearNotes,
+    isGiven,
+    requestHint,
+    undo,
+  ]);
 
   if (isLoading || !entry) {
     return (
@@ -474,7 +507,9 @@ export function LogicPuzzlePage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
-        <p className="text-center text-white/50">No Logic Puzzle is available today. Check back soon!</p>
+        <p className="text-center text-white/50">
+          No Logic Puzzle is available today. Check back soon!
+        </p>
       </GameShell>
     );
   }
@@ -557,79 +592,84 @@ export function LogicPuzzlePage() {
     >
       <div className="relative mx-auto w-fit">
         {celebrating ? (
-          <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-xl bg-emerald-500/40 blur-xl" aria-hidden="true" />
+          <div
+            className="animate-glow-pulse absolute inset-0 -z-10 rounded-xl bg-emerald-500/40 blur-xl"
+            aria-hidden="true"
+          />
         ) : null}
         <div className="grid grid-cols-6 gap-0.5 rounded-xl border-2 border-white/[0.16] bg-white/[0.16] p-0.5">
           {view.grid.map((row, r) =>
-          row.map((value, c) => {
-            const given = isGiven(r, c);
-            const isSelected = selected?.row === r && selected?.col === c;
-            const isSectionPeer =
-              settings.highlightSections &&
-              !isSelected &&
-              !!selected &&
-              (r === selected.row || c === selected.col || boxOf(r, c) === boxOf(selected.row, selected.col));
-            const isMatchingValue = !isSelected && !!selectedValue && value === selectedValue;
-            const isJustFilled = justFilled?.row === r && justFilled?.col === c;
-            const isRejecting = rejectedCell?.row === r && rejectedCell?.col === c;
-            const isCelebratingCell = celebratingCells.has(cellKey(r, c));
-            const isHintTarget = hintSuggestion?.row === r && hintSuggestion?.col === c;
-            const cellNotes = value === 0 ? notes[cellKey(r, c)] : undefined;
-            const rightBorder = c === 2 ? "border-r-2 border-r-white/[0.16]" : "";
-            const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/[0.16]" : "";
+            row.map((value, c) => {
+              const given = isGiven(r, c);
+              const isSelected = selected?.row === r && selected?.col === c;
+              const isSectionPeer =
+                settings.highlightSections &&
+                !isSelected &&
+                !!selected &&
+                (r === selected.row ||
+                  c === selected.col ||
+                  boxOf(r, c) === boxOf(selected.row, selected.col));
+              const isMatchingValue = !isSelected && !!selectedValue && value === selectedValue;
+              const isJustFilled = justFilled?.row === r && justFilled?.col === c;
+              const isRejecting = rejectedCell?.row === r && rejectedCell?.col === c;
+              const isCelebratingCell = celebratingCells.has(cellKey(r, c));
+              const isHintTarget = hintSuggestion?.row === r && hintSuggestion?.col === c;
+              const cellNotes = value === 0 ? notes[cellKey(r, c)] : undefined;
+              const rightBorder = c === 2 ? "border-r-2 border-r-white/[0.16]" : "";
+              const bottomBorder = r === 1 || r === 3 ? "border-b-2 border-b-white/[0.16]" : "";
 
-            let bgClass: string;
-            if (given) bgClass = "bg-white/[0.03] text-white/50";
-            else if (isCelebratingCell) bgClass = "bg-emerald-500/25 text-emerald-100";
-            else if (isSelected) bgClass = "bg-brand-600 text-white";
-            else if (isSectionPeer) bgClass = "bg-brand-500/[0.12] text-white";
-            else bgClass = "bg-white/[0.06] text-white hover:bg-white/[0.1]";
+              let bgClass: string;
+              if (given) bgClass = "bg-white/[0.03] text-white/50";
+              else if (isCelebratingCell) bgClass = "bg-emerald-500/25 text-emerald-100";
+              else if (isSelected) bgClass = "bg-brand-600 text-white";
+              else if (isSectionPeer) bgClass = "bg-brand-500/[0.12] text-white";
+              else bgClass = "bg-white/[0.06] text-white hover:bg-white/[0.1]";
 
-            let ringClass = "";
-            if (isRejecting) ringClass = "ring-2 ring-inset ring-rose-500/70";
-            else if (isCelebratingCell) ringClass = "ring-2 ring-inset ring-emerald-400/70";
-            else if (isHintTarget) ringClass = "ring-2 ring-inset ring-amber-400/70";
-            else if (isMatchingValue) ringClass = "ring-2 ring-inset ring-brand-400/40";
+              let ringClass = "";
+              if (isRejecting) ringClass = "ring-2 ring-inset ring-rose-500/70";
+              else if (isCelebratingCell) ringClass = "ring-2 ring-inset ring-emerald-400/70";
+              else if (isHintTarget) ringClass = "ring-2 ring-inset ring-amber-400/70";
+              else if (isMatchingValue) ringClass = "ring-2 ring-inset ring-brand-400/40";
 
-            const cellLabel = `Row ${r + 1}, column ${c + 1}, ${
-              given
-                ? `given ${value}`
-                : value !== 0
-                  ? `filled with ${value}`
-                  : cellNotes?.size
-                    ? `empty, notes ${[...cellNotes].sort((a, b) => a - b).join(", ")}`
-                    : "empty"
-            }${isSelected ? ", selected" : ""}`;
+              const cellLabel = `Row ${r + 1}, column ${c + 1}, ${
+                given
+                  ? `given ${value}`
+                  : value !== 0
+                    ? `filled with ${value}`
+                    : cellNotes?.size
+                      ? `empty, notes ${[...cellNotes].sort((a, b) => a - b).join(", ")}`
+                      : "empty"
+              }${isSelected ? ", selected" : ""}`;
 
-            return (
-              <button
-                key={`${r}-${c}`}
-                type="button"
-                disabled={given || resetting}
-                aria-label={cellLabel}
-                onClick={() => setSelected({ row: r, col: c })}
-                style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
-                className={`relative flex h-10 w-10 items-center justify-center text-lg font-bold transition-colors focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
-                  isJustFilled ? "animate-pop-in" : ""
-                } ${isRejecting ? "animate-shake" : ""} ${
-                  celebrating || isCelebratingCell ? "animate-tile-bounce" : ""
-                } ${bgClass} ${ringClass}`}
-              >
-                {value !== 0 ? (
-                  value
-                ) : isHintTarget ? (
-                  <span className="text-amber-300/70">{hintSuggestion?.value}</span>
-                ) : cellNotes?.size ? (
-                  <span className="grid grid-cols-3 grid-rows-2 place-items-center gap-0 p-0.5 text-[8px] font-semibold leading-none text-white/45 sm:text-[9px]">
-                    {[1, 2, 3, 4, 5, 6].map((n) => (
-                      <span key={n}>{cellNotes.has(n) ? n : ""}</span>
-                    ))}
-                  </span>
-                ) : null}
-              </button>
-            );
-          }),
-        )}
+              return (
+                <button
+                  key={`${r}-${c}`}
+                  type="button"
+                  disabled={given || resetting}
+                  aria-label={cellLabel}
+                  onClick={() => setSelected({ row: r, col: c })}
+                  style={celebrating ? { animationDelay: `${(r + c) * 40}ms` } : undefined}
+                  className={`relative flex h-10 w-10 items-center justify-center text-lg font-bold transition-colors focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:h-12 sm:w-12 ${rightBorder} ${bottomBorder} ${
+                    isJustFilled ? "animate-pop-in" : ""
+                  } ${isRejecting ? "animate-shake" : ""} ${
+                    celebrating || isCelebratingCell ? "animate-tile-bounce" : ""
+                  } ${bgClass} ${ringClass}`}
+                >
+                  {value !== 0 ? (
+                    value
+                  ) : isHintTarget ? (
+                    <span className="text-amber-300/70">{hintSuggestion?.value}</span>
+                  ) : cellNotes?.size ? (
+                    <span className="grid grid-cols-3 grid-rows-2 place-items-center gap-0 p-0.5 text-[8px] font-semibold leading-none text-white/45 sm:text-[9px]">
+                      {[1, 2, 3, 4, 5, 6].map((n) => (
+                        <span key={n}>{cellNotes.has(n) ? n : ""}</span>
+                      ))}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            }),
+          )}
         </div>
       </div>
 
@@ -651,20 +691,30 @@ export function LogicPuzzlePage() {
             </>
           ) : (
             <>
-              Row {hintSuggestion.row + 1}, column {hintSuggestion.col + 1} can be {hintSuggestion.value}.
+              Row {hintSuggestion.row + 1}, column {hintSuggestion.col + 1} can be{" "}
+              {hintSuggestion.value}.
               <Button size="sm" variant="secondary" onClick={acceptHint}>
                 Place {hintSuggestion.value}
               </Button>
             </>
           )}
-          <Button size="sm" variant="ghost" aria-label="Dismiss hint" onClick={() => setHintSuggestion(null)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            aria-label="Dismiss hint"
+            onClick={() => setHintSuggestion(null)}
+          >
             <Icon name="close" className="text-base" />
           </Button>
         </div>
       ) : null}
 
       <div className="mt-6 flex justify-center">
-        <Button variant={notesMode ? "primary" : "secondary"} size="sm" onClick={() => setNotesMode((m) => !m)}>
+        <Button
+          variant={notesMode ? "primary" : "secondary"}
+          size="sm"
+          onClick={() => setNotesMode((m) => !m)}
+        >
           <Icon name="edit_note" className="text-lg" /> Notes {notesMode ? "On" : "Off"}
         </Button>
       </div>

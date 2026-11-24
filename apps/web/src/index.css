@@ -114,10 +114,23 @@ body {
 }
 
 @keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
 }
 
 .animate-shake {
@@ -125,9 +138,15 @@ body {
 }
 
 @keyframes flip-in {
-  0% { transform: rotateX(0deg); }
-  50% { transform: rotateX(90deg); }
-  100% { transform: rotateX(0deg); }
+  0% {
+    transform: rotateX(0deg);
+  }
+  50% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
 }
 
 .animate-flip {
@@ -135,10 +154,19 @@ body {
 }
 
 @keyframes tile-bounce {
-  0%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-10px); }
-  50% { transform: translateY(0); }
-  65% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  65% {
+    transform: translateY(-4px);
+  }
 }
 
 .animate-tile-bounce {
@@ -146,9 +174,16 @@ body {
 }
 
 @keyframes ambient-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(3%, -4%) scale(1.05); }
-  66% { transform: translate(-3%, 3%) scale(0.98); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(3%, -4%) scale(1.05);
+  }
+  66% {
+    transform: translate(-3%, 3%) scale(0.98);
+  }
 }
 
 .animate-ambient-drift {
@@ -156,8 +191,12 @@ body {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .animate-shimmer {
@@ -172,9 +211,18 @@ body {
 }
 
 @keyframes pop-in {
-  0% { transform: scale(0.85); opacity: 0; }
-  60% { transform: scale(1.04); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-pop-in {
@@ -182,8 +230,15 @@ body {
 }
 
 @keyframes glow-pulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.9; transform: scale(1.08); }
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
 }
 
 .animate-glow-pulse {
@@ -191,8 +246,14 @@ body {
 }
 
 @keyframes toast-in {
-  0% { transform: translateY(12px) scale(0.95); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+  0% {
+    transform: translateY(12px) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .animate-toast-in {
@@ -200,8 +261,14 @@ body {
 }
 
 @keyframes toast-out {
-  0% { transform: translateY(0) scale(1); opacity: 1; }
-  100% { transform: translateY(-6px) scale(0.95); opacity: 0; }
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-6px) scale(0.95);
+    opacity: 0;
+  }
 }
 
 .animate-toast-out {
@@ -209,8 +276,14 @@ body {
 }
 
 @keyframes route-fade {
-  0% { opacity: 0; transform: translateY(6px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-route-fade {
@@ -218,8 +291,14 @@ body {
 }
 
 @keyframes menu-in {
-  0% { opacity: 0; transform: translateY(-6px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-menu-in {
@@ -259,7 +338,9 @@ dialog:not([open]) {
 /* Respect reduced-motion globally rather than adding motion-reduce: variants to every
    transition/animation individually across every component. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

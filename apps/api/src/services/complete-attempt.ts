@@ -72,12 +72,21 @@ export async function completeAttempt(input: CompleteAttemptInput) {
     // The streak only advances once per day, on that day's first completed game.
     let streak = await tx.streak.findUnique({ where: { userId: input.userId } });
     if (gamesCompleted === 1) {
-      const previousKey = streak?.lastCompletedDate ? jsDateToDateKey(streak.lastCompletedDate) : null;
-      const currentStreak = isConsecutiveDay(previousKey, dateKey) ? (streak?.currentStreak ?? 0) + 1 : 1;
+      const previousKey = streak?.lastCompletedDate
+        ? jsDateToDateKey(streak.lastCompletedDate)
+        : null;
+      const currentStreak = isConsecutiveDay(previousKey, dateKey)
+        ? (streak?.currentStreak ?? 0) + 1
+        : 1;
       const longestStreak = Math.max(streak?.longestStreak ?? 0, currentStreak);
       streak = await tx.streak.upsert({
         where: { userId: input.userId },
-        create: { userId: input.userId, currentStreak, longestStreak, lastCompletedDate: puzzle.date },
+        create: {
+          userId: input.userId,
+          currentStreak,
+          longestStreak,
+          lastCompletedDate: puzzle.date,
+        },
         update: { currentStreak, longestStreak, lastCompletedDate: puzzle.date },
       });
     }

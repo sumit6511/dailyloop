@@ -118,7 +118,13 @@ describe("nextPuzzleNumber", () => {
     expect(await nextPuzzleNumber(game.id)).toBe(1);
 
     await prisma.dailyPuzzle.create({
-      data: { gameId: game.id, date: new Date(), puzzleNumber: 1, status: "PUBLISHED", content: {} },
+      data: {
+        gameId: game.id,
+        date: new Date(),
+        puzzleNumber: 1,
+        status: "PUBLISHED",
+        content: {},
+      },
     });
     expect(await nextPuzzleNumber(game.id)).toBe(2);
   });
@@ -131,12 +137,16 @@ describe("nextPuzzleNumber", () => {
     });
     const made = [];
     for (let i = 0; i < 3; i++) {
-      const result = await generatePuzzleForGame("word-guess", addDaysToKey(todayKey, i), { status: "SCHEDULED" });
+      const result = await generatePuzzleForGame("word-guess", addDaysToKey(todayKey, i), {
+        status: "SCHEDULED",
+      });
       if (result.kind === "created") made.push(result.puzzle);
     }
     await prisma.dailyPuzzle.delete({ where: { id: made[1]!.id } }); // #2 gone; #1 and #3 remain
 
-    const next = await generatePuzzleForGame("word-guess", addDaysToKey(todayKey, 3), { status: "SCHEDULED" });
+    const next = await generatePuzzleForGame("word-guess", addDaysToKey(todayKey, 3), {
+      status: "SCHEDULED",
+    });
     expect(next.kind === "created" && next.puzzle.puzzleNumber).toBe(4);
   });
 
@@ -144,7 +154,9 @@ describe("nextPuzzleNumber", () => {
     const game = await prisma.game.create({
       data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 0 },
     });
-    const results = await Promise.all(Array.from({ length: 6 }, () => findTodaysPuzzle(game.id, game.slug)));
+    const results = await Promise.all(
+      Array.from({ length: 6 }, () => findTodaysPuzzle(game.id, game.slug)),
+    );
     for (const puzzle of results) expect(puzzle?.id).toBeDefined();
     expect(new Set(results.map((p) => p!.id)).size).toBe(1);
   });

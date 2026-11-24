@@ -19,7 +19,13 @@ describe("formatShareText", () => {
     const data: ShareData = {
       date: "2026-08-31",
       games: [
-        { slug: "word-guess", icon: "🟨", name: "Word Guess", score: 100, pattern: "⬜🟨⬜⬜🟩\n🟩🟩🟩🟩🟩" },
+        {
+          slug: "word-guess",
+          icon: "🟨",
+          name: "Word Guess",
+          score: 100,
+          pattern: "⬜🟨⬜⬜🟩\n🟩🟩🟩🟩🟩",
+        },
       ],
       totalScore: 100,
       currentStreak: 1,
@@ -34,7 +40,9 @@ describe("formatShareText", () => {
   it("never includes anything beyond icon/name/score/pattern (no letters or answers)", () => {
     const data: ShareData = {
       date: "2026-08-31",
-      games: [{ slug: "word-guess", icon: "🟨", name: "Word Guess", score: 80, pattern: "🟩🟩🟩🟩🟩" }],
+      games: [
+        { slug: "word-guess", icon: "🟨", name: "Word Guess", score: 80, pattern: "🟩🟩🟩🟩🟩" },
+      ],
       totalScore: 80,
       currentStreak: 0,
     };

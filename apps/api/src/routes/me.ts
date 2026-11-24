@@ -9,7 +9,9 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
       data: {
         currentStreak: streak?.currentStreak ?? 0,
         longestStreak: streak?.longestStreak ?? 0,
-        lastCompletedDate: streak?.lastCompletedDate ? jsDateToDateKey(streak.lastCompletedDate) : null,
+        lastCompletedDate: streak?.lastCompletedDate
+          ? jsDateToDateKey(streak.lastCompletedDate)
+          : null,
       },
     });
   });
@@ -21,7 +23,12 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
       prisma.game.findMany({ where: { isEnabled: true }, orderBy: { sortOrder: "asc" } }),
       prisma.gameAttempt.findMany({
         where: { userId, status: "COMPLETED" },
-        select: { won: true, score: true, attemptLog: true, dailyPuzzle: { select: { gameId: true } } },
+        select: {
+          won: true,
+          score: true,
+          attemptLog: true,
+          dailyPuzzle: { select: { gameId: true } },
+        },
       }),
     ]);
 
@@ -36,7 +43,9 @@ export const meRoutes: FastifyPluginAsync = async (app) => {
           played: mine.length,
           won,
           winRate: mine.length ? Math.round((won / mine.length) * 100) : 0,
-          averageScore: mine.length ? Math.round(mine.reduce((sum, a) => sum + a.score, 0) / mine.length) : 0,
+          averageScore: mine.length
+            ? Math.round(mine.reduce((sum, a) => sum + a.score, 0) / mine.length)
+            : 0,
           bestScore: mine.reduce((best, a) => Math.max(best, a.score), 0),
         };
       }),

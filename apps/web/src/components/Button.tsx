@@ -12,7 +12,8 @@ const VARIANT_CLASSES: Record<NonNullable<ButtonProps["variant"]>, string> = {
     "bg-brand-600 text-white shadow-lg shadow-brand-600/30 hover:bg-brand-500 hover:shadow-brand-500/40 focus-visible:outline-brand-400",
   secondary:
     "glass-subtle text-white/90 hover:bg-white/[0.08] hover:border-white/[0.16] focus-visible:outline-white/40",
-  ghost: "bg-transparent text-white/70 hover:bg-white/[0.08] hover:text-white focus-visible:outline-white/40",
+  ghost:
+    "bg-transparent text-white/70 hover:bg-white/[0.08] hover:text-white focus-visible:outline-white/40",
   danger:
     "bg-rose-600 text-white shadow-lg shadow-rose-600/30 hover:bg-rose-500 hover:shadow-rose-500/40 focus-visible:outline-rose-400",
 };
@@ -24,7 +25,10 @@ const SIZE_CLASSES: Record<NonNullable<ButtonProps["size"]>, string> = {
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", isLoading, className = "", disabled, children, ...props }, ref) => {
+  (
+    { variant = "primary", size = "md", isLoading, className = "", disabled, children, ...props },
+    ref,
+  ) => {
     return (
       <button
         ref={ref}

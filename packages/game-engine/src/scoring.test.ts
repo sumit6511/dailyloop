@@ -12,7 +12,12 @@ describe("clampScore", () => {
 
 describe("buildScoreBreakdown", () => {
   it("sums parts into a clamped total", () => {
-    const breakdown = buildScoreBreakdown({ base: 60, speedBonus: 20, accuracyBonus: 10, mistakePenalty: 5 });
+    const breakdown = buildScoreBreakdown({
+      base: 60,
+      speedBonus: 20,
+      accuracyBonus: 10,
+      mistakePenalty: 5,
+    });
     expect(breakdown.total).toBe(85);
   });
 

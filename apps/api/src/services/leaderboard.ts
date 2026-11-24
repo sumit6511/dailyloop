@@ -46,9 +46,15 @@ interface ScopeOptions {
   limit?: number;
 }
 
-export async function getDailyLeaderboard(dateKey: string, options: ScopeOptions = {}): Promise<LeaderboardEntry[]> {
+export async function getDailyLeaderboard(
+  dateKey: string,
+  options: ScopeOptions = {},
+): Promise<LeaderboardEntry[]> {
   const rows = await prisma.dailyScore.findMany({
-    where: { date: dateKeyToJSDate(dateKey), ...(options.userIds ? { userId: { in: options.userIds } } : {}) },
+    where: {
+      date: dateKeyToJSDate(dateKey),
+      ...(options.userIds ? { userId: { in: options.userIds } } : {}),
+    },
     orderBy: { totalScore: "desc" },
     take: options.limit ?? DEFAULT_LIMIT,
     select: { userId: true, totalScore: true },
@@ -56,7 +62,10 @@ export async function getDailyLeaderboard(dateKey: string, options: ScopeOptions
   return toEntries(rows.map((r) => ({ userId: r.userId, score: r.totalScore })));
 }
 
-export async function getWeeklyLeaderboard(dateKey: string, options: ScopeOptions = {}): Promise<LeaderboardEntry[]> {
+export async function getWeeklyLeaderboard(
+  dateKey: string,
+  options: ScopeOptions = {},
+): Promise<LeaderboardEntry[]> {
   const { start, end } = getWeekRangeKeys(dateKey);
   const grouped = await prisma.dailyScore.groupBy({
     by: ["userId"],
@@ -71,7 +80,9 @@ export async function getWeeklyLeaderboard(dateKey: string, options: ScopeOption
   return toEntries(grouped.map((g) => ({ userId: g.userId, score: g._sum.totalScore ?? 0 })));
 }
 
-export async function getAllTimeLeaderboard(options: ScopeOptions = {}): Promise<LeaderboardEntry[]> {
+export async function getAllTimeLeaderboard(
+  options: ScopeOptions = {},
+): Promise<LeaderboardEntry[]> {
   const grouped = await prisma.dailyScore.groupBy({
     by: ["userId"],
     where: options.userIds ? { userId: { in: options.userIds } } : undefined,
@@ -106,7 +117,11 @@ export interface MyRank {
  * top-N list: 1 + the number of players with a strictly higher score (so ties share a rank,
  * matching the lists). Null when they have no score in that range yet.
  */
-export async function getMyRank(userId: string, range: LeaderboardRange, dateKey: string): Promise<MyRank | null> {
+export async function getMyRank(
+  userId: string,
+  range: LeaderboardRange,
+  dateKey: string,
+): Promise<MyRank | null> {
   if (range === "daily") {
     const date = dateKeyToJSDate(dateKey);
     const mine = await prisma.dailyScore.findUnique({ where: { userId_date: { userId, date } } });
@@ -125,7 +140,11 @@ export async function getMyRank(userId: string, range: LeaderboardRange, dateKey
           return { date: { gte: dateKeyToJSDate(start), lte: dateKeyToJSDate(end) } };
         })()
       : {};
-  const mine = await prisma.dailyScore.aggregate({ where: { ...where, userId }, _sum: { totalScore: true }, _count: true });
+  const mine = await prisma.dailyScore.aggregate({
+    where: { ...where, userId },
+    _sum: { totalScore: true },
+    _count: true,
+  });
   if (mine._count === 0) return null;
   const myScore = mine._sum.totalScore ?? 0;
   const [higher, all] = await Promise.all([

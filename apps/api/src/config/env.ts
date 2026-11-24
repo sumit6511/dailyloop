@@ -12,7 +12,10 @@ const envSchema = z.object({
   /** Bearer-token secret for the scheduled pre-warm cron endpoint (see routes/cron.ts). Optional
    * — if unset, that endpoint rejects every request rather than accepting an unauthenticated one.
    * An empty value (as shipped in .env.example) counts as unset rather than failing startup. */
-  CRON_SECRET: z.preprocess((value) => (value === "" ? undefined : value), z.string().min(16).optional()),
+  CRON_SECRET: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(16).optional(),
+  ),
   /** How many proxies sit in front of the API (see lib/trust-proxy.ts). */
   TRUST_PROXY: z
     .string()

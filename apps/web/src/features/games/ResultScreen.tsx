@@ -22,7 +22,14 @@ interface ResultScreenProps {
   children?: ReactNode;
 }
 
-export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, children }: ResultScreenProps) {
+export function ResultScreen({
+  gameName,
+  won,
+  score,
+  stats,
+  newAchievementKeys,
+  children,
+}: ResultScreenProps) {
   const navigate = useNavigate();
   const { data: catalog } = useAchievementCatalog();
   const newAchievements = (catalog ?? []).filter((a) => newAchievementKeys?.includes(a.key));
@@ -31,7 +38,10 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
     <Card intensity="strong" className="animate-pop-in text-center">
       <div className="relative mb-2 inline-flex">
         {won ? (
-          <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-brand-500/40 blur-xl" aria-hidden="true" />
+          <div
+            className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-brand-500/40 blur-xl"
+            aria-hidden="true"
+          />
         ) : null}
         <Icon
           name={won ? "celebration" : "sentiment_dissatisfied"}
@@ -39,7 +49,9 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
           filled
         />
       </div>
-      <h2 className="font-display text-xl font-bold text-white">{won ? "Nice work!" : "So close!"}</h2>
+      <h2 className="font-display text-xl font-bold text-white">
+        {won ? "Nice work!" : "So close!"}
+      </h2>
       <p className="mt-1 text-sm text-white/50">{gameName} — today's puzzle is done</p>
 
       {stats.length > 0 ? (
@@ -47,7 +59,9 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
           {stats.map((stat) => (
             <div key={stat.label}>
               <div className="text-2xl font-bold text-white">{stat.value}</div>
-              <div className="text-xs font-medium uppercase tracking-wide text-white/50">{stat.label}</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-white/50">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
@@ -70,7 +84,9 @@ export function ResultScreen({ gameName, won, score, stats, newAchievementKeys, 
             >
               <Icon name={achievement.icon} className="text-2xl text-flame-400" filled />
               <div>
-                <div className="text-xs font-bold uppercase tracking-wide text-flame-400">Achievement unlocked!</div>
+                <div className="text-xs font-bold uppercase tracking-wide text-flame-400">
+                  Achievement unlocked!
+                </div>
                 <div className="text-sm font-semibold text-white/90">{achievement.name}</div>
               </div>
             </div>

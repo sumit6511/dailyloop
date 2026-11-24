@@ -3,7 +3,11 @@ import { MAX_MISTAKES } from "@dailyloop/shared";
 import type { DailyGameModule, ValidationResult } from "../../types.js";
 import { buildScoreBreakdown, speedBonus } from "../../scoring.js";
 import { shuffle, createRng, pickLeastRecentlyUsed } from "../../rng.js";
-import { CATEGORY_BANK, type ConnectionsBankEntry, type ConnectionsCategory } from "./categories.js";
+import {
+  CATEGORY_BANK,
+  type ConnectionsBankEntry,
+  type ConnectionsCategory,
+} from "./categories.js";
 
 export interface ConnectionsContent {
   /** Answer key — server-only, never sent to the client until a category is solved. */
@@ -61,7 +65,10 @@ function guessKey(words: readonly string[]): string {
   return words.map(normalizeWord).sort().join("|");
 }
 
-function replay(content: ConnectionsContent, moves: ConnectionsMove[]): ValidationResult<ConnectionsResult> {
+function replay(
+  content: ConnectionsContent,
+  moves: ConnectionsMove[],
+): ValidationResult<ConnectionsResult> {
   const solved: SolvedGroup[] = [];
   const solvedIndices = new Set<number>();
   const guesses: ConnectionsGuess[] = [];
@@ -83,13 +90,20 @@ function replay(content: ConnectionsContent, moves: ConnectionsMove[]): Validati
     if (matchIndex >= 0) {
       solvedIndices.add(matchIndex);
       const category = content.categories[matchIndex]!;
-      solved.push({ categoryIndex: matchIndex, title: category.title, difficulty: category.difficulty, words: [...category.words] });
+      solved.push({
+        categoryIndex: matchIndex,
+        title: category.title,
+        difficulty: category.difficulty,
+        words: [...category.words],
+      });
       guesses.push({ words: [...move.words], correct: true, oneAway: false });
     } else {
       mistakes++;
       const guessed = new Set(move.words.map(normalizeWord));
       const oneAway = content.categories.some(
-        (category, index) => !solvedIndices.has(index) && category.words.filter((w) => guessed.has(normalizeWord(w))).length === 3,
+        (category, index) =>
+          !solvedIndices.has(index) &&
+          category.words.filter((w) => guessed.has(normalizeWord(w))).length === 3,
       );
       guesses.push({ words: [...move.words], correct: false, oneAway });
     }
@@ -107,7 +121,11 @@ function replay(content: ConnectionsContent, moves: ConnectionsMove[]): Validati
 }
 
 function fits(category: ConnectionsBankEntry, word: string): boolean {
-  return category.words.includes(word) || !!category.herrings?.includes(word) || !!category.matches?.(word);
+  return (
+    category.words.includes(word) ||
+    !!category.herrings?.includes(word) ||
+    !!category.matches?.(word)
+  );
 }
 
 /**
@@ -155,7 +173,10 @@ const TIERS = [4, 3, 2, 1] as const;
  * combination is skipped if two categories share a word or the grid could be grouped more than
  * one way; the hardest tier is chosen first since it has the fewest options.
  */
-function pickCategories(rng: () => number, recentlyUsed: readonly string[]): ConnectionsBankEntry[] {
+function pickCategories(
+  rng: () => number,
+  recentlyUsed: readonly string[],
+): ConnectionsBankEntry[] {
   const ordered = TIERS.map((tier) => {
     const bank = CATEGORY_BANK.filter((c) => c.difficulty === tier);
     return pickLeastRecentlyUsed(rng, bank, (c) => c.title, recentlyUsed, bank.length);
@@ -177,7 +198,11 @@ function pickCategories(rng: () => number, recentlyUsed: readonly string[]): Con
   return [...chosen].sort((a, b) => a.difficulty - b.difficulty);
 }
 
-export const connectionsGame: DailyGameModule<ConnectionsContent, ConnectionsMove, ConnectionsResult> = {
+export const connectionsGame: DailyGameModule<
+  ConnectionsContent,
+  ConnectionsMove,
+  ConnectionsResult
+> = {
   id: "connections",
   name: "Connections",
   description: "Group 16 words into four hidden categories.",
@@ -206,7 +231,10 @@ export const connectionsGame: DailyGameModule<ConnectionsContent, ConnectionsMov
       difficulty,
       words: [...words] as ConnectionsCategory["words"],
     }));
-    const words = shuffle(rng, categories.flatMap((category) => category.words));
+    const words = shuffle(
+      rng,
+      categories.flatMap((category) => category.words),
+    );
 
     return { categories, words };
   },

@@ -47,7 +47,9 @@ describe("connections: generatePuzzle", () => {
       const content = connectionsGame.generatePuzzle("s", addDaysToKey(DATE, day), history);
       history = [...history, ...connectionsGame.contentIdentity!(content)];
       expect(new Set(content.words).size).toBe(16);
-      const entries = content.categories.map((c) => CATEGORY_BANK.find((b) => b.title === c.title)!);
+      const entries = content.categories.map((c) =>
+        CATEGORY_BANK.find((b) => b.title === c.title)!,
+      );
       expect(countGroupings(entries)).toBe(1);
     }
   });
@@ -58,14 +60,20 @@ describe("connections: generatePuzzle", () => {
     for (let day = 0; day < 365; day++) {
       const content = connectionsGame.generatePuzzle("s", addDaysToKey(DATE, day), history);
       history = [...history, ...connectionsGame.contentIdentity!(content)];
-      grids.add(content.categories.map((c) => c.title).sort().join("|"));
+      grids.add(
+        content.categories
+          .map((c) => c.title)
+          .sort()
+          .join("|"),
+      );
     }
     expect(grids.size).toBe(365);
   });
 
   it("never stores generation-only bank metadata in puzzle content", () => {
     const content = generate();
-    for (const category of content.categories) expect(Object.keys(category).sort()).toEqual(["difficulty", "title", "words"]);
+    for (const category of content.categories)
+      expect(Object.keys(category).sort()).toEqual(["difficulty", "title", "words"]);
   });
 });
 
@@ -74,9 +82,11 @@ describe("connections: CATEGORY_BANK", () => {
     expect(new Set(CATEGORY_BANK.map((c) => c.title)).size).toBe(CATEGORY_BANK.length);
     for (const category of CATEGORY_BANK) {
       expect(new Set(category.words).size).toBe(4);
-      for (const word of [...category.words, ...(category.herrings ?? [])]) expect(word).toMatch(/^[A-Z]+$/);
+      for (const word of [...category.words, ...(category.herrings ?? [])])
+        expect(word).toMatch(/^[A-Z]+$/);
       // A pattern category must actually describe its own words.
-      if (category.matches) for (const word of category.words) expect(category.matches(word)).toBe(true);
+      if (category.matches)
+        for (const word of category.words) expect(category.matches(word)).toBe(true);
     }
     for (const tier of [1, 2, 3, 4]) {
       expect(CATEGORY_BANK.filter((c) => c.difficulty === tier).length).toBeGreaterThanOrEqual(15);
@@ -86,8 +96,18 @@ describe("connections: CATEGORY_BANK", () => {
 
 describe("connections: countGroupings", () => {
   it("detects a grid where a red herring makes the grouping ambiguous", () => {
-    const a: ConnectionsBankEntry = { title: "A", difficulty: 1, words: ["W", "X", "Y", "Z"], herrings: ["Q"] };
-    const b: ConnectionsBankEntry = { title: "B", difficulty: 2, words: ["Q", "R", "S", "T"], herrings: ["Z"] };
+    const a: ConnectionsBankEntry = {
+      title: "A",
+      difficulty: 1,
+      words: ["W", "X", "Y", "Z"],
+      herrings: ["Q"],
+    };
+    const b: ConnectionsBankEntry = {
+      title: "B",
+      difficulty: 2,
+      words: ["Q", "R", "S", "T"],
+      herrings: ["Z"],
+    };
     expect(countGroupings([a, b])).toBe(2); // Z and Q can swap
     expect(countGroupings([a, { ...b, herrings: [] }])).toBe(1); // B must take Q, so A takes Z
   });
@@ -96,7 +116,9 @@ describe("connections: countGroupings", () => {
 describe("connections: contentIdentity", () => {
   it("returns the 4 category titles this content used", () => {
     const content = generate();
-    expect(connectionsGame.contentIdentity!(content)).toEqual(content.categories.map((c) => c.title));
+    expect(connectionsGame.contentIdentity!(content)).toEqual(
+      content.categories.map((c) => c.title),
+    );
   });
 });
 
@@ -123,7 +145,9 @@ describe("connections: validateAttempt", () => {
 
   // One word from each of the 4 real categories can never itself equal a full category
   // (a category needs all 4 of its own words), so this is guaranteed to be a wrong guess.
-  const oneFromEachCategory = { words: [catA!.words[0], catB!.words[0], catC!.words[0], catD!.words[0]] };
+  const oneFromEachCategory = {
+    words: [catA!.words[0], catB!.words[0], catC!.words[0], catD!.words[0]],
+  };
 
   it("counts a non-matching guess as a mistake without solving anything", () => {
     const result = connectionsGame.validateAttempt(content, [oneFromEachCategory]);
@@ -146,7 +170,9 @@ describe("connections: validateAttempt", () => {
   });
 
   it("ignores a repeated wrong guess (any order or case) instead of charging another mistake", () => {
-    const reordered = { words: [...oneFromEachCategory.words].reverse().map((w) => w.toLowerCase()) };
+    const reordered = {
+      words: [...oneFromEachCategory.words].reverse().map((w) => w.toLowerCase()),
+    };
     const result = connectionsGame.validateAttempt(content, [oneFromEachCategory, reordered]);
     expect(result.mistakes).toBe(1);
     expect(result.result.guesses).toHaveLength(1);
@@ -154,7 +180,10 @@ describe("connections: validateAttempt", () => {
   });
 
   it("doesn't count double-submitting a group that was just solved as a mistake", () => {
-    const result = connectionsGame.validateAttempt(content, [{ words: catA!.words }, { words: catA!.words }]);
+    const result = connectionsGame.validateAttempt(content, [
+      { words: catA!.words },
+      { words: catA!.words },
+    ]);
     expect(result.mistakes).toBe(0);
     expect(result.result.solved).toHaveLength(1);
   });
@@ -170,8 +199,13 @@ describe("connections: validateAttempt", () => {
 describe("connections: calculateScore", () => {
   const content = generate();
   const [catA, catB, catC, catD] = content.categories;
-  const oneFromEachCategory = { words: [catA!.words[0], catB!.words[0], catC!.words[0], catD!.words[0]] };
-  const won = connectionsGame.validateAttempt(content, content.categories.map((c) => ({ words: c.words })));
+  const oneFromEachCategory = {
+    words: [catA!.words[0], catB!.words[0], catC!.words[0], catD!.words[0]],
+  };
+  const won = connectionsGame.validateAttempt(
+    content,
+    content.categories.map((c) => ({ words: c.words })),
+  );
 
   it("scores a flawless fast solve at the maximum", () => {
     const score = connectionsGame.calculateScore(content, won.result, { durationMs: 5_000 });
@@ -183,7 +217,9 @@ describe("connections: calculateScore", () => {
       oneFromEachCategory,
       ...content.categories.map((c) => ({ words: c.words })),
     ]);
-    const score = connectionsGame.calculateScore(content, withMistake.result, { durationMs: 5_000 });
+    const score = connectionsGame.calculateScore(content, withMistake.result, {
+      durationMs: 5_000,
+    });
     expect(score.total).toBeLessThan(100);
   });
 
@@ -206,7 +242,10 @@ describe("connections: sanitizeForClient", () => {
   const content = generate();
 
   it("never reveals category groupings before the player has started", () => {
-    const view = connectionsGame.sanitizeForClient(content, null) as { words: string[]; categories?: unknown };
+    const view = connectionsGame.sanitizeForClient(content, null) as {
+      words: string[];
+      categories?: unknown;
+    };
     expect(view.words).toHaveLength(16);
     expect(view.categories).toBeUndefined();
   });

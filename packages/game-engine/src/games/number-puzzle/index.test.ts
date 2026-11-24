@@ -33,9 +33,15 @@ describe("number-puzzle: generatePuzzle", () => {
   it("stores a worked solution that is only revealed once the attempt is complete", () => {
     const content = generate();
     expect(content.solution).toBeTruthy();
-    const inProgress = numberPuzzleGame.sanitizeForClient(content, { status: "IN_PROGRESS", moves: [] }) as Record<string, unknown>;
+    const inProgress = numberPuzzleGame.sanitizeForClient(content, {
+      status: "IN_PROGRESS",
+      moves: [],
+    }) as Record<string, unknown>;
     expect(inProgress.solution).toBeUndefined();
-    const done = numberPuzzleGame.sanitizeForClient(content, { status: "COMPLETED", moves: [{ type: "submit" }] }) as Record<string, unknown>;
+    const done = numberPuzzleGame.sanitizeForClient(content, {
+      status: "COMPLETED",
+      moves: [{ type: "submit" }],
+    }) as Record<string, unknown>;
     expect(done.solution).toBe(content.solution);
   });
 
@@ -57,14 +63,20 @@ describe("number-puzzle: validateAttempt", () => {
   });
 
   it("wins when the target is in the pool at submit time", () => {
-    const moves: NumberPuzzleMove[] = [{ type: "combine", a: 4, b: 5, op: "*" }, { type: "submit" }];
+    const moves: NumberPuzzleMove[] = [
+      { type: "combine", a: 4, b: 5, op: "*" },
+      { type: "submit" },
+    ];
     const result = numberPuzzleGame.validateAttempt(content, moves);
     expect(result.complete).toBe(true);
     expect(result.won).toBe(true);
   });
 
   it("loses if the player submits without reaching the target", () => {
-    const moves: NumberPuzzleMove[] = [{ type: "combine", a: 2, b: 3, op: "+" }, { type: "submit" }];
+    const moves: NumberPuzzleMove[] = [
+      { type: "combine", a: 2, b: 3, op: "+" },
+      { type: "submit" },
+    ];
     const result = numberPuzzleGame.validateAttempt(content, moves);
     expect(result.complete).toBe(true);
     expect(result.won).toBe(false);
@@ -72,7 +84,10 @@ describe("number-puzzle: validateAttempt", () => {
   });
 
   it("counts referencing a number not currently in the pool as a mistake, without changing the pool", () => {
-    const moves: NumberPuzzleMove[] = [{ type: "combine", a: 4, b: 5, op: "*" }, { type: "combine", a: 5, b: 2, op: "+" }];
+    const moves: NumberPuzzleMove[] = [
+      { type: "combine", a: 4, b: 5, op: "*" },
+      { type: "combine", a: 5, b: 2, op: "+" },
+    ];
     const result = numberPuzzleGame.validateAttempt(content, moves);
     // the second move reuses "5", which was already consumed by the first move
     expect(result.mistakes).toBe(1);

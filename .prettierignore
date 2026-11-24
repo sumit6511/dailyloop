@@ -1,0 +1,12 @@
+# Generated or vendored
+package-lock.json
+**/dist
+**/coverage
+prisma/migrations
+
+# Content banks: laid out by hand as compact grids/records, which reads better in review than
+# one-entry-per-line formatting (words.ts alone would grow by ~1,000 lines).
+packages/game-engine/src/games/word-guess/words.ts
+packages/game-engine/src/games/word-guess/valid-guesses.ts
+packages/game-engine/src/games/connections/categories.ts
+packages/game-engine/src/games/guess-it/entries.ts

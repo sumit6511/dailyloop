@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes } from "react";
 
-export type GameTileState = "default" | "selected" | "correct" | "present" | "absent" | "given" | "disabled" | "wrong";
+export type GameTileState =
+  "default" | "selected" | "correct" | "present" | "absent" | "given" | "disabled" | "wrong";
 
 interface GameTileProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   state?: GameTileState;
@@ -14,7 +15,8 @@ interface GameTileProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * as "glass" by sitting on an already-blurred board/panel and using solid or semi-opaque fills.
  */
 const STATE_CLASSES: Record<GameTileState, string> = {
-  default: "border-white/[0.14] bg-white/[0.05] text-white hover:border-white/[0.26] hover:bg-white/[0.09]",
+  default:
+    "border-white/[0.14] bg-white/[0.05] text-white hover:border-white/[0.26] hover:bg-white/[0.09]",
   selected: "border-brand-400 bg-brand-600 text-white shadow-lg shadow-brand-600/30",
   correct: "border-emerald-500 bg-emerald-500 text-white",
   present: "border-amber-400 bg-amber-400 text-white",
@@ -35,7 +37,13 @@ const SIZE_CLASSES: Record<NonNullable<GameTileProps["size"]>, string> = {
 // since a CSS animation only (re)plays when its animation-name actually changes onto the element.
 const POP_STATES = new Set<GameTileState>(["correct", "present", "wrong"]);
 
-export function GameTile({ state = "default", size = "md", className = "", disabled, ...props }: GameTileProps) {
+export function GameTile({
+  state = "default",
+  size = "md",
+  className = "",
+  disabled,
+  ...props
+}: GameTileProps) {
   return (
     <button
       type="button"

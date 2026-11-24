@@ -16,4 +16,11 @@ export function registerAllGames(): void {
   registerGame(pathwayGame);
 }
 
-export { connectionsGame, wordGuessGame, numberPuzzleGame, logicPuzzleGame, guessItGame, pathwayGame };
+export {
+  connectionsGame,
+  wordGuessGame,
+  numberPuzzleGame,
+  logicPuzzleGame,
+  guessItGame,
+  pathwayGame,
+};

@@ -46,9 +46,15 @@ export function MyStatsCard() {
                     </span>
                   </td>
                   <td className="py-2 text-right tabular-nums">{game.played}</td>
-                  <td className="py-2 text-right tabular-nums">{game.played ? `${game.winRate}%` : "—"}</td>
-                  <td className="py-2 text-right tabular-nums">{game.played ? game.averageScore : "—"}</td>
-                  <td className="py-2 text-right tabular-nums">{game.played ? game.bestScore : "—"}</td>
+                  <td className="py-2 text-right tabular-nums">
+                    {game.played ? `${game.winRate}%` : "—"}
+                  </td>
+                  <td className="py-2 text-right tabular-nums">
+                    {game.played ? game.averageScore : "—"}
+                  </td>
+                  <td className="py-2 text-right tabular-nums">
+                    {game.played ? game.bestScore : "—"}
+                  </td>
                 </tr>
               ))}
             </tbody>

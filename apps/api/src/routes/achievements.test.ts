@@ -13,8 +13,22 @@ const CONNECTIONS_CONTENT = {
     { title: "D", difficulty: 4, words: ["RED", "BLUE", "GREEN", "PINK"] },
   ],
   words: [
-    "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT",
-    "NINE", "TEN", "ELEVEN", "TWELVE", "RED", "BLUE", "GREEN", "PINK",
+    "ONE",
+    "TWO",
+    "THREE",
+    "FOUR",
+    "FIVE",
+    "SIX",
+    "SEVEN",
+    "EIGHT",
+    "NINE",
+    "TEN",
+    "ELEVEN",
+    "TWELVE",
+    "RED",
+    "BLUE",
+    "GREEN",
+    "PINK",
   ],
 };
 
@@ -25,7 +39,11 @@ describe("achievements", () => {
     app = await buildApp();
     await app.ready();
     for (const achievement of ACHIEVEMENT_CATALOG) {
-      await prisma.achievement.upsert({ where: { key: achievement.key }, update: achievement, create: achievement });
+      await prisma.achievement.upsert({
+        where: { key: achievement.key },
+        update: achievement,
+        create: achievement,
+      });
     }
   });
 
@@ -62,11 +80,23 @@ describe("achievements", () => {
 
   async function publishConnectionsToday() {
     const game = await prisma.game.create({
-      data: { slug: "connections", name: "Connections", description: "d", icon: "🟩", sortOrder: 0 },
+      data: {
+        slug: "connections",
+        name: "Connections",
+        description: "d",
+        icon: "🟩",
+        sortOrder: 0,
+      },
     });
     const date = dateKeyToJSDate(getTodayKey("Asia/Kathmandu"));
     await prisma.dailyPuzzle.create({
-      data: { gameId: game.id, date, puzzleNumber: 1, status: "PUBLISHED", content: CONNECTIONS_CONTENT },
+      data: {
+        gameId: game.id,
+        date,
+        puzzleNumber: 1,
+        status: "PUBLISHED",
+        content: CONNECTIONS_CONTENT,
+      },
     });
     return game;
   }
@@ -99,7 +129,10 @@ describe("achievements", () => {
     const body = await winConnections(cookies);
     expect(body.newlyUnlockedAchievements).toContain("FIRST_WIN");
 
-    const unlocked = await prisma.userAchievement.findMany({ where: { userId }, include: { achievement: true } });
+    const unlocked = await prisma.userAchievement.findMany({
+      where: { userId },
+      include: { achievement: true },
+    });
     expect(unlocked.map((u) => u.achievement.key)).toContain("FIRST_WIN");
 
     const res = await app.inject({ method: "GET", url: "/api/me/achievements", cookies });
@@ -170,8 +203,18 @@ describe("achievements", () => {
     await publishConnectionsToday();
     await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies });
     let last;
-    for (const words of [["ONE", "FIVE", "NINE", "RED"], ["TWO", "SIX", "TEN", "BLUE"], ["THREE", "SEVEN", "ELEVEN", "GREEN"], ["FOUR", "EIGHT", "TWELVE", "PINK"]]) {
-      last = await app.inject({ method: "POST", url: "/api/games/connections/attempts/submit", cookies, payload: { move: { words } } });
+    for (const words of [
+      ["ONE", "FIVE", "NINE", "RED"],
+      ["TWO", "SIX", "TEN", "BLUE"],
+      ["THREE", "SEVEN", "ELEVEN", "GREEN"],
+      ["FOUR", "EIGHT", "TWELVE", "PINK"],
+    ]) {
+      last = await app.inject({
+        method: "POST",
+        url: "/api/games/connections/attempts/submit",
+        cookies,
+        payload: { move: { words } },
+      });
     }
     const body = last!.json().data;
     expect(body).toMatchObject({ complete: true, won: false });
@@ -202,7 +245,14 @@ describe("achievements", () => {
     const { cookies } = await registerUser("harry");
     await publishConnectionsToday();
     const retired = await prisma.game.create({
-      data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 1, isEnabled: false },
+      data: {
+        slug: "word-guess",
+        name: "Word Guess",
+        description: "d",
+        icon: "🟨",
+        sortOrder: 1,
+        isEnabled: false,
+      },
     });
     await prisma.dailyPuzzle.create({
       data: {
@@ -224,14 +274,20 @@ describe("achievements", () => {
     expect((await winConnections(cookies)).newlyUnlockedAchievements).toContain("FLAWLESS");
 
     const sumit = await registerUser("sumit");
-    await app.inject({ method: "POST", url: "/api/games/connections/attempts/start", cookies: sumit.cookies });
+    await app.inject({
+      method: "POST",
+      url: "/api/games/connections/attempts/start",
+      cookies: sumit.cookies,
+    });
     await app.inject({
       method: "POST",
       url: "/api/games/connections/attempts/submit",
       cookies: sumit.cookies,
       payload: { move: { words: ["ONE", "FIVE", "NINE", "RED"] } }, // one mistake first
     });
-    expect((await winConnections(sumit.cookies)).newlyUnlockedAchievements).not.toContain("FLAWLESS");
+    expect((await winConnections(sumit.cookies)).newlyUnlockedAchievements).not.toContain(
+      "FLAWLESS",
+    );
   });
 
   it("unlocks ALL_ROUNDER only once every enabled game has been won", async () => {

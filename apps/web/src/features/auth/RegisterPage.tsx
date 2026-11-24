@@ -27,7 +27,9 @@ export function RegisterPage() {
       await invalidateAuth();
       navigate("/", { replace: true });
     } catch (error) {
-      setFormError(error instanceof ApiClientError ? error.message : "Something went wrong. Try again.");
+      setFormError(
+        error instanceof ApiClientError ? error.message : "Something went wrong. Try again.",
+      );
     }
   };
 

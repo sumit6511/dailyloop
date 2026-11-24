@@ -50,7 +50,11 @@ describe("admin puzzle routes", () => {
     const anon = await app.inject({ method: "GET", url: "/api/admin/puzzles" });
     expect(anon.statusCode).toBe(401);
 
-    const nonAdmin = await app.inject({ method: "GET", url: "/api/admin/puzzles", cookies: userCookies });
+    const nonAdmin = await app.inject({
+      method: "GET",
+      url: "/api/admin/puzzles",
+      cookies: userCookies,
+    });
     expect(nonAdmin.statusCode).toBe(403);
   });
 
@@ -65,14 +69,23 @@ describe("admin puzzle routes", () => {
       method: "POST",
       url: "/api/admin/puzzles",
       cookies: adminCookies,
-      payload: { gameSlug: "mock-game", date: dateKey, content: { words: ["a", "b"] }, status: "SCHEDULED" },
+      payload: {
+        gameSlug: "mock-game",
+        date: dateKey,
+        content: { words: ["a", "b"] },
+        status: "SCHEDULED",
+      },
     });
     expect(created.statusCode).toBe(201);
     const body = created.json().data;
     expect(body.puzzleNumber).toBe(1);
     const puzzleId = body.id as string;
 
-    const listed = await app.inject({ method: "GET", url: "/api/admin/puzzles", cookies: adminCookies });
+    const listed = await app.inject({
+      method: "GET",
+      url: "/api/admin/puzzles",
+      cookies: adminCookies,
+    });
     expect(listed.json().data).toHaveLength(1);
 
     const updated = await app.inject({
@@ -91,7 +104,11 @@ describe("admin puzzle routes", () => {
     });
     expect(deleted.statusCode).toBe(200);
 
-    const listedAfter = await app.inject({ method: "GET", url: "/api/admin/puzzles", cookies: adminCookies });
+    const listedAfter = await app.inject({
+      method: "GET",
+      url: "/api/admin/puzzles",
+      cookies: adminCookies,
+    });
     expect(listedAfter.json().data).toHaveLength(0);
   });
 
@@ -107,10 +124,20 @@ describe("admin puzzle routes", () => {
       status: "SCHEDULED" as const,
     };
 
-    const first = await app.inject({ method: "POST", url: "/api/admin/puzzles", cookies: adminCookies, payload });
+    const first = await app.inject({
+      method: "POST",
+      url: "/api/admin/puzzles",
+      cookies: adminCookies,
+      payload,
+    });
     expect(first.statusCode).toBe(201);
 
-    const second = await app.inject({ method: "POST", url: "/api/admin/puzzles", cookies: adminCookies, payload });
+    const second = await app.inject({
+      method: "POST",
+      url: "/api/admin/puzzles",
+      cookies: adminCookies,
+      payload,
+    });
     expect(second.statusCode).toBe(409);
   });
 
@@ -169,18 +196,34 @@ describe("admin puzzle routes", () => {
   it("generates a real puzzle using the game's own generator, then 409s a repeat for the same game+date", async () => {
     const adminCookies = await registerAndGetCookies("admin5", "ADMIN");
     await prisma.game.create({
-      data: { slug: "logic-puzzle", name: "Logic Puzzle", description: "d", icon: "🧠", sortOrder: 0 },
+      data: {
+        slug: "logic-puzzle",
+        name: "Logic Puzzle",
+        description: "d",
+        icon: "🧠",
+        sortOrder: 0,
+      },
     });
     const payload = { gameSlug: "logic-puzzle", date: getTodayKey("Asia/Kathmandu") };
 
-    const first = await app.inject({ method: "POST", url: "/api/admin/puzzles/generate", cookies: adminCookies, payload });
+    const first = await app.inject({
+      method: "POST",
+      url: "/api/admin/puzzles/generate",
+      cookies: adminCookies,
+      payload,
+    });
     expect(first.statusCode).toBe(201);
     const body = first.json().data;
     expect(body.status).toBe("SCHEDULED");
     expect(body.content.puzzle).toBeDefined();
     expect(body.content.solution).toBeDefined();
 
-    const second = await app.inject({ method: "POST", url: "/api/admin/puzzles/generate", cookies: adminCookies, payload });
+    const second = await app.inject({
+      method: "POST",
+      url: "/api/admin/puzzles/generate",
+      cookies: adminCookies,
+      payload,
+    });
     expect(second.statusCode).toBe(409);
   });
 
@@ -190,13 +233,26 @@ describe("admin puzzle routes", () => {
     const makeGame = (slug: string, sortOrder: number) =>
       prisma.game.create({ data: { slug, name: slug, description: "d", icon: "🧪", sortOrder } });
     const [gameA, gameB] = [await makeGame("game-a", 0), await makeGame("game-b", 1)];
-    const puzzleA = await prisma.dailyPuzzle.create({ data: { gameId: gameA.id, date, puzzleNumber: 1, status: "PUBLISHED", content: {} } });
-    const puzzleB = await prisma.dailyPuzzle.create({ data: { gameId: gameB.id, date, puzzleNumber: 1, status: "PUBLISHED", content: {} } });
+    const puzzleA = await prisma.dailyPuzzle.create({
+      data: { gameId: gameA.id, date, puzzleNumber: 1, status: "PUBLISHED", content: {} },
+    });
+    const puzzleB = await prisma.dailyPuzzle.create({
+      data: { gameId: gameB.id, date, puzzleNumber: 1, status: "PUBLISHED", content: {} },
+    });
 
     const player = (name: string) =>
-      prisma.user.create({ data: { email: `${name}@example.com`, username: name, passwordHash: "x", displayName: name } });
+      prisma.user.create({
+        data: {
+          email: `${name}@example.com`,
+          username: name,
+          passwordHash: "x",
+          displayName: name,
+        },
+      });
     const finish = (userId: string, dailyPuzzleId: string, score: number) =>
-      prisma.gameAttempt.create({ data: { userId, dailyPuzzleId, status: "COMPLETED", won: true, score } });
+      prisma.gameAttempt.create({
+        data: { userId, dailyPuzzleId, status: "COMPLETED", won: true, score },
+      });
     const both = await player("both"); // finished A and B: a Perfect Day
     const onlyB = await player("onlyb"); // only finished the puzzle that gets deleted
     const onlyA = await player("onlya"); // finished everything that will remain
@@ -212,23 +268,51 @@ describe("admin puzzle routes", () => {
       ],
     });
 
-    const res = await app.inject({ method: "DELETE", url: `/api/admin/puzzles/${puzzleB.id}`, cookies: adminCookies });
+    const res = await app.inject({
+      method: "DELETE",
+      url: `/api/admin/puzzles/${puzzleB.id}`,
+      cookies: adminCookies,
+    });
     expect(res.statusCode).toBe(200);
 
-    const score = (userId: string) => prisma.dailyScore.findUnique({ where: { userId_date: { userId, date } } });
-    expect(await score(both.id)).toMatchObject({ totalScore: 70 + SCORE.PERFECT_DAY_BONUS, gamesCompleted: 1, isPerfectDay: true });
+    const score = (userId: string) =>
+      prisma.dailyScore.findUnique({ where: { userId_date: { userId, date } } });
+    expect(await score(both.id)).toMatchObject({
+      totalScore: 70 + SCORE.PERFECT_DAY_BONUS,
+      gamesCompleted: 1,
+      isPerfectDay: true,
+    });
     expect(await score(onlyB.id)).toBeNull();
-    expect(await score(onlyA.id)).toMatchObject({ totalScore: 70 + SCORE.PERFECT_DAY_BONUS, isPerfectDay: true });
+    expect(await score(onlyA.id)).toMatchObject({
+      totalScore: 70 + SCORE.PERFECT_DAY_BONUS,
+      isPerfectDay: true,
+    });
   });
 
   it("lists puzzles newest first, bounded by ?limit", async () => {
     const adminCookies = await registerAndGetCookies("admin5", "ADMIN");
-    const game = await prisma.game.create({ data: { slug: "mock-game", name: "M", description: "d", icon: "🧪", sortOrder: 0 } });
+    const game = await prisma.game.create({
+      data: { slug: "mock-game", name: "M", description: "d", icon: "🧪", sortOrder: 0 },
+    });
     const today = getTodayKey("Asia/Kathmandu");
     for (let i = 0; i < 3; i++) {
-      await prisma.dailyPuzzle.create({ data: { gameId: game.id, date: dateKeyToJSDate(addDaysToKey(today, -i)), puzzleNumber: i + 1, content: {} } });
+      await prisma.dailyPuzzle.create({
+        data: {
+          gameId: game.id,
+          date: dateKeyToJSDate(addDaysToKey(today, -i)),
+          puzzleNumber: i + 1,
+          content: {},
+        },
+      });
     }
-    const res = await app.inject({ method: "GET", url: "/api/admin/puzzles?limit=2", cookies: adminCookies });
-    expect(res.json().data.map((p: { date: string }) => p.date)).toEqual([today, addDaysToKey(today, -1)]);
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/admin/puzzles?limit=2",
+      cookies: adminCookies,
+    });
+    expect(res.json().data.map((p: { date: string }) => p.date)).toEqual([
+      today,
+      addDaysToKey(today, -1),
+    ]);
   });
 });

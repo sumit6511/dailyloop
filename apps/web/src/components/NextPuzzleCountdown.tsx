@@ -27,10 +27,18 @@ export function NextPuzzleCountdown({ className = "" }: { className?: string }) 
     return () => clearInterval(id);
   }, []);
 
-  const remaining = schedule ? Date.parse(schedule.nextRolloverAt) - (now + schedule.clockSkewMs) : null;
+  const remaining = schedule
+    ? Date.parse(schedule.nextRolloverAt) - (now + schedule.clockSkewMs)
+    : null;
 
   useEffect(() => {
-    if (!schedule || remaining === null || remaining > 0 || refreshedFor.current === schedule.nextRolloverAt) return;
+    if (
+      !schedule ||
+      remaining === null ||
+      remaining > 0 ||
+      refreshedFor.current === schedule.nextRolloverAt
+    )
+      return;
     refreshedFor.current = schedule.nextRolloverAt;
     // A small delay so the request lands after the server's own rollover, not a hair before it.
     const id = setTimeout(() => void queryClient.invalidateQueries({ queryKey: ["games"] }), 1500);
@@ -43,7 +51,10 @@ export function NextPuzzleCountdown({ className = "" }: { className?: string }) 
       <Icon name="schedule" className="text-base" />
       {remaining > 0 ? (
         <>
-          New puzzles in <span className="font-semibold tabular-nums text-white/80">{formatRemaining(remaining)}</span>
+          New puzzles in{" "}
+          <span className="font-semibold tabular-nums text-white/80">
+            {formatRemaining(remaining)}
+          </span>
         </>
       ) : (
         "New puzzles are ready!"

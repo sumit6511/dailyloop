@@ -1,7 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { createPuzzleSchema, updatePuzzleSchema, generatePuzzleSchema, dateKeyToJSDate, jsDateToDateKey } from "@dailyloop/shared";
+import {
+  createPuzzleSchema,
+  updatePuzzleSchema,
+  generatePuzzleSchema,
+  dateKeyToJSDate,
+  jsDateToDateKey,
+} from "@dailyloop/shared";
 import { getGameModule } from "@dailyloop/game-engine";
 import { prisma } from "../../lib/prisma.js";
 import { Errors } from "../../lib/errors.js";
@@ -82,12 +88,17 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
     if (module) {
       const parsed = module.contentSchema.safeParse(body.content);
       if (!parsed.success) {
-        throw Errors.badRequest("Puzzle content doesn't match this game's schema", parsed.error.flatten());
+        throw Errors.badRequest(
+          "Puzzle content doesn't match this game's schema",
+          parsed.error.flatten(),
+        );
       }
     }
 
     const date = dateKeyToJSDate(body.date);
-    const existing = await prisma.dailyPuzzle.findUnique({ where: { gameId_date: { gameId: game.id, date } } });
+    const existing = await prisma.dailyPuzzle.findUnique({
+      where: { gameId_date: { gameId: game.id, date } },
+    });
     if (existing) throw Errors.conflict(`A puzzle for ${game.slug} on ${body.date} already exists`);
 
     const puzzle = await prisma.dailyPuzzle.create({
@@ -118,7 +129,10 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
       if (module) {
         const parsed = module.contentSchema.safeParse(body.content);
         if (!parsed.success) {
-          throw Errors.badRequest("Puzzle content doesn't match this game's schema", parsed.error.flatten());
+          throw Errors.badRequest(
+            "Puzzle content doesn't match this game's schema",
+            parsed.error.flatten(),
+          );
         }
       }
     }
@@ -129,19 +143,24 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
         data: {
           ...(body.content !== undefined ? { content: body.content as Prisma.InputJsonValue } : {}),
           ...(body.status !== undefined ? { status: body.status } : {}),
-          ...(body.publishAt !== undefined ? { publishAt: body.publishAt ? new Date(body.publishAt) : null } : {}),
+          ...(body.publishAt !== undefined
+            ? { publishAt: body.publishAt ? new Date(body.publishAt) : null }
+            : {}),
           ...(body.date !== undefined ? { date: dateKeyToJSDate(body.date) } : {}),
         },
       });
       // Archiving/un-archiving or moving a puzzle changes which puzzles count on those days.
       if (row.status !== puzzle.status || row.date.getTime() !== puzzle.date.getTime()) {
         await recomputeDailyScoresForDate(tx, puzzle.date);
-        if (row.date.getTime() !== puzzle.date.getTime()) await recomputeDailyScoresForDate(tx, row.date);
+        if (row.date.getTime() !== puzzle.date.getTime())
+          await recomputeDailyScoresForDate(tx, row.date);
       }
       return row;
     });
 
-    return reply.send({ data: { ...updated, gameSlug: puzzle.game.slug, date: jsDateToDateKey(updated.date) } });
+    return reply.send({
+      data: { ...updated, gameSlug: puzzle.game.slug, date: jsDateToDateKey(updated.date) },
+    });
   });
 
   app.delete<{ Params: { id: string } }>("/puzzles/:id", async (request, reply) => {
@@ -171,6 +190,8 @@ export const adminPuzzleRoutes: FastifyPluginAsync = async (app) => {
       throw Errors.conflict(`A puzzle for ${body.gameSlug} on ${body.date} already exists`);
     }
 
-    return reply.status(201).send({ data: { ...result.puzzle, gameSlug: body.gameSlug, date: body.date } });
+    return reply
+      .status(201)
+      .send({ data: { ...result.puzzle, gameSlug: body.gameSlug, date: body.date } });
   });
 };

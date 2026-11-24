@@ -2,7 +2,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod/mini";
 import { useNavigate } from "react-router-dom";
-import { updateProfileSchema, changePasswordSchema, type UpdateProfileInput } from "@dailyloop/shared";
+import {
+  updateProfileSchema,
+  changePasswordSchema,
+  type UpdateProfileInput,
+} from "@dailyloop/shared";
 import { useAuth, useInvalidateAuth } from "../../lib/use-auth";
 import { useUpdateProfile, useChangePassword } from "../../lib/profile-api";
 import { useToast } from "../../lib/toast-context";
@@ -50,7 +54,12 @@ function ProfileSection() {
     <Card>
       <h2 className="mb-4 font-display text-lg font-bold text-white">Profile</h2>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
-        <TextField label="Display name" icon="badge" error={errors.displayName?.message} {...register("displayName")} />
+        <TextField
+          label="Display name"
+          icon="badge"
+          error={errors.displayName?.message}
+          {...register("displayName")}
+        />
         <TextField
           label="Bio"
           icon="notes"

@@ -48,15 +48,31 @@ describe("game routes", () => {
       data: { slug: "word-guess", name: "Word Guess", description: "d", icon: "🟨", sortOrder: 1 },
     });
     await prisma.game.create({
-      data: { slug: "connections", name: "Connections", description: "d", icon: "🟩", sortOrder: 0 },
+      data: {
+        slug: "connections",
+        name: "Connections",
+        description: "d",
+        icon: "🟩",
+        sortOrder: 0,
+      },
     });
     await prisma.game.create({
-      data: { slug: "disabled-game", name: "Disabled", description: "d", icon: "❌", sortOrder: 2, isEnabled: false },
+      data: {
+        slug: "disabled-game",
+        name: "Disabled",
+        description: "d",
+        icon: "❌",
+        sortOrder: 2,
+        isEnabled: false,
+      },
     });
 
     const res = await app.inject({ method: "GET", url: "/api/games" });
     expect(res.statusCode).toBe(200);
-    expect(res.json().data.map((g: { slug: string }) => g.slug)).toEqual(["connections", "word-guess"]);
+    expect(res.json().data.map((g: { slug: string }) => g.slug)).toEqual([
+      "connections",
+      "word-guess",
+    ]);
   });
 
   it("GET /games/schedule reports today and the next rollover in the puzzle timezone", async () => {
@@ -73,11 +89,18 @@ describe("game routes", () => {
 
   it("answers malformed JSON with 400 and an oversized body with 413, not 500", async () => {
     const send = (payload: string) =>
-      app.inject({ method: "POST", url: "/api/auth/login", headers: { "content-type": "application/json" }, payload });
+      app.inject({
+        method: "POST",
+        url: "/api/auth/login",
+        headers: { "content-type": "application/json" },
+        payload,
+      });
     const malformed = await send("{not json");
     expect(malformed.statusCode).toBe(400);
     expect(malformed.json().error.code).toBe("BAD_REQUEST");
-    const oversized = await send(JSON.stringify({ emailOrUsername: "x".repeat(100_000), password: "y" }));
+    const oversized = await send(
+      JSON.stringify({ emailOrUsername: "x".repeat(100_000), password: "y" }),
+    );
     expect(oversized.statusCode).toBe(413);
     expect(oversized.json().error.code).toBe("PAYLOAD_TOO_LARGE");
   });
@@ -221,12 +244,25 @@ describe("game routes", () => {
         throw new Error("boom");
       },
       validateAttempt: () => ({ won: false, complete: false, mistakes: 0, result: {} }),
-      calculateScore: () => ({ base: 0, speedBonus: 0, accuracyBonus: 0, mistakePenalty: 0, hintPenalty: 0, total: 0 }),
+      calculateScore: () => ({
+        base: 0,
+        speedBonus: 0,
+        accuracyBonus: 0,
+        mistakePenalty: 0,
+        hintPenalty: 0,
+        total: 0,
+      }),
       sanitizeForClient: () => null,
     });
     const { cookies } = await registerUser("harry");
     await prisma.game.create({
-      data: { slug: "throwing-game", name: "Throwing Game", description: "d", icon: "💥", sortOrder: 0 },
+      data: {
+        slug: "throwing-game",
+        name: "Throwing Game",
+        description: "d",
+        icon: "💥",
+        sortOrder: 0,
+      },
     });
 
     const res = await app.inject({ method: "GET", url: "/api/games/throwing-game/today", cookies });
@@ -236,7 +272,11 @@ describe("game routes", () => {
 
   it("404s for an unknown game slug", async () => {
     const { cookies } = await registerUser("harry");
-    const res = await app.inject({ method: "GET", url: "/api/games/does-not-exist/today", cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/games/does-not-exist/today",
+      cookies,
+    });
     expect(res.statusCode).toBe(404);
   });
 });

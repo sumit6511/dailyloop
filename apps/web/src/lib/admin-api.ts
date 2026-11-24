@@ -59,14 +59,22 @@ export interface AdminActivityDTO {
 }
 
 export function useAdminGames() {
-  return useQuery({ queryKey: ["admin", "games"], queryFn: () => api.get<AdminGameDTO[]>("/admin/games") });
+  return useQuery({
+    queryKey: ["admin", "games"],
+    queryFn: () => api.get<AdminGameDTO[]>("/admin/games"),
+  });
 }
 
 export function useUpdateAdminGame() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Pick<AdminGameDTO, "isEnabled" | "sortOrder">> }) =>
-      api.patch(`/admin/games/${id}`, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Pick<AdminGameDTO, "isEnabled" | "sortOrder">>;
+    }) => api.patch(`/admin/games/${id}`, data),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["admin", "games"] }),
   });
 }
@@ -116,8 +124,13 @@ export function useGeneratePuzzle() {
 export function useUpdatePuzzle() {
   const invalidate = useInvalidatePuzzles();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { content?: unknown; status?: string; date?: string } }) =>
-      api.put<AdminPuzzleDTO>(`/admin/puzzles/${id}`, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: { content?: unknown; status?: string; date?: string };
+    }) => api.put<AdminPuzzleDTO>(`/admin/puzzles/${id}`, data),
     onSuccess: invalidate,
   });
 }
@@ -131,7 +144,10 @@ export function useDeletePuzzle() {
 }
 
 export function useAdminUsers() {
-  return useQuery({ queryKey: ["admin", "users"], queryFn: () => api.get<AdminUserDTO[]>("/admin/users") });
+  return useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: () => api.get<AdminUserDTO[]>("/admin/users"),
+  });
 }
 
 export function useAdminStatsOverview() {

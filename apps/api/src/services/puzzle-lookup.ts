@@ -15,11 +15,14 @@ export async function findTodaysPuzzle(gameId: string, gameSlug: string) {
   const dateKey = getTodayKey(env.DEFAULT_TIMEZONE);
   const date = dateKeyToJSDate(dateKey);
 
-  const published = await prisma.dailyPuzzle.findFirst({ where: { gameId, date, status: "PUBLISHED" } });
+  const published = await prisma.dailyPuzzle.findFirst({
+    where: { gameId, date, status: "PUBLISHED" },
+  });
   if (published) return published;
 
   const due = await prisma.dailyPuzzle.findFirst({ where: { gameId, date, status: "SCHEDULED" } });
-  if (due) return prisma.dailyPuzzle.update({ where: { id: due.id }, data: { status: "PUBLISHED" } });
+  if (due)
+    return prisma.dailyPuzzle.update({ where: { id: due.id }, data: { status: "PUBLISHED" } });
 
   // A thrown generator error, a missing module, or a same-date ARCHIVED row already occupying
   // the unique (gameId, date) slot all degrade to "still unavailable" (null) instead of breaking
@@ -34,7 +37,9 @@ export async function findTodaysPuzzle(gameId: string, gameSlug: string) {
   // Another request generated today's puzzle between our lookup and our insert (the first few
   // seconds after midnight when the cron didn't pre-generate it) — use theirs rather than telling
   // this player nothing is available. An ARCHIVED row in the slot still correctly yields null.
-  const theirs = await prisma.dailyPuzzle.findFirst({ where: { gameId, date, status: { in: ["PUBLISHED", "SCHEDULED"] } } });
+  const theirs = await prisma.dailyPuzzle.findFirst({
+    where: { gameId, date, status: { in: ["PUBLISHED", "SCHEDULED"] } },
+  });
   if (theirs?.status === "SCHEDULED") {
     return prisma.dailyPuzzle.update({ where: { id: theirs.id }, data: { status: "PUBLISHED" } });
   }

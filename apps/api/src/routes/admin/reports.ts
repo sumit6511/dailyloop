@@ -17,13 +17,18 @@ export const adminReportRoutes: FastifyPluginAsync = async (app) => {
       prisma.user.count(),
       prisma.gameAttempt.count(),
       prisma.gameAttempt.count({ where: { status: "COMPLETED" } }),
-      prisma.game.findMany({ orderBy: { sortOrder: "asc" }, include: { _count: { select: { puzzles: true } } } }),
+      prisma.game.findMany({
+        orderBy: { sortOrder: "asc" },
+        include: { _count: { select: { puzzles: true } } },
+      }),
     ]);
 
     const perGame = await Promise.all(
       games.map(async (game) => {
         const [completedCount, avgScoreAgg] = await Promise.all([
-          prisma.gameAttempt.count({ where: { status: "COMPLETED", dailyPuzzle: { gameId: game.id } } }),
+          prisma.gameAttempt.count({
+            where: { status: "COMPLETED", dailyPuzzle: { gameId: game.id } },
+          }),
           prisma.gameAttempt.aggregate({
             where: { status: "COMPLETED", dailyPuzzle: { gameId: game.id } },
             _avg: { score: true },
@@ -49,7 +54,11 @@ export const adminReportRoutes: FastifyPluginAsync = async (app) => {
     const date = dateKeyToJSDate(dateKey);
 
     const [scores, attempts] = await Promise.all([
-      prisma.dailyScore.findMany({ where: { date }, include: { user: true }, orderBy: { totalScore: "desc" } }),
+      prisma.dailyScore.findMany({
+        where: { date },
+        include: { user: true },
+        orderBy: { totalScore: "desc" },
+      }),
       prisma.gameAttempt.findMany({ where: { dailyPuzzle: { date } } }),
     ]);
 
@@ -60,9 +69,11 @@ export const adminReportRoutes: FastifyPluginAsync = async (app) => {
         perfectDays: scores.filter((s) => s.isPerfectDay).length,
         totalAttempts: attempts.length,
         completedAttempts: attempts.filter((a) => a.status === "COMPLETED").length,
-        topScores: scores
-          .slice(0, 10)
-          .map((s) => ({ username: s.user.username, score: s.totalScore, isPerfectDay: s.isPerfectDay })),
+        topScores: scores.slice(0, 10).map((s) => ({
+          username: s.user.username,
+          score: s.totalScore,
+          isPerfectDay: s.isPerfectDay,
+        })),
       },
     });
   });

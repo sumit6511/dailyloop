@@ -23,7 +23,10 @@ export function ForgotPasswordPage() {
   };
 
   return (
-    <AuthLayout title="Reset your password" subtitle="We'll email you a reset link if the account exists.">
+    <AuthLayout
+      title="Reset your password"
+      subtitle="We'll email you a reset link if the account exists."
+    >
       {sent ? (
         <p className="text-sm text-white/70">
           If an account exists for that email, a reset link is on its way. Check your inbox.

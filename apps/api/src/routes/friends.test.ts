@@ -53,7 +53,11 @@ describe("friends", () => {
     });
     expect(sent.statusCode).toBe(201);
 
-    const sumitIncoming = await app.inject({ method: "GET", url: "/api/friends/requests", cookies: sumit.cookies });
+    const sumitIncoming = await app.inject({
+      method: "GET",
+      url: "/api/friends/requests",
+      cookies: sumit.cookies,
+    });
     expect(sumitIncoming.json().data.incoming).toHaveLength(1);
     const requestId = sumitIncoming.json().data.incoming[0].id;
 
@@ -64,11 +68,23 @@ describe("friends", () => {
     });
     expect(accepted.statusCode).toBe(200);
 
-    const harryFriends = await app.inject({ method: "GET", url: "/api/friends", cookies: harry.cookies });
-    expect(harryFriends.json().data.map((u: { username: string }) => u.username)).toEqual(["sumit"]);
+    const harryFriends = await app.inject({
+      method: "GET",
+      url: "/api/friends",
+      cookies: harry.cookies,
+    });
+    expect(harryFriends.json().data.map((u: { username: string }) => u.username)).toEqual([
+      "sumit",
+    ]);
 
-    const sumitFriends = await app.inject({ method: "GET", url: "/api/friends", cookies: sumit.cookies });
-    expect(sumitFriends.json().data.map((u: { username: string }) => u.username)).toEqual(["harry"]);
+    const sumitFriends = await app.inject({
+      method: "GET",
+      url: "/api/friends",
+      cookies: sumit.cookies,
+    });
+    expect(sumitFriends.json().data.map((u: { username: string }) => u.username)).toEqual([
+      "harry",
+    ]);
   });
 
   it("rejects a request, and the sender can send a fresh one afterward", async () => {
@@ -81,7 +97,11 @@ describe("friends", () => {
       cookies: harry.cookies,
       payload: { username: "sumit" },
     });
-    const incoming1 = await app.inject({ method: "GET", url: "/api/friends/requests", cookies: sumit.cookies });
+    const incoming1 = await app.inject({
+      method: "GET",
+      url: "/api/friends/requests",
+      cookies: sumit.cookies,
+    });
     const requestId = incoming1.json().data.incoming[0].id;
 
     const rejected = await app.inject({
@@ -99,7 +119,11 @@ describe("friends", () => {
     });
     expect(retry.statusCode).toBe(201);
 
-    const incoming2 = await app.inject({ method: "GET", url: "/api/friends/requests", cookies: sumit.cookies });
+    const incoming2 = await app.inject({
+      method: "GET",
+      url: "/api/friends/requests",
+      cookies: sumit.cookies,
+    });
     expect(incoming2.json().data.incoming).toHaveLength(1);
   });
 
@@ -122,10 +146,18 @@ describe("friends", () => {
     });
     expect(second.statusCode).toBe(201);
 
-    const harryFriends = await app.inject({ method: "GET", url: "/api/friends", cookies: harry.cookies });
+    const harryFriends = await app.inject({
+      method: "GET",
+      url: "/api/friends",
+      cookies: harry.cookies,
+    });
     expect(harryFriends.json().data).toHaveLength(1);
 
-    const pending = await app.inject({ method: "GET", url: "/api/friends/requests", cookies: harry.cookies });
+    const pending = await app.inject({
+      method: "GET",
+      url: "/api/friends/requests",
+      cookies: harry.cookies,
+    });
     expect(pending.json().data.incoming).toHaveLength(0);
     expect(pending.json().data.outgoing).toHaveLength(0);
   });
@@ -166,7 +198,11 @@ describe("friends", () => {
       cookies: harry.cookies,
       payload: { username: "sumit" },
     });
-    const incoming = await app.inject({ method: "GET", url: "/api/friends/requests", cookies: sumit.cookies });
+    const incoming = await app.inject({
+      method: "GET",
+      url: "/api/friends/requests",
+      cookies: sumit.cookies,
+    });
     await app.inject({
       method: "POST",
       url: `/api/friends/requests/${incoming.json().data.incoming[0].id}/accept`,
@@ -180,9 +216,17 @@ describe("friends", () => {
     });
     expect(removed.statusCode).toBe(200);
 
-    const harryFriends = await app.inject({ method: "GET", url: "/api/friends", cookies: harry.cookies });
+    const harryFriends = await app.inject({
+      method: "GET",
+      url: "/api/friends",
+      cookies: harry.cookies,
+    });
     expect(harryFriends.json().data).toHaveLength(0);
-    const sumitFriends = await app.inject({ method: "GET", url: "/api/friends", cookies: sumit.cookies });
+    const sumitFriends = await app.inject({
+      method: "GET",
+      url: "/api/friends",
+      cookies: sumit.cookies,
+    });
     expect(sumitFriends.json().data).toHaveLength(0);
   });
 
@@ -190,7 +234,11 @@ describe("friends", () => {
     const harry = await registerUser("harry");
     const sumit = await registerUser("sumit");
 
-    const none = await app.inject({ method: "GET", url: "/api/users/sumit", cookies: harry.cookies });
+    const none = await app.inject({
+      method: "GET",
+      url: "/api/users/sumit",
+      cookies: harry.cookies,
+    });
     expect(none.json().data.relationship).toBe("none");
 
     await app.inject({
@@ -199,12 +247,24 @@ describe("friends", () => {
       cookies: harry.cookies,
       payload: { username: "sumit" },
     });
-    const sent = await app.inject({ method: "GET", url: "/api/users/sumit", cookies: harry.cookies });
+    const sent = await app.inject({
+      method: "GET",
+      url: "/api/users/sumit",
+      cookies: harry.cookies,
+    });
     expect(sent.json().data.relationship).toBe("request_sent");
-    const received = await app.inject({ method: "GET", url: "/api/users/harry", cookies: sumit.cookies });
+    const received = await app.inject({
+      method: "GET",
+      url: "/api/users/harry",
+      cookies: sumit.cookies,
+    });
     expect(received.json().data.relationship).toBe("request_received");
 
-    const self = await app.inject({ method: "GET", url: "/api/users/harry", cookies: harry.cookies });
+    const self = await app.inject({
+      method: "GET",
+      url: "/api/users/harry",
+      cookies: harry.cookies,
+    });
     expect(self.json().data.relationship).toBe("self");
   });
 
@@ -212,10 +272,18 @@ describe("friends", () => {
     const harry = await registerUser("harry");
     await registerUser("sumit");
 
-    const res = await app.inject({ method: "GET", url: "/api/users/search?q=sum", cookies: harry.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/users/search?q=sum",
+      cookies: harry.cookies,
+    });
     expect(res.json().data.map((u: { username: string }) => u.username)).toEqual(["sumit"]);
 
-    const self = await app.inject({ method: "GET", url: "/api/users/search?q=harry", cookies: harry.cookies });
+    const self = await app.inject({
+      method: "GET",
+      url: "/api/users/search?q=harry",
+      cookies: harry.cookies,
+    });
     expect(self.json().data).toHaveLength(0);
   });
 
@@ -226,15 +294,26 @@ describe("friends", () => {
     const asker = await registerUser("sam_asker");
     await registerUser("sam_none");
     const request = (from: typeof harry, to: string) =>
-      app.inject({ method: "POST", url: "/api/friends/requests", cookies: from.cookies, payload: { username: to } });
+      app.inject({
+        method: "POST",
+        url: "/api/friends/requests",
+        cookies: from.cookies,
+        payload: { username: to },
+      });
     await request(harry, "sam_friend");
     await request(friend, "harry"); // mutual request = accepted
     await request(harry, "sam_asked");
     await request(asker, "harry");
 
-    const res = await app.inject({ method: "GET", url: "/api/users/search?q=sam_", cookies: harry.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/users/search?q=sam_",
+      cookies: harry.cookies,
+    });
     const byName = Object.fromEntries(
-      res.json().data.map((u: { username: string; relationship: string }) => [u.username, u.relationship]),
+      res
+        .json()
+        .data.map((u: { username: string; relationship: string }) => [u.username, u.relationship]),
     );
     expect(byName).toEqual({
       sam_friend: "friends",
@@ -255,7 +334,11 @@ describe("friends", () => {
       cookies: harry.cookies,
       payload: { username: "sumit" },
     });
-    const incoming = await app.inject({ method: "GET", url: "/api/friends/requests", cookies: sumit.cookies });
+    const incoming = await app.inject({
+      method: "GET",
+      url: "/api/friends/requests",
+      cookies: sumit.cookies,
+    });
     await app.inject({
       method: "POST",
       url: `/api/friends/requests/${incoming.json().data.incoming[0].id}/accept`,
@@ -263,9 +346,15 @@ describe("friends", () => {
     });
 
     const today = dateKeyToJSDate(getTodayKey("Asia/Kathmandu"));
-    await prisma.dailyScore.create({ data: { userId: harry.userId, date: today, totalScore: 50, gamesCompleted: 1 } });
-    await prisma.dailyScore.create({ data: { userId: sumit.userId, date: today, totalScore: 80, gamesCompleted: 1 } });
-    await prisma.dailyScore.create({ data: { userId: outsider.userId, date: today, totalScore: 999, gamesCompleted: 1 } });
+    await prisma.dailyScore.create({
+      data: { userId: harry.userId, date: today, totalScore: 50, gamesCompleted: 1 },
+    });
+    await prisma.dailyScore.create({
+      data: { userId: sumit.userId, date: today, totalScore: 80, gamesCompleted: 1 },
+    });
+    await prisma.dailyScore.create({
+      data: { userId: outsider.userId, date: today, totalScore: 999, gamesCompleted: 1 },
+    });
 
     const res = await app.inject({
       method: "GET",

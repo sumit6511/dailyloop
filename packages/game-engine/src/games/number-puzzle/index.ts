@@ -16,7 +16,8 @@ export interface NumberPuzzleContent {
   difficulty?: PuzzleTier;
 }
 
-export type NumberPuzzleMove = { type: "combine"; a: number; b: number; op: NumberOp } | { type: "submit" };
+export type NumberPuzzleMove =
+  { type: "combine"; a: number; b: number; op: NumberOp } | { type: "submit" };
 
 export interface NumberPuzzleStep {
   a: number;
@@ -56,7 +57,10 @@ const TIER_SPECS: Record<PuzzleTier, TierSpec> = {
   hard: { targetMin: 40, targetMax: 150, minNumbers: 4, minWays: 1, maxWays: 2 },
 };
 
-function replay(content: NumberPuzzleContent, moves: NumberPuzzleMove[]): ValidationResult<NumberPuzzleResult> {
+function replay(
+  content: NumberPuzzleContent,
+  moves: NumberPuzzleMove[],
+): ValidationResult<NumberPuzzleResult> {
   let pool = [...content.numbers];
   const steps: NumberPuzzleStep[] = [];
   let mistakes = 0;
@@ -94,7 +98,11 @@ function replay(content: NumberPuzzleContent, moves: NumberPuzzleMove[]): Valida
   return { won, complete: submitted, mistakes, result: { pool, steps, mistakes, won, gaveUp } };
 }
 
-export const numberPuzzleGame: DailyGameModule<NumberPuzzleContent, NumberPuzzleMove, NumberPuzzleResult> = {
+export const numberPuzzleGame: DailyGameModule<
+  NumberPuzzleContent,
+  NumberPuzzleMove,
+  NumberPuzzleResult
+> = {
   id: "number-puzzle",
   name: "Number Puzzle",
   description: "Reach the target using numbers and operators.",
@@ -125,11 +133,15 @@ export const numberPuzzleGame: DailyGameModule<NumberPuzzleContent, NumberPuzzle
     let fallback: NumberPuzzleContent | null = null;
 
     for (let draw = 0; draw < MAX_DRAWS; draw++) {
-      const numbers = Array.from({ length: NUMBER_COUNT }, () => randInt(rng, NUMBER_MIN, NUMBER_MAX));
+      const numbers = Array.from({ length: NUMBER_COUNT }, () =>
+        randInt(rng, NUMBER_MIN, NUMBER_MAX),
+      );
       const candidates: { target: number; expression: string }[] = [];
       for (const [value, info] of analyzeNumbers(numbers)) {
-        if (value < spec.targetMin || value > spec.targetMax || info.minNumbers < spec.minNumbers) continue;
-        if (info.ways >= spec.minWays && info.ways <= spec.maxWays) candidates.push({ target: value, expression: info.expression });
+        if (value < spec.targetMin || value > spec.targetMax || info.minNumbers < spec.minNumbers)
+          continue;
+        if (info.ways >= spec.minWays && info.ways <= spec.maxWays)
+          candidates.push({ target: value, expression: info.expression });
         else fallback ??= { numbers, target: value, solution: info.expression, difficulty };
       }
       if (candidates.length > 0) {

@@ -6,7 +6,10 @@ import { prisma } from "../lib/prisma.js";
 /** One past the highest number used so far — `count + 1` would hand out a number that's already
  * taken as soon as any earlier puzzle had been deleted. */
 export async function nextPuzzleNumber(gameId: string): Promise<number> {
-  const { _max } = await prisma.dailyPuzzle.aggregate({ where: { gameId }, _max: { puzzleNumber: true } });
+  const { _max } = await prisma.dailyPuzzle.aggregate({
+    where: { gameId },
+    _max: { puzzleNumber: true },
+  });
   return (_max.puzzleNumber ?? 0) + 1;
 }
 

@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { useGameToday, useAutoStartAttempt, useSubmitMove, useUndoMove } from "../../../lib/games-api";
+import {
+  useGameToday,
+  useAutoStartAttempt,
+  useSubmitMove,
+  useUndoMove,
+} from "../../../lib/games-api";
 import { GameShell } from "../GameShell";
 import { ResultScreen } from "../ResultScreen";
 import { Button } from "../../../components/Button";
@@ -44,7 +49,12 @@ function BoardSkeleton() {
 
 const OPS = ["+", "-", "*", "/"] as const;
 const OP_SYMBOLS: Record<string, string> = { "+": "+", "-": "−", "*": "×", "/": "÷" };
-const OP_NAMES: Record<string, string> = { "+": "add", "-": "subtract", "*": "multiply", "/": "divide" };
+const OP_NAMES: Record<string, string> = {
+  "+": "add",
+  "-": "subtract",
+  "*": "multiply",
+  "/": "divide",
+};
 const MERGE_MS = 380;
 const CELEBRATE_MS = 700;
 
@@ -77,7 +87,9 @@ export function NumberPuzzlePage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
-        <p className="text-center text-white/50">No Number Puzzle is available today. Check back soon!</p>
+        <p className="text-center text-white/50">
+          No Number Puzzle is available today. Check back soon!
+        </p>
       </GameShell>
     );
   }
@@ -208,7 +220,10 @@ export function NumberPuzzlePage() {
               {view.solution ? (
                 <>
                   <br />
-                  One way to get there: <span className="font-semibold text-white/80">{view.solution} = {view.target}</span>
+                  One way to get there:{" "}
+                  <span className="font-semibold text-white/80">
+                    {view.solution} = {view.target}
+                  </span>
                 </>
               ) : null}
             </p>
@@ -219,14 +234,23 @@ export function NumberPuzzlePage() {
   }
 
   return (
-    <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle" subtitle={`Reach ${view.target} using the numbers below.`}>
+    <GameShell
+      icon={<GameIcon slug="number-puzzle" size="lg" />}
+      title="Number Puzzle"
+      subtitle={`Reach ${view.target} using the numbers below.`}
+    >
       <div className="mb-6 text-center">
         <div className="text-xs font-medium uppercase tracking-wide text-white/50">Target</div>
         <div className="relative inline-flex items-center justify-center">
           {celebrating ? (
-            <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-emerald-500/50 blur-xl" aria-hidden="true" />
+            <div
+              className="animate-glow-pulse absolute inset-0 -z-10 rounded-full bg-emerald-500/50 blur-xl"
+              aria-hidden="true"
+            />
           ) : null}
-          <div className={`text-4xl font-bold transition-colors ${celebrating ? "text-emerald-300" : "text-brand-300"}`}>
+          <div
+            className={`text-4xl font-bold transition-colors ${celebrating ? "text-emerald-300" : "text-brand-300"}`}
+          >
             {view.target}
           </div>
         </div>
@@ -237,7 +261,13 @@ export function NumberPuzzlePage() {
           const isCombining = combiningIndices?.includes(i);
           const state = isCombining ? "correct" : firstIndex === i ? "selected" : "default";
           return (
-            <GameTile key={i} state={state} size="lg" onClick={() => void selectNumber(i)} disabled={!!combiningIndices}>
+            <GameTile
+              key={i}
+              state={state}
+              size="lg"
+              onClick={() => void selectNumber(i)}
+              disabled={!!combiningIndices}
+            >
               {num}
             </GameTile>
           );
@@ -264,7 +294,8 @@ export function NumberPuzzlePage() {
           <div className="flex flex-col gap-1 text-center text-sm text-white/50">
             {view.steps.map((step, i) => (
               <div key={i} className="animate-pop-in">
-                {step.a} {OP_SYMBOLS[step.op]} {step.b} = <span className="font-semibold text-white/80">{step.result}</span>
+                {step.a} {OP_SYMBOLS[step.op]} {step.b} ={" "}
+                <span className="font-semibold text-white/80">{step.result}</span>
               </div>
             ))}
           </div>
@@ -278,7 +309,12 @@ export function NumberPuzzlePage() {
             >
               <Icon name="undo" className="text-base" /> Undo last step
             </Button>
-            <Button variant="ghost" size="sm" disabled={!!combiningIndices || undoMove.isPending} onClick={() => void resetPuzzle()}>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={!!combiningIndices || undoMove.isPending}
+              onClick={() => void resetPuzzle()}
+            >
               <Icon name="restart_alt" className="text-base" /> Reset
             </Button>
           </div>
@@ -296,7 +332,11 @@ export function NumberPuzzlePage() {
       </p>
 
       <div className="flex justify-center gap-3">
-        <Button variant="secondary" onClick={resetSelection} disabled={firstIndex === null && op === null}>
+        <Button
+          variant="secondary"
+          onClick={resetSelection}
+          disabled={firstIndex === null && op === null}
+        >
           <Icon name="close" className="text-lg" /> Clear selection
         </Button>
         <Button onClick={requestSubmit} isLoading={submitMove.isPending}>

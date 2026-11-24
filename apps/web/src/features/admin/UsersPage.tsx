@@ -42,7 +42,8 @@ export function UsersPage() {
                 </td>
                 <td className="py-2 text-center text-white/60">
                   <span className="inline-flex items-center gap-1">
-                    <Icon name="local_fire_department" className="text-sm text-flame-400" filled /> {user.currentStreak}
+                    <Icon name="local_fire_department" className="text-sm text-flame-400" filled />{" "}
+                    {user.currentStreak}
                   </span>
                 </td>
                 <td className="py-2 text-center text-white/60">{user.gamesPlayed}</td>

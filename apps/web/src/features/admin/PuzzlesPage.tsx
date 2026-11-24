@@ -164,7 +164,9 @@ export function PuzzlesPage() {
       }
       setGenerateSummary(
         `Generated ${generated.length} of ${gameOptions.length} puzzle${gameOptions.length === 1 ? "" : "s"}` +
-          (skipped.length > 0 ? ` — skipped ${skipped.join(", ")} (already exists or no generator)` : ""),
+          (skipped.length > 0
+            ? ` — skipped ${skipped.join(", ")} (already exists or no generator)`
+            : ""),
       );
       if (failed.length > 0) setGenerateError(`Failed to generate for: ${failed.join(", ")}`);
       return;
@@ -205,9 +207,9 @@ export function PuzzlesPage() {
         <Card intensity="subtle">
           <h2 className="mb-3 font-display text-lg font-bold text-white">Generate a puzzle</h2>
           <p className="mb-3 text-xs text-white/50">
-            Uses the game's real generator — only works for games with an engine module.
-            Choose "All games" to generate every game's puzzle for that date at once, skipping any
-            that already have one or don't have a generator.
+            Uses the game's real generator — only works for games with an engine module. Choose "All
+            games" to generate every game's puzzle for that date at once, skipping any that already
+            have one or don't have a generator.
           </p>
           <div className="flex flex-wrap items-end gap-2">
             <GameSelect
@@ -222,12 +224,19 @@ export function PuzzlesPage() {
               onChange={(e) => setGenerateForm((p) => ({ ...p, date: e.target.value }))}
               className={INPUT_CLASSES}
             />
-            <Button isLoading={generatingAll || generatePuzzle.isPending} onClick={() => void handleGenerate()}>
+            <Button
+              isLoading={generatingAll || generatePuzzle.isPending}
+              onClick={() => void handleGenerate()}
+            >
               <Icon name="auto_awesome" className="text-lg" /> Generate
             </Button>
           </div>
-          {generateError ? <p className="mt-2 text-xs font-medium text-rose-400">{generateError}</p> : null}
-          {generateSummary ? <p className="mt-2 text-xs font-medium text-emerald-400">{generateSummary}</p> : null}
+          {generateError ? (
+            <p className="mt-2 text-xs font-medium text-rose-400">{generateError}</p>
+          ) : null}
+          {generateSummary ? (
+            <p className="mt-2 text-xs font-medium text-emerald-400">{generateSummary}</p>
+          ) : null}
         </Card>
 
         <Card intensity="subtle">
@@ -262,8 +271,14 @@ export function PuzzlesPage() {
               placeholder="Puzzle content as JSON"
               className="w-full rounded-lg border border-white/[0.12] bg-white/[0.04] p-2 font-mono text-xs text-white/90 placeholder:text-white/30"
             />
-            {createError ? <p className="text-xs font-medium text-rose-400">{createError}</p> : null}
-            <Button isLoading={createPuzzle.isPending} onClick={() => void handleCreate()} className="self-start">
+            {createError ? (
+              <p className="text-xs font-medium text-rose-400">{createError}</p>
+            ) : null}
+            <Button
+              isLoading={createPuzzle.isPending}
+              onClick={() => void handleCreate()}
+              className="self-start"
+            >
               <Icon name="add" className="text-lg" /> Create Puzzle
             </Button>
           </div>
@@ -319,7 +334,9 @@ export function PuzzlesPage() {
                         className="!h-11 !w-11 !px-0"
                         aria-label="Publish"
                         title="Publish"
-                        onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "PUBLISHED" } })}
+                        onClick={() =>
+                          updatePuzzle.mutate({ id: puzzle.id, data: { status: "PUBLISHED" } })
+                        }
                       >
                         <Icon name="publish" className="text-base" />
                       </Button>
@@ -330,7 +347,9 @@ export function PuzzlesPage() {
                         className="!h-11 !w-11 !px-0"
                         aria-label="Unpublish"
                         title="Unpublish"
-                        onClick={() => updatePuzzle.mutate({ id: puzzle.id, data: { status: "ARCHIVED" } })}
+                        onClick={() =>
+                          updatePuzzle.mutate({ id: puzzle.id, data: { status: "ARCHIVED" } })
+                        }
                       >
                         <Icon name="unpublished" className="text-base" />
                       </Button>
@@ -343,7 +362,10 @@ export function PuzzlesPage() {
                       title={editingId === puzzle.id ? "Close editor" : "Edit"}
                       onClick={() => setEditingId(editingId === puzzle.id ? null : puzzle.id)}
                     >
-                      <Icon name={editingId === puzzle.id ? "close" : "edit"} className="text-base" />
+                      <Icon
+                        name={editingId === puzzle.id ? "close" : "edit"}
+                        className="text-base"
+                      />
                     </Button>
                     <Button
                       size="sm"

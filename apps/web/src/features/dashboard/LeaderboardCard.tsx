@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { useLeaderboard, useFriendsLeaderboard, useMyRank, type LeaderboardRange } from "../../lib/leaderboard-api";
+import {
+  useLeaderboard,
+  useFriendsLeaderboard,
+  useMyRank,
+  type LeaderboardRange,
+} from "../../lib/leaderboard-api";
 import { useAuth } from "../../lib/use-auth";
 import { Card } from "../../components/Card";
 import { Avatar } from "../../components/Avatar";
@@ -36,7 +41,9 @@ export function LeaderboardCard() {
       const mine = entries?.find((e) => isMe(e.username));
       return mine ? { rank: mine.rank, score: mine.score } : null;
     }
-    return myGlobalRank.data ? { rank: myGlobalRank.data.rank, score: myGlobalRank.data.score } : null;
+    return myGlobalRank.data
+      ? { rank: myGlobalRank.data.rank, score: myGlobalRank.data.score }
+      : null;
   })();
 
   return (
@@ -105,13 +112,19 @@ export function LeaderboardCard() {
             >
               <span className="flex w-6 shrink-0 items-center justify-center text-sm font-semibold text-white/50">
                 {entry.rank <= 3 ? (
-                  <Icon name="emoji_events" className={`text-lg ${RANK_COLORS[entry.rank - 1]}`} filled />
+                  <Icon
+                    name="emoji_events"
+                    className={`text-lg ${RANK_COLORS[entry.rank - 1]}`}
+                    filled
+                  />
                 ) : (
                   entry.rank
                 )}
               </span>
               <Avatar name={entry.displayName} size="sm" />
-              <span className="flex-1 truncate text-sm font-medium text-white/85">{entry.displayName}</span>
+              <span className="flex-1 truncate text-sm font-medium text-white/85">
+                {entry.displayName}
+              </span>
               <span className="text-sm font-bold text-brand-300">{entry.score}</span>
             </li>
           ))}
@@ -125,7 +138,9 @@ export function LeaderboardCard() {
                   {myRow.rank}
                 </span>
                 <Avatar name={user.displayName} size="sm" />
-                <span className="flex-1 truncate text-sm font-medium text-white/85">{user.displayName} (you)</span>
+                <span className="flex-1 truncate text-sm font-medium text-white/85">
+                  {user.displayName} (you)
+                </span>
                 <span className="text-sm font-bold text-brand-300">{myRow.score}</span>
               </li>
             </>

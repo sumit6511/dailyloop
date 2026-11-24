@@ -77,7 +77,9 @@ export function GuessItPage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
-        <p className="text-center text-white/50">No Guess It puzzle is available today. Check back soon!</p>
+        <p className="text-center text-white/50">
+          No Guess It puzzle is available today. Check back soon!
+        </p>
       </GameShell>
     );
   }
@@ -166,13 +168,20 @@ export function GuessItPage() {
               key={i}
               style={{ animationDelay: `${i * 80}ms` }}
               className={`animate-pop-in relative px-4 py-3 transition-colors ${
-                isCelebratingClue ? "border border-emerald-400/40 bg-emerald-500/15" : "glass-subtle"
+                isCelebratingClue
+                  ? "border border-emerald-400/40 bg-emerald-500/15"
+                  : "glass-subtle"
               }`}
             >
               {isCelebratingClue ? (
-                <div className="animate-glow-pulse absolute inset-0 -z-10 rounded-2xl bg-emerald-500/30 blur-lg" aria-hidden="true" />
+                <div
+                  className="animate-glow-pulse absolute inset-0 -z-10 rounded-2xl bg-emerald-500/30 blur-lg"
+                  aria-hidden="true"
+                />
               ) : null}
-              <div className="text-xs font-bold uppercase tracking-wide text-brand-300">Clue {i + 1}</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-brand-300">
+                Clue {i + 1}
+              </div>
               <p className="mt-1 text-sm text-white/80">{clue}</p>
             </div>
           );
@@ -197,7 +206,10 @@ export function GuessItPage() {
       ) : null}
 
       {error ? (
-        <p role="alert" className="animate-pop-in mt-3 text-center text-sm font-medium text-rose-400">
+        <p
+          role="alert"
+          className="animate-pop-in mt-3 text-center text-sm font-medium text-rose-400"
+        >
           {error}
         </p>
       ) : null}
@@ -219,7 +231,11 @@ export function GuessItPage() {
             disabled={shake || celebrating}
           />
         </div>
-        <Button type="submit" isLoading={submitMove.isPending} disabled={!guess.trim() || shake || celebrating}>
+        <Button
+          type="submit"
+          isLoading={submitMove.isPending}
+          disabled={!guess.trim() || shake || celebrating}
+        >
           <Icon name="send" className="text-lg" /> Guess
         </Button>
       </form>

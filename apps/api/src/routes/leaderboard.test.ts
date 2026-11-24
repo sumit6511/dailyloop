@@ -55,7 +55,11 @@ describe("leaderboard routes", () => {
       data: { userId: sumit.userId, date: today, totalScore: 150, gamesCompleted: 3 },
     });
 
-    const res = await app.inject({ method: "GET", url: "/api/leaderboard/daily", cookies: harry.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/leaderboard/daily",
+      cookies: harry.cookies,
+    });
     const entries = res.json().data;
     expect(entries.map((e: { username: string }) => e.username)).toEqual(["sumit", "harry"]);
     expect(entries[0].rank).toBe(1);
@@ -72,17 +76,36 @@ describe("leaderboard routes", () => {
     const otherDayKey = todayKey === weekStartKey ? addDaysToKey(weekStartKey, 1) : weekStartKey;
 
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: dateKeyToJSDate(todayKey), totalScore: 50, gamesCompleted: 1 },
+      data: {
+        userId: harry.userId,
+        date: dateKeyToJSDate(todayKey),
+        totalScore: 50,
+        gamesCompleted: 1,
+      },
     });
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: dateKeyToJSDate(otherDayKey), totalScore: 30, gamesCompleted: 1 },
+      data: {
+        userId: harry.userId,
+        date: dateKeyToJSDate(otherDayKey),
+        totalScore: 30,
+        gamesCompleted: 1,
+      },
     });
     // Outside this week (2 days before it starts) — should not count.
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: dateKeyToJSDate(addDaysToKey(weekStartKey, -2)), totalScore: 1000, gamesCompleted: 1 },
+      data: {
+        userId: harry.userId,
+        date: dateKeyToJSDate(addDaysToKey(weekStartKey, -2)),
+        totalScore: 1000,
+        gamesCompleted: 1,
+      },
     });
 
-    const res = await app.inject({ method: "GET", url: "/api/leaderboard/weekly", cookies: harry.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/leaderboard/weekly",
+      cookies: harry.cookies,
+    });
     const entry = res.json().data.find((e: { username: string }) => e.username === "harry");
     expect(entry.score).toBe(80);
   });
@@ -92,32 +115,61 @@ describe("leaderboard routes", () => {
     const todayKey = getTodayKey("Asia/Kathmandu");
 
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: dateKeyToJSDate(todayKey), totalScore: 50, gamesCompleted: 1 },
+      data: {
+        userId: harry.userId,
+        date: dateKeyToJSDate(todayKey),
+        totalScore: 50,
+        gamesCompleted: 1,
+      },
     });
     await prisma.dailyScore.create({
-      data: { userId: harry.userId, date: dateKeyToJSDate(addDaysToKey(todayKey, -60)), totalScore: 200, gamesCompleted: 1 },
+      data: {
+        userId: harry.userId,
+        date: dateKeyToJSDate(addDaysToKey(todayKey, -60)),
+        totalScore: 200,
+        gamesCompleted: 1,
+      },
     });
 
-    const res = await app.inject({ method: "GET", url: "/api/leaderboard/all-time", cookies: harry.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/leaderboard/all-time",
+      cookies: harry.cookies,
+    });
     const entry = res.json().data.find((e: { username: string }) => e.username === "harry");
     expect(entry.score).toBe(250);
   });
 
   it("gives tied scores the same rank and skips the next one (1, 2, 2, 4)", async () => {
     const today = dateKeyToJSDate(getTodayKey("Asia/Kathmandu"));
-    const players = await Promise.all(["ann", "ben", "cat", "dan"].map((name) => registerUser(name)));
+    const players = await Promise.all(
+      ["ann", "ben", "cat", "dan"].map((name) => registerUser(name)),
+    );
     const scores = [150, 90, 90, 40];
     await prisma.dailyScore.createMany({
-      data: players.map((p, i) => ({ userId: p.userId, date: today, totalScore: scores[i]!, gamesCompleted: 1 })),
+      data: players.map((p, i) => ({
+        userId: p.userId,
+        date: today,
+        totalScore: scores[i]!,
+        gamesCompleted: 1,
+      })),
     });
-    const res = await app.inject({ method: "GET", url: "/api/leaderboard/daily", cookies: players[0]!.cookies });
+    const res = await app.inject({
+      method: "GET",
+      url: "/api/leaderboard/daily",
+      cookies: players[0]!.cookies,
+    });
     expect(res.json().data.map((e: { rank: number }) => e.rank)).toEqual([1, 2, 2, 4]);
   });
 
   it("reports your own rank for each range, sharing ties, or null with no score", async () => {
     const todayKey = getTodayKey("Asia/Kathmandu");
     const today = dateKeyToJSDate(todayKey);
-    const [me, rival, tied] = await Promise.all([registerUser("myself"), registerUser("rival"), registerUser("tied")]);
+    const [me, rival, tied] = await Promise.all([
+      registerUser("myself"),
+      registerUser("rival"),
+      registerUser("tied"),
+    ]);
     const outsideWeek = dateKeyToJSDate(addDaysToKey(getWeekRangeKeys(todayKey).start, -1));
     await prisma.dailyScore.createMany({
       data: [
@@ -129,7 +181,9 @@ describe("leaderboard routes", () => {
       ],
     });
     const mine = async (range: string, cookies = me.cookies) =>
-      (await app.inject({ method: "GET", url: `/api/leaderboard/me?range=${range}`, cookies })).json().data;
+      (
+        await app.inject({ method: "GET", url: `/api/leaderboard/me?range=${range}`, cookies })
+      ).json().data;
 
     expect(await mine("daily")).toEqual({ rank: 2, score: 50, players: 3 });
     expect(await mine("daily", tied.cookies)).toEqual({ rank: 2, score: 50, players: 3 });

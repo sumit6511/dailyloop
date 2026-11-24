@@ -24,7 +24,10 @@ interface GameIconProps {
 }
 
 export function GameIcon({ slug, size = "md", className = "" }: GameIconProps) {
-  const entry = GAME_ICONS[slug] ?? { icon: "extension", className: "bg-white/[0.08] text-white/70" };
+  const entry = GAME_ICONS[slug] ?? {
+    icon: "extension",
+    className: "bg-white/[0.08] text-white/70",
+  };
   return (
     <span
       className={`flex shrink-0 items-center justify-center ${SIZE_CLASSES[size]} ${entry.className} ${className}`}

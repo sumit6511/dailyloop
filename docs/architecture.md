@@ -136,7 +136,7 @@ client only ever sends its raw moves.
 - **Difficulty curve.** `tierForDate(dateKey)` (game-engine) maps the weekday to easy / medium /
   hard; procedural generators scale with it and store it in `content.difficulty`.
 - **Hints are charged.** `POST /games/:slug/attempts/hint` asks the module's `hint()` and records
-  the charge on the attempt (`GameAttempt.hintsUsed`, once per *distinct* hint). The count reaches
+  the charge on the attempt (`GameAttempt.hintsUsed`, once per _distinct_ hint). The count reaches
   `calculateScore` via `ScoreMeta.hintsUsed`; Logic Puzzle and Pathway deduct
   `SCORE.HINT_PENALTY` per hint.
 - **Active time.** Modules with `timing: "active"` (Logic Puzzle) are scored on time actually
@@ -160,7 +160,7 @@ it naturally produces bigger numbers.
 Finishing an attempt runs one Prisma transaction that: rejects a re-submit of an already-completed
 attempt (backed by a `@@unique([userId, dailyPuzzleId])` constraint as a hard stop against
 race conditions), records the server-computed score, upserts that day's `DailyScore`
-(Perfect Day requires every SCHEDULED/PUBLISHED puzzle of an *enabled* game that day — see
+(Perfect Day requires every SCHEDULED/PUBLISHED puzzle of an _enabled_ game that day — see
 `services/daily-score.ts`, which also recomputes a day's scores when an admin deletes, archives
 or moves a puzzle or toggles a game), and updates the `Streak` row
 (consecutive day → +1, same day again → no-op, any gap → reset to 1).

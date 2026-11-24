@@ -99,7 +99,10 @@ export function WordGuessPage() {
     setAnimatingRow(newRowIndex);
     setRevealedCols(0);
     const timers = Array.from({ length: WORD_LENGTH }, (_, col) =>
-      setTimeout(() => setRevealedCols((c) => Math.max(c, col + 1)), col * STAGGER_MS + FLIP_MS / 2),
+      setTimeout(
+        () => setRevealedCols((c) => Math.max(c, col + 1)),
+        col * STAGGER_MS + FLIP_MS / 2,
+      ),
     );
     const finishTimer = setTimeout(
       () => {
@@ -163,7 +166,9 @@ export function WordGuessPage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
-        <p className="text-center text-white/50">No Word Guess puzzle is available today. Check back soon!</p>
+        <p className="text-center text-white/50">
+          No Word Guess puzzle is available today. Check back soon!
+        </p>
       </GameShell>
     );
   }
@@ -182,7 +187,8 @@ export function WordGuessPage() {
   for (const guess of view.guesses.slice(0, settledCount)) {
     for (const fb of guess.feedback) {
       const existing = letterStatus.get(fb.letter);
-      if (!existing || STATUS_RANK[fb.status] > STATUS_RANK[existing]) letterStatus.set(fb.letter, fb.status);
+      if (!existing || STATUS_RANK[fb.status] > STATUS_RANK[existing])
+        letterStatus.set(fb.letter, fb.status);
     }
   }
 
@@ -216,7 +222,11 @@ export function WordGuessPage() {
   }
 
   return (
-    <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess" subtitle={`Guess the word in ${MAX_GUESSES} tries.`}>
+    <GameShell
+      icon={<GameIcon slug="word-guess" size="lg" />}
+      title="Word Guess"
+      subtitle={`Guess the word in ${MAX_GUESSES} tries.`}
+    >
       <div className="mx-auto flex flex-col gap-1.5">
         {rows.map((row, rowIndex) => {
           const isCurrentRow = rowIndex === view.guesses.length && !complete;
@@ -226,43 +236,43 @@ export function WordGuessPage() {
               ? `Current guess: ${current || "empty"}`
               : `Row ${rowIndex + 1}: empty`;
           return (
-          <div
-            key={rowIndex}
-            role="group"
-            aria-label={rowLabel}
-            className={`flex justify-center gap-1.5 ${shakeRow && rowIndex === view.guesses.length ? "animate-shake" : ""}`}
-          >
-            {Array.from({ length: WORD_LENGTH }, (_, colIndex) => {
-              const letter = row?.word[colIndex] ?? "";
-              const feedback = row?.feedback?.[colIndex];
-              const isAnimating = rowIndex === animatingRow;
-              const isRevealed = !isAnimating || colIndex < revealedCols;
-              const isCelebrating = rowIndex === celebrateRow;
-              return (
-                <div
-                  key={colIndex}
-                  style={
-                    isAnimating
-                      ? { animationDelay: `${colIndex * STAGGER_MS}ms` }
-                      : isCelebrating
-                        ? { animationDelay: `${colIndex * 70}ms` }
-                        : undefined
-                  }
-                  className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 text-xl font-bold uppercase sm:h-14 sm:w-14 ${
-                    isAnimating ? "animate-flip" : isCelebrating ? "animate-tile-bounce" : ""
-                  } ${
-                    feedback && isRevealed
-                      ? GRID_FEEDBACK_CLASSES[feedback.status]
-                      : letter
-                        ? "border-white/40 text-white"
-                        : "border-white/[0.14]"
-                  }`}
-                >
-                  {letter}
-                </div>
-              );
-            })}
-          </div>
+            <div
+              key={rowIndex}
+              role="group"
+              aria-label={rowLabel}
+              className={`flex justify-center gap-1.5 ${shakeRow && rowIndex === view.guesses.length ? "animate-shake" : ""}`}
+            >
+              {Array.from({ length: WORD_LENGTH }, (_, colIndex) => {
+                const letter = row?.word[colIndex] ?? "";
+                const feedback = row?.feedback?.[colIndex];
+                const isAnimating = rowIndex === animatingRow;
+                const isRevealed = !isAnimating || colIndex < revealedCols;
+                const isCelebrating = rowIndex === celebrateRow;
+                return (
+                  <div
+                    key={colIndex}
+                    style={
+                      isAnimating
+                        ? { animationDelay: `${colIndex * STAGGER_MS}ms` }
+                        : isCelebrating
+                          ? { animationDelay: `${colIndex * 70}ms` }
+                          : undefined
+                    }
+                    className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 text-xl font-bold uppercase sm:h-14 sm:w-14 ${
+                      isAnimating ? "animate-flip" : isCelebrating ? "animate-tile-bounce" : ""
+                    } ${
+                      feedback && isRevealed
+                        ? GRID_FEEDBACK_CLASSES[feedback.status]
+                        : letter
+                          ? "border-white/40 text-white"
+                          : "border-white/[0.14]"
+                    }`}
+                  >
+                    {letter}
+                  </div>
+                );
+              })}
+            </div>
           );
         })}
       </div>
@@ -289,8 +299,14 @@ export function WordGuessPage() {
             {row.split("").map((letter) => (
               <GameTile
                 key={letter}
-                state={letterStatus.has(letter) ? STATUS_TO_TILE_STATE[letterStatus.get(letter)!] : "default"}
-                onClick={() => setCurrent((prev) => (prev.length < WORD_LENGTH ? prev + letter : prev))}
+                state={
+                  letterStatus.has(letter)
+                    ? STATUS_TO_TILE_STATE[letterStatus.get(letter)!]
+                    : "default"
+                }
+                onClick={() =>
+                  setCurrent((prev) => (prev.length < WORD_LENGTH ? prev + letter : prev))
+                }
                 className="!h-11 !w-6 rounded-lg border-0 px-0 text-sm normal-case sm:!w-9"
               >
                 {letter}

@@ -20,7 +20,12 @@ interface RelationshipButtonProps {
   displayName?: string;
 }
 
-export function RelationshipButton({ username, userId, relationship, displayName }: RelationshipButtonProps) {
+export function RelationshipButton({
+  username,
+  userId,
+  relationship,
+  displayName,
+}: RelationshipButtonProps) {
   const sendRequest = useSendFriendRequest();
   const cancelRequest = useCancelFriendRequest();
   const removeFriend = useRemoveFriend();
@@ -29,7 +34,8 @@ export function RelationshipButton({ username, userId, relationship, displayName
   const { showToast } = useToast();
   const [confirmingRemove, setConfirmingRemove] = useState(false);
 
-  const onError = (err: unknown) => showToast(err instanceof ApiClientError ? err.message : "Something went wrong", "error");
+  const onError = (err: unknown) =>
+    showToast(err instanceof ApiClientError ? err.message : "Something went wrong", "error");
 
   if (relationship === "self") return null;
 
@@ -86,7 +92,8 @@ export function RelationshipButton({ username, userId, relationship, displayName
         onClick={() =>
           incomingRequest &&
           acceptRequest.mutate(incomingRequest.id, {
-            onSuccess: () => showToast(`You're now friends with ${displayName ?? username}`, "success"),
+            onSuccess: () =>
+              showToast(`You're now friends with ${displayName ?? username}`, "success"),
             onError,
           })
         }

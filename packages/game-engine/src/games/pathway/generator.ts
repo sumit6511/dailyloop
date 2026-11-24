@@ -136,7 +136,11 @@ export interface SolveOptions {
   maxSteps?: number;
 }
 
-export function solvePathway(constraints: PathwayConstraints, limit = 2, options: SolveOptions = {}): Cell[][] {
+export function solvePathway(
+  constraints: PathwayConstraints,
+  limit = 2,
+  options: SolveOptions = {},
+): Cell[][] {
   const { size, checkpoints, walls } = constraints;
   const { prefix = [], maxSteps = Infinity } = options;
   let steps = 0;
@@ -203,7 +207,11 @@ export function solvePathway(constraints: PathwayConstraints, limit = 2, options
       if (cp === last && path.length + 1 !== total) continue;
       visited[n] = 1;
       path.push(n);
-      if ((path.length === total || viable(n)) && walk(n, cp !== 0 ? nextCheckpoint + 1 : nextCheckpoint)) return true;
+      if (
+        (path.length === total || viable(n)) &&
+        walk(n, cp !== 0 ? nextCheckpoint + 1 : nextCheckpoint)
+      )
+        return true;
       path.pop();
       visited[n] = 0;
     }
@@ -255,11 +263,17 @@ function candidateWallEdges(size: number, solutionEdges: Set<string>): Wall[] {
  * least one edge the intended path doesn't (a Hamiltonian path with a fixed start is determined
  * by its edges), so walling one of those off always rules that alternative out — this loop
  * always terminates with a unique puzzle. */
-function addWallsUntilUnique(rng: () => number, constraints: PathwayConstraints, solutionEdges: Set<string>): Wall[] {
+function addWallsUntilUnique(
+  rng: () => number,
+  constraints: PathwayConstraints,
+  solutionEdges: Set<string>,
+): Wall[] {
   const walls = [...constraints.walls];
   const wallKeys = new Set(walls.map((w) => edgeKey(w.a, w.b)));
   for (;;) {
-    const alternative = solvePathway({ ...constraints, walls }, 2).find((path) => edgeKeyList(path).some((k) => !solutionEdges.has(k)));
+    const alternative = solvePathway({ ...constraints, walls }, 2).find((path) =>
+      edgeKeyList(path).some((k) => !solutionEdges.has(k)),
+    );
     if (!alternative) return walls;
     const divergent: Wall[] = [];
     for (let i = 0; i < alternative.length - 1; i++) {
@@ -295,7 +309,9 @@ function pruneRedundantWalls(rng: () => number, constraints: PathwayConstraints)
 export function generatePathwayPuzzle(rng: () => number, options: PathwayOptions): PathwayPuzzle {
   const { size, checkpointCount, unique = true, wallCount = 0 } = options;
   const solution = buildHamiltonianPath(rng, size);
-  const checkpoints = pickCheckpointIndices(rng, solution.length, Math.max(2, checkpointCount)).map((i) => solution[i]!);
+  const checkpoints = pickCheckpointIndices(rng, solution.length, Math.max(2, checkpointCount)).map(
+    (i) => solution[i]!,
+  );
   const solutionEdges = solutionEdgeSet(solution);
 
   if (!unique) {
@@ -304,7 +320,10 @@ export function generatePathwayPuzzle(rng: () => number, options: PathwayOptions
   }
 
   const base = { size, checkpoints, walls: [] as Wall[] };
-  const walls = pruneRedundantWalls(rng, { ...base, walls: addWallsUntilUnique(rng, base, solutionEdges) });
+  const walls = pruneRedundantWalls(rng, {
+    ...base,
+    walls: addWallsUntilUnique(rng, base, solutionEdges),
+  });
   // Keep walls in a stable reading order so equal puzzles serialise identically.
   walls.sort((x, y) => edgeKey(x.a, x.b).localeCompare(edgeKey(y.a, y.b)));
   return { size, checkpoints, walls, solution };

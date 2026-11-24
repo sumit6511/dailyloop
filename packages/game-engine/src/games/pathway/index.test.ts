@@ -180,7 +180,11 @@ describe("validateAttempt", () => {
 
 describe("calculateScore", () => {
   it("scores 0 for an unfinished attempt", () => {
-    const score = pathwayGame.calculateScore(FIXTURE, { path: [], mistakes: 0, won: false }, { durationMs: 10_000 });
+    const score = pathwayGame.calculateScore(
+      FIXTURE,
+      { path: [], mistakes: 0, won: false },
+      { durationMs: 10_000 },
+    );
     expect(score.total).toBe(0);
   });
 
@@ -195,8 +199,16 @@ describe("calculateScore", () => {
 
   it("penalizes mistakes and slower completion below a flawless solve", () => {
     const durationMs = 200_000;
-    const perfect = pathwayGame.calculateScore(FIXTURE, { path: FIXTURE.solution, mistakes: 0, won: true }, { durationMs: 10_000 });
-    const flawed = pathwayGame.calculateScore(FIXTURE, { path: FIXTURE.solution, mistakes: 3, won: true }, { durationMs });
+    const perfect = pathwayGame.calculateScore(
+      FIXTURE,
+      { path: FIXTURE.solution, mistakes: 0, won: true },
+      { durationMs: 10_000 },
+    );
+    const flawed = pathwayGame.calculateScore(
+      FIXTURE,
+      { path: FIXTURE.solution, mistakes: 3, won: true },
+      { durationMs },
+    );
     expect(flawed.total).toBeLessThan(perfect.total);
     expect(flawed.mistakePenalty).toBe(24);
     expect(flawed.accuracyBonus).toBe(0);
@@ -239,7 +251,8 @@ describe("sanitizeForClient", () => {
 
 describe("hint", () => {
   type Hint = { kind: "extend" | "retreat"; cell: { row: number; col: number } } | null;
-  const hintFor = (content: PathwayContent, moves: { row: number; col: number }[]) => pathwayGame.hint!(content, moves) as Hint;
+  const hintFor = (content: PathwayContent, moves: { row: number; col: number }[]) =>
+    pathwayGame.hint!(content, moves) as Hint;
 
   it("leads from an empty board all the way to a solved puzzle without ever backtracking", () => {
     const content = pathwayGame.generatePuzzle("ignored", "2026-08-30"); // a Sunday: 7x7
@@ -288,7 +301,11 @@ describe("hint", () => {
         { row: 2, col: 2 },
       ],
       walls: [],
-      solution: FIXTURE.solution.slice(0, 6).concat([{ row: 2, col: 0 }, { row: 2, col: 1 }, { row: 2, col: 2 }]),
+      solution: FIXTURE.solution.slice(0, 6).concat([
+        { row: 2, col: 0 },
+        { row: 2, col: 1 },
+        { row: 2, col: 2 },
+      ]),
     };
     const columnSnakeStart = [
       { row: 0, col: 0 },
@@ -296,7 +313,10 @@ describe("hint", () => {
     ];
     expect(hintFor(legacy, columnSnakeStart)).toEqual({ kind: "extend", cell: { row: 2, col: 0 } });
     // The same position on a tiered (unique-by-construction) puzzle trusts the stored solution.
-    expect(hintFor({ ...legacy, difficulty: "easy" }, columnSnakeStart)).toEqual({ kind: "retreat", cell: { row: 0, col: 0 } });
+    expect(hintFor({ ...legacy, difficulty: "easy" }, columnSnakeStart)).toEqual({
+      kind: "retreat",
+      cell: { row: 0, col: 0 },
+    });
   });
 
   it("deducts for hints and withholds the flawless bonus", () => {

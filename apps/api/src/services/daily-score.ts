@@ -29,7 +29,8 @@ export async function recomputeDailyScore(tx: Tx, userId: string, date: Date) {
   });
   const completedPuzzleIds = new Set(completed.map((a) => a.dailyPuzzleId));
   const gamesCompleted = completed.length;
-  const isPerfectDay = requiredPuzzles.length > 0 && requiredPuzzles.every((p) => completedPuzzleIds.has(p.id));
+  const isPerfectDay =
+    requiredPuzzles.length > 0 && requiredPuzzles.every((p) => completedPuzzleIds.has(p.id));
   const rawTotal = completed.reduce((sum, a) => sum + a.score, 0);
   const totalScore = rawTotal + (isPerfectDay ? SCORE.PERFECT_DAY_BONUS : 0);
 

@@ -52,7 +52,11 @@ export const leaderboardRoutes: FastifyPluginAsync = async (app) => {
   app.get("/friends", async (request, reply) => {
     const query = friendsQuerySchema.parse(request.query);
     const dateKey = query.date ?? getTodayKey(env.DEFAULT_TIMEZONE);
-    const data = await getFriendsLeaderboard(request.currentUser!.id, query.range as LeaderboardRange, dateKey);
+    const data = await getFriendsLeaderboard(
+      request.currentUser!.id,
+      query.range as LeaderboardRange,
+      dateKey,
+    );
     return reply.send({ data });
   });
 };

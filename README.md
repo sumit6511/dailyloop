@@ -13,14 +13,14 @@ scheduler without touching core code.
 
 ## Games
 
-| Game          | What you do                                                                   | Difficulty              |
-| ------------- | ----------------------------------------------------------------------------- | ----------------------- |
-| Connections   | Sort 16 words into four hidden groups (one per colour, yellow → purple)       | Fixed bank, 115 groups  |
-| Word Guess    | Guess the five-letter word in six tries                                       | Curated answers         |
-| Number Puzzle | Combine four numbers with + − × ÷ to hit the target                           | Ramps through the week  |
-| Logic Puzzle  | A 6×6 Sudoku — always uniquely solvable without guessing                      | Ramps through the week  |
-| Guess It      | Name the mystery answer from up to four clues                                 | Fixed bank, 94 entries  |
-| Pathway       | Draw one line through every cell, in number order — always one solution       | 5×5 → 7×7 through week  |
+| Game          | What you do                                                             | Difficulty             |
+| ------------- | ----------------------------------------------------------------------- | ---------------------- |
+| Connections   | Sort 16 words into four hidden groups (one per colour, yellow → purple) | Fixed bank, 115 groups |
+| Word Guess    | Guess the five-letter word in six tries                                 | Curated answers        |
+| Number Puzzle | Combine four numbers with + − × ÷ to hit the target                     | Ramps through the week |
+| Logic Puzzle  | A 6×6 Sudoku — always uniquely solvable without guessing                | Ramps through the week |
+| Guess It      | Name the mystery answer from up to four clues                           | Fixed bank, 94 entries |
+| Pathway       | Draw one line through every cell, in number order — always one solution | 5×5 → 7×7 through week |
 
 Procedural games follow a weekly curve: Monday/Tuesday easy, Wednesday/Thursday medium,
 Friday–Sunday hard. Logic Puzzle and Pathway offer hints, which cost points.
@@ -76,12 +76,12 @@ Then open http://localhost:5173.
 Created by `npm run db:seed`. **Fake, local-only credentials — never reuse these anywhere real.**
 
 | Role  | Username | Email                  | Password       |
-| ----- | -------- | ----------------------- | -------------- |
-| Admin | `admin`  | `admin@dailyloop.dev`   | `DevAdmin123!` |
-| Demo  | `harry`  | `harry@dailyloop.dev`   | `DemoPass123!` |
-| Demo  | `sumit`  | `sumit@dailyloop.dev`   | `DemoPass123!` |
-| Demo  | `aayush` | `aayush@dailyloop.dev`  | `DemoPass123!` |
-| Demo  | `sagar`  | `sagar@dailyloop.dev`   | `DemoPass123!` |
+| ----- | -------- | ---------------------- | -------------- |
+| Admin | `admin`  | `admin@dailyloop.dev`  | `DevAdmin123!` |
+| Demo  | `harry`  | `harry@dailyloop.dev`  | `DemoPass123!` |
+| Demo  | `sumit`  | `sumit@dailyloop.dev`  | `DemoPass123!` |
+| Demo  | `aayush` | `aayush@dailyloop.dev` | `DemoPass123!` |
+| Demo  | `sagar`  | `sagar@dailyloop.dev`  | `DemoPass123!` |
 
 The four demo users are already friends with each other so the friends leaderboard isn't empty
 on first login. Before deploying anywhere real, change or remove the admin account.
@@ -96,17 +96,17 @@ repo root instead of `apps/web/`).
 
 Run from the repo root:
 
-| Command                 | What it does                                              |
-| ------------------------ | ---------------------------------------------------------- |
-| `npm run dev`              | Runs the API and web app together                          |
-| `npm run build`             | Builds the web app for production                          |
-| `npm run typecheck`          | Type-checks every package                                   |
-| `npm run lint` / `format`     | ESLint / Prettier across the repo                           |
-| `npm test`                     | Runs all test suites (needs the DB containers up + migrated) |
-| `npm run db:up` / `db:down`      | Start/stop local Postgres (dev + test)                     |
-| `npm run db:migrate`              | Create & apply a dev migration                              |
-| `npm run db:studio`                | Open Prisma Studio                                          |
-| `npm run db:seed`                   | (Re-)seed dev data                                          |
+| Command                     | What it does                                                 |
+| --------------------------- | ------------------------------------------------------------ |
+| `npm run dev`               | Runs the API and web app together                            |
+| `npm run build`             | Builds the web app for production                            |
+| `npm run typecheck`         | Type-checks every package                                    |
+| `npm run lint` / `format`   | ESLint / Prettier across the repo                            |
+| `npm test`                  | Runs all test suites (needs the DB containers up + migrated) |
+| `npm run db:up` / `db:down` | Start/stop local Postgres (dev + test)                       |
+| `npm run db:migrate`        | Create & apply a dev migration                               |
+| `npm run db:studio`         | Open Prisma Studio                                           |
+| `npm run db:seed`           | (Re-)seed dev data                                           |
 
 ## Testing
 
