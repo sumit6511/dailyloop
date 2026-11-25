@@ -17,6 +17,7 @@ export const baseConfig = tseslint.config(js.configs.recommended, ...tseslint.co
 export const ignores = {
   ignores: [
     "**/dist/**",
+    "**/dist-e2e/**",
     "**/build/**",
     "**/node_modules/**",
     "**/.vite/**",

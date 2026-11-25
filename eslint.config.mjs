@@ -23,6 +23,8 @@ export default [
     // Playwright tests and scripts: Node, with page.evaluate callbacks running in the browser.
     files: [
       "apps/web/visual/**/*.{ts,mjs}",
+      "apps/web/e2e/**/*.ts",
+      "apps/web/playwright.e2e.config.ts",
       "apps/web/scripts/**/*.mjs",
       "apps/web/playwright.config.ts",
     ],

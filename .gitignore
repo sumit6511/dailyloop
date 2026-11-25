@@ -18,3 +18,4 @@ prisma/generated/
 # Playwright visual-test output
 apps/web/test-results/
 apps/web/playwright-report/
+apps/web/dist-e2e/

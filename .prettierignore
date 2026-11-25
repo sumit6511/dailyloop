@@ -10,3 +10,4 @@ packages/game-engine/src/games/word-guess/words.ts
 packages/game-engine/src/games/word-guess/valid-guesses.ts
 packages/game-engine/src/games/connections/categories.ts
 packages/game-engine/src/games/guess-it/entries.ts
+**/dist-e2e

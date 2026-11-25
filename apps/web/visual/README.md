@@ -17,7 +17,7 @@ contrast in both themes.
 
 The first command builds the app and serves it with `vite preview` (production build, production
 security headers). On a failure, `apps/web/test-results/` holds the expected, actual and diff
-image for each screen; in CI they're uploaded as the `visual-diffs` artifact.
+image for each screen; in CI they’re uploaded as the `playwright-results` artifact.
 
 ## What makes it deterministic
 

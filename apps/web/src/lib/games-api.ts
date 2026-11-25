@@ -81,12 +81,26 @@ export interface SubmitMoveResponse {
   newlyUnlockedAchievements?: string[];
 }
 
+/**
+ * What a finished game changes besides the game itself: the leaderboards, your streak, stats and
+ * achievements (["me", …]), profiles and their activity (["users", …]), and the share text and
+ * the rest of today's lineup (["games", …]). Without this they'd stay stale until they expire —
+ * right when the player goes to look at them.
+ */
+const AFFECTED_BY_A_FINISHED_GAME = [["games"], ["leaderboard"], ["me"], ["users"]] as const;
+
 export function useSubmitMove(slug: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (move: unknown) =>
       api.post<SubmitMoveResponse>(`/games/${slug}/attempts/submit`, { move }),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      if (response.complete) {
+        for (const queryKey of AFFECTED_BY_A_FINISHED_GAME) {
+          void queryClient.invalidateQueries({ queryKey });
+        }
+        return;
+      }
       void queryClient.invalidateQueries({ queryKey: ["games", "today"] });
       void queryClient.invalidateQueries({ queryKey: ["games", slug, "today"] });
     },
