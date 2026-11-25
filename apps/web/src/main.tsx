@@ -1,4 +1,9 @@
 import { StrictMode } from "react";
+// Self-hosted variable fonts (only the unicode subsets a page uses are downloaded); bundled with
+// a content hash, so they cache forever and no visitor data goes to a font CDN.
+import "@fontsource-variable/inter/wght.css";
+import "@fontsource-variable/space-grotesk/wght.css";
+import "@fontsource-variable/jetbrains-mono/wght.css";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";

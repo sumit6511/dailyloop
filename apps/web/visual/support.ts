@@ -71,8 +71,15 @@ export const SCREENS: { name: string; path: string; fixture: string }[] = [
 
 /** Opens a screen with its recorded API and the frozen clock, ready to inspect. */
 export async function openScreen(page: Page, screen: { path: string; fixture: string }) {
+  // The build runs under the production Content-Security-Policy; anything it blocks (an inlined
+  // font, a stray inline style) fails the screen rather than silently not loading.
+  const blocked: string[] = [];
+  page.on("console", (message) => {
+    if (/Content Security Policy|Refused to/i.test(message.text())) blocked.push(message.text());
+  });
   await page.clock.setFixedTime(NOW);
   await replayApi(page, loadFixture(screen.fixture));
   await page.goto(screen.path);
   await settle(page);
+  expect(blocked, "blocked by the Content-Security-Policy").toEqual([]);
 }

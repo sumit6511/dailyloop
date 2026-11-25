@@ -69,8 +69,32 @@ function materialSymbolsSubset(): Plugin {
   };
 }
 
+/**
+ * Libraries that change far less often than the app: each gets its own content-hashed chunk, so a
+ * deploy that only touches app code leaves them cached in returning visitors' browsers.
+ */
+const VENDOR_CHUNKS: Record<string, RegExp> = {
+  react: /[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom)[\\/]/,
+  data: /[\\/]node_modules[\\/](@tanstack|zod|react-hook-form|@hookform)[\\/]/,
+};
+
 const config = {
   plugins: [react(), tailwindcss(), materialSymbolsSubset()],
+  build: {
+    // Never inline font files as data: URIs (Vite does for anything under 4 kB): the CSP's
+    // font-src allows the app's own origin, not data:.
+    assetsInlineLimit: (filePath: string) => (/\.woff2?$/.test(filePath) ? false : undefined),
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          for (const [name, pattern] of Object.entries(VENDOR_CHUNKS)) {
+            if (pattern.test(id)) return `vendor-${name}`;
+          }
+          return undefined;
+        },
+      },
+    },
+  },
   preview: {
     port: 5173,
     strictPort: true,

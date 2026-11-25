@@ -24,9 +24,20 @@ describe("web security headers (render.yaml vs apps/web/security-headers.json)",
     expect(csp).not.toContain("unsafe-eval");
     expect(csp).toContain("frame-ancestors 'none'");
   });
+
+  it("pin the site to HTTPS and isolate it from cross-origin windows", () => {
+    expect(headers["Strict-Transport-Security"]).toMatch(/max-age=\d{8,}/);
+    expect(headers["Cross-Origin-Opener-Policy"]).toBe("same-origin");
+  });
 });
 
 describe("render.yaml", () => {
+  it("caches the content-hashed build assets immutably", () => {
+    expect(renderYaml).toContain(
+      'path: /assets/*\n        name: Cache-Control\n        value: "public, max-age=31536000, immutable"',
+    );
+  });
+
   it("health-checks the API on the database-aware endpoint", () => {
     expect(renderYaml).toContain("healthCheckPath: /api/health");
   });
