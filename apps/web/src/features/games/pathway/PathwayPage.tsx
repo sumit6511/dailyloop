@@ -277,7 +277,7 @@ export function PathwayPage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
+      <GameShell slug="pathway" icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -287,7 +287,7 @@ export function PathwayPage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
+      <GameShell slug="pathway" icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
         <p className="text-center text-fg-subtle">
           No Pathway puzzle is available today. Check back soon!
         </p>
@@ -297,7 +297,7 @@ export function PathwayPage() {
 
   if (!view) {
     return (
-      <GameShell icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
+      <GameShell slug="pathway" icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -307,7 +307,7 @@ export function PathwayPage() {
 
   if (view.complete) {
     return (
-      <GameShell icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
+      <GameShell slug="pathway" icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
         <ResultScreen
           gameName="Pathway"
           won={!!view.won}
@@ -331,6 +331,8 @@ export function PathwayPage() {
 
   return (
     <GameShell
+      slug="pathway"
+      showRulesOnFirstVisit
       icon={<GameIcon slug="pathway" size="lg" />}
       title="Pathway"
       subtitle="Draw one line through every cell, in number order."

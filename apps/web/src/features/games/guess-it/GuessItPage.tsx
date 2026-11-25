@@ -67,7 +67,7 @@ export function GuessItPage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
+      <GameShell slug="guess-it" icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -77,7 +77,7 @@ export function GuessItPage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
+      <GameShell slug="guess-it" icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <p className="text-center text-fg-subtle">
           No Guess It puzzle is available today. Check back soon!
         </p>
@@ -88,7 +88,7 @@ export function GuessItPage() {
   const view = entry.content as GuessItView | null;
   if (!view) {
     return (
-      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
+      <GameShell slug="guess-it" icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -126,7 +126,7 @@ export function GuessItPage() {
 
   if (showResult) {
     return (
-      <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
+      <GameShell slug="guess-it" icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
         <ResultScreen
           gameName="Guess It"
           won={!!view.won}
@@ -146,6 +146,8 @@ export function GuessItPage() {
 
   return (
     <GameShell
+      slug="guess-it"
+      showRulesOnFirstVisit
       icon={<GameIcon slug="guess-it" size="lg" />}
       title="Guess It"
       subtitle={view.category}

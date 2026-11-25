@@ -76,7 +76,11 @@ export function NumberPuzzlePage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
+      <GameShell
+        slug="number-puzzle"
+        icon={<GameIcon slug="number-puzzle" size="lg" />}
+        title="Number Puzzle"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -86,7 +90,11 @@ export function NumberPuzzlePage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
+      <GameShell
+        slug="number-puzzle"
+        icon={<GameIcon slug="number-puzzle" size="lg" />}
+        title="Number Puzzle"
+      >
         <p className="text-center text-fg-subtle">
           No Number Puzzle is available today. Check back soon!
         </p>
@@ -97,7 +105,11 @@ export function NumberPuzzlePage() {
   const view = entry.content as NumberPuzzleView | null;
   if (!view) {
     return (
-      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
+      <GameShell
+        slug="number-puzzle"
+        icon={<GameIcon slug="number-puzzle" size="lg" />}
+        title="Number Puzzle"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -206,7 +218,11 @@ export function NumberPuzzlePage() {
 
   if (showResult) {
     return (
-      <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
+      <GameShell
+        slug="number-puzzle"
+        icon={<GameIcon slug="number-puzzle" size="lg" />}
+        title="Number Puzzle"
+      >
         <ResultScreen
           gameName="Number Puzzle"
           won={!!view.won}
@@ -235,6 +251,8 @@ export function NumberPuzzlePage() {
 
   return (
     <GameShell
+      slug="number-puzzle"
+      showRulesOnFirstVisit
       icon={<GameIcon slug="number-puzzle" size="lg" />}
       title="Number Puzzle"
       subtitle={`Reach ${view.target} using the numbers below.`}

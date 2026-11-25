@@ -88,7 +88,11 @@ export function ConnectionsPage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
+      <GameShell
+        slug="connections"
+        icon={<GameIcon slug="connections" size="lg" />}
+        title="Connections"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -98,7 +102,11 @@ export function ConnectionsPage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
+      <GameShell
+        slug="connections"
+        icon={<GameIcon slug="connections" size="lg" />}
+        title="Connections"
+      >
         <p className="text-center text-fg-subtle">
           No Connections puzzle is available today. Check back soon!
         </p>
@@ -109,7 +117,11 @@ export function ConnectionsPage() {
   const view = entry.content as ConnectionsView | null;
   if (!view) {
     return (
-      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
+      <GameShell
+        slug="connections"
+        icon={<GameIcon slug="connections" size="lg" />}
+        title="Connections"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -188,7 +200,11 @@ export function ConnectionsPage() {
   if (showResult) {
     const mistakesMade = MAX_MISTAKES - view.mistakesRemaining;
     return (
-      <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
+      <GameShell
+        slug="connections"
+        icon={<GameIcon slug="connections" size="lg" />}
+        title="Connections"
+      >
         <ResultScreen
           gameName="Connections"
           won={view.solved.length === 4}
@@ -218,6 +234,8 @@ export function ConnectionsPage() {
 
   return (
     <GameShell
+      slug="connections"
+      showRulesOnFirstVisit
       icon={<GameIcon slug="connections" size="lg" />}
       title="Connections"
       subtitle="Find groups of four!"

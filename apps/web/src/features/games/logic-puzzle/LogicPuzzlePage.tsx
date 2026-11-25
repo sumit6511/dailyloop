@@ -497,7 +497,11 @@ export function LogicPuzzlePage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
+      <GameShell
+        slug="logic-puzzle"
+        icon={<GameIcon slug="logic-puzzle" size="lg" />}
+        title="Logic Puzzle"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -507,7 +511,11 @@ export function LogicPuzzlePage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
+      <GameShell
+        slug="logic-puzzle"
+        icon={<GameIcon slug="logic-puzzle" size="lg" />}
+        title="Logic Puzzle"
+      >
         <p className="text-center text-fg-subtle">
           No Logic Puzzle is available today. Check back soon!
         </p>
@@ -517,7 +525,11 @@ export function LogicPuzzlePage() {
 
   if (!view) {
     return (
-      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
+      <GameShell
+        slug="logic-puzzle"
+        icon={<GameIcon slug="logic-puzzle" size="lg" />}
+        title="Logic Puzzle"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -559,7 +571,11 @@ export function LogicPuzzlePage() {
 
   if (showResult) {
     return (
-      <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
+      <GameShell
+        slug="logic-puzzle"
+        icon={<GameIcon slug="logic-puzzle" size="lg" />}
+        title="Logic Puzzle"
+      >
         <ResultScreen
           gameName="Logic Puzzle"
           won={!!view.won}
@@ -578,6 +594,8 @@ export function LogicPuzzlePage() {
 
   return (
     <GameShell
+      slug="logic-puzzle"
+      showRulesOnFirstVisit
       icon={<GameIcon slug="logic-puzzle" size="lg" />}
       title="Logic Puzzle"
       subtitle="Fill every row, column, and box with 1–6."

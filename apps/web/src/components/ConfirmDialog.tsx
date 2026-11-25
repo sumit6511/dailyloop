@@ -1,5 +1,5 @@
 import type { IconName } from "@dailyloop/shared";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 
@@ -30,6 +30,7 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -44,6 +45,7 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault();
         onCancel();
@@ -54,7 +56,9 @@ export function ConfirmDialog({
       }}
       className="glass-strong m-auto w-[calc(100%-2rem)] max-w-sm p-6 text-white backdrop:bg-ink-950/75 backdrop:backdrop-blur-sm"
     >
-      <h2 className="font-display text-lg font-semibold text-white">{title}</h2>
+      <h2 id={titleId} className="font-display text-lg font-semibold text-white">
+        {title}
+      </h2>
       {body ? <p className="mt-2 text-sm text-fg-muted">{body}</p> : null}
       <div className="mt-6 flex justify-end gap-2">
         <Button variant="ghost" onClick={onCancel} type="button">

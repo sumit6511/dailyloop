@@ -159,7 +159,11 @@ export function WordGuessPage() {
 
   if (isLoading || !entry) {
     return (
-      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
+      <GameShell
+        slug="word-guess"
+        icon={<GameIcon slug="word-guess" size="lg" />}
+        title="Word Guess"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -169,7 +173,11 @@ export function WordGuessPage() {
 
   if (!entry.available) {
     return (
-      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
+      <GameShell
+        slug="word-guess"
+        icon={<GameIcon slug="word-guess" size="lg" />}
+        title="Word Guess"
+      >
         <p className="text-center text-fg-subtle">
           No Word Guess puzzle is available today. Check back soon!
         </p>
@@ -179,7 +187,11 @@ export function WordGuessPage() {
 
   if (!view) {
     return (
-      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
+      <GameShell
+        slug="word-guess"
+        icon={<GameIcon slug="word-guess" size="lg" />}
+        title="Word Guess"
+      >
         <div className="py-4">
           <BoardSkeleton />
         </div>
@@ -207,7 +219,11 @@ export function WordGuessPage() {
 
   if (showResult) {
     return (
-      <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
+      <GameShell
+        slug="word-guess"
+        icon={<GameIcon slug="word-guess" size="lg" />}
+        title="Word Guess"
+      >
         <ResultScreen
           gameName="Word Guess"
           won={!!view.won}
@@ -227,6 +243,8 @@ export function WordGuessPage() {
 
   return (
     <GameShell
+      slug="word-guess"
+      showRulesOnFirstVisit
       icon={<GameIcon slug="word-guess" size="lg" />}
       title="Word Guess"
       subtitle={`Guess the word in ${MAX_GUESSES} tries.`}

@@ -37,6 +37,7 @@ export const ICON_NAMES = [
   "grid_view",
   "group",
   "group_add",
+  "help",
   "history",
   "home",
   "how_to_reg",

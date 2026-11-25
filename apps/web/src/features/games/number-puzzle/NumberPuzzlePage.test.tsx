@@ -64,7 +64,7 @@ describe("NumberPuzzlePage", () => {
     renderPage();
     await user.click(await screen.findByRole("button", { name: /Submit answer/ }));
     expect(screen.getByText("You haven't made 20 yet")).toBeInTheDocument();
-    expect(document.querySelector("dialog")).toHaveAttribute("open");
+    expect(screen.getByRole("dialog", { name: "You haven't made 20 yet" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Keep playing" }));
     expect(moves).toEqual([]);
@@ -79,7 +79,7 @@ describe("NumberPuzzlePage", () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(await screen.findByRole("button", { name: /Submit answer/ }));
-    expect(document.querySelector("dialog")).not.toHaveAttribute("open");
+    expect(screen.queryByRole("dialog", { name: /haven't made/ })).not.toBeInTheDocument();
     await waitFor(() => expect(moves).toEqual([{ type: "submit" }]));
   });
 });

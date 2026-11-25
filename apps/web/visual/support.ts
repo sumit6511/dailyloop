@@ -51,7 +51,24 @@ export async function settle(page: Page) {
   await expect(page.getByRole("status", { name: "Loading" })).toHaveCount(0);
 }
 
-export const SCREENS: { name: string; path: string; fixture: string }[] = [
+export interface Screen {
+  name: string;
+  path: string;
+  fixture: string;
+  /** Show the page as a first-time player sees it: with the game's rules dialog open. */
+  firstVisit?: boolean;
+}
+
+const GAME_SLUGS = [
+  "connections",
+  "word-guess",
+  "number-puzzle",
+  "logic-puzzle",
+  "guess-it",
+  "pathway",
+];
+
+export const SCREENS: Screen[] = [
   { name: "login", path: "/login", fixture: "login" },
   { name: "dashboard", path: "/", fixture: "dashboard" },
   { name: "connections", path: "/play/connections", fixture: "connections" },
@@ -67,16 +84,23 @@ export const SCREENS: { name: string; path: string; fixture: string }[] = [
   { name: "admin-puzzles", path: "/admin/puzzles", fixture: "admin-puzzles" },
   { name: "admin-users", path: "/admin/users", fixture: "admin-users" },
   { name: "not-found", path: "/no-such-page", fixture: "settings" },
+  { name: "how-to-play", path: "/play/connections", fixture: "connections", firstVisit: true },
 ];
 
 /** Opens a screen with its recorded API and the frozen clock, ready to inspect. */
-export async function openScreen(page: Page, screen: { path: string; fixture: string }) {
+export async function openScreen(page: Page, screen: Screen) {
   // The build runs under the production Content-Security-Policy; anything it blocks (an inlined
   // font, a stray inline style) fails the screen rather than silently not loading.
   const blocked: string[] = [];
   page.on("console", (message) => {
     if (/Content Security Policy|Refused to/i.test(message.text())) blocked.push(message.text());
   });
+  if (!screen.firstVisit) {
+    // A returning player: the rules dialog that opens on a first visit would cover the board.
+    await page.addInitScript((slugs) => {
+      for (const slug of slugs) localStorage.setItem(`dailyloop-rules-seen:${slug}`, "1");
+    }, GAME_SLUGS);
+  }
   await page.clock.setFixedTime(NOW);
   await replayApi(page, loadFixture(screen.fixture));
   await page.goto(screen.path);
