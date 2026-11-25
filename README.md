@@ -11,6 +11,18 @@ scheduler without touching core code.
 > and tested. See [docs/architecture.md](docs/architecture.md) for the full build log and the
 > architectural decisions behind it, and [docs/deployment.md](docs/deployment.md) to ship it.
 
+<p>
+  <img src="apps/web/visual/__screenshots__/linux/desktop-dark/dashboard.png" alt="The dashboard in the dark theme: today's progress, streak and points, six game cards, the leaderboard and yesterday's answers" width="66%" />
+  <img src="apps/web/visual/__screenshots__/linux/phone-light/logic-puzzle.png" alt="Logic Puzzle on a phone, in the light theme" width="31%" />
+</p>
+<p>
+  <img src="apps/web/visual/__screenshots__/linux/desktop-light/profile.png" alt="A profile in the light theme, with stats and a 12-week activity calendar" width="49%" />
+  <img src="apps/web/visual/__screenshots__/linux/desktop-dark/how-to-play.png" alt="The How to play dialog for Connections" width="49%" />
+</p>
+
+<sub>These are the visual-test baselines (see <a href="apps/web/visual">apps/web/visual</a>), so they always
+show the current UI.</sub>
+
 ## Games
 
 | Game          | What you do                                                             | Difficulty             |
@@ -31,7 +43,8 @@ Friday–Sunday hard. Logic Puzzle and Pathway offer hints, which cost points.
 - **Backend:** Node.js, TypeScript, Fastify, Zod, Prisma
 - **Database:** PostgreSQL
 - **Auth:** server-side sessions (opaque cookie token, hashed in the DB), Argon2 password hashing
-- **Testing:** Vitest, React Testing Library, Fastify integration tests
+- **Testing:** Vitest, React Testing Library, Fastify integration tests; Playwright for screenshot,
+  accessibility (axe-core) and end-to-end tests
 
 ## Project structure
 
@@ -123,8 +136,18 @@ npm run db:test:migrate   # once, or after a schema change
 npm test
 ```
 
-Every push and pull request runs the same checks in GitHub Actions (`.github/workflows/ci.yml`):
-lint, typecheck, the full test suite against a Postgres service, and the production web build.
+In a real browser (Playwright, against the production build):
+
+- **Screens and accessibility** (`npm run test:visual -w @dailyloop/web`): every screen in four
+  variants (desktop/phone × dark/light), compared pixel by pixel with committed baselines and
+  checked with axe-core against WCAG 2.1 AA. The API is replayed from recorded fixtures, so no
+  database is needed. See [apps/web/visual](apps/web/visual/README.md).
+- **End to end** (`npm run test:e2e -w @dailyloop/web`): sign up, play a game and see it on
+  the leaderboard, against the real API and database. See [apps/web/e2e](apps/web/e2e/README.md).
+
+Every push and pull request runs all of it in GitHub Actions (`.github/workflows/ci.yml`): lint,
+format, typecheck, the unit and integration suites against a Postgres service, the production web
+build, and a browser job with the Playwright suites.
 
 ## Deployment
 
