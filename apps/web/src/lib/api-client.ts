@@ -1,15 +1,7 @@
 import type { ApiErrorBody } from "@dailyloop/shared";
+import { resolveApiUrl } from "./api-url";
 
-// Hosting platforms that wire one service's URL into another's build-time env vars (e.g.
-// Render's `fromService: { property: host }`) typically hand over a bare hostname — default it
-// to an https origin plus the API's `/api` prefix so it works whether given as `example.com` or
-// a full `https://example.com/api` URL.
-function resolveApiUrl(raw: string): string {
-  if (/^https?:\/\//.test(raw)) return raw;
-  return `https://${raw}/api`;
-}
-
-const API_URL = resolveApiUrl(import.meta.env.VITE_API_URL || "http://localhost:4000/api");
+const API_URL = resolveApiUrl(import.meta.env.VITE_API_URL);
 
 export class ApiClientError extends Error {
   status: number;

@@ -113,6 +113,10 @@ compiler needed for common platforms), and
 - The API sets its own security headers. The static web app's headers (CSP, framing, sniffing,
   referrer, permissions) live in `apps/web/security-headers.json`; `render.yaml` mirrors them, and
   on another host configure the same headers for every path.
+- That header file's CSP lets the page connect to any https origin, since it's written before the
+  API's host is known. The build narrows this to the API's own origin (from `VITE_API_URL`) with a
+  `<meta>` policy in `index.html`, so a wrong `VITE_API_URL` shows up as blocked requests in the
+  browser console.
 
 ## Checklist before going live
 

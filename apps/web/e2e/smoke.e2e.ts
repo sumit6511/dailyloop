@@ -96,3 +96,22 @@ test("a new player signs up, plays a game, and shows up on the leaderboard", asy
     await expect(page.getByText(`${score}`, { exact: true }).first()).toBeVisible();
   });
 });
+
+test("the page can only call its own API", async ({ page }) => {
+  // The journey above shows the API is reachable. The served header allows any https origin
+  // (it's written before the API's host is known); the build's <meta> policy narrows that.
+  await page.goto("/login");
+  const blocked = await page.evaluate(
+    () =>
+      new Promise<string>((resolve) => {
+        document.addEventListener(
+          "securitypolicyviolation",
+          (event) => resolve(`${event.effectiveDirective} ${event.blockedURI}`),
+          { once: true },
+        );
+        fetch("https://example.com/elsewhere").catch(() => {});
+        setTimeout(() => resolve("not blocked"), 5_000);
+      }),
+  );
+  expect(blocked).toBe("connect-src https://example.com/elsewhere");
+});

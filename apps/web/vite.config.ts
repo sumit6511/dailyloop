@@ -4,9 +4,10 @@ import { parseEnv } from "node:util";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
-import type { Plugin } from "vite";
-// A relative path (not "@dailyloop/shared") so Vite's config bundler inlines it.
+import { loadEnv, type Plugin } from "vite";
+// Relative paths (not "@dailyloop/shared") so Vite's config bundler inlines them.
 import { ICON_NAMES } from "../../packages/shared/src/icons.ts";
+import { resolveApiUrl } from "./src/lib/api-url.ts";
 import tailwindcss from "@tailwindcss/vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,27 +35,55 @@ export default defineConfig(({ command, mode }) => {
         "development build. Remove NODE_ENV from .env (the API defaults to development).",
     );
   }
-  return config;
+  return makeConfig(apiOriginFor(mode));
 });
 
+/** The origin the client will call, from the same VITE_API_URL the build hands it. */
+function apiOriginFor(mode: string): string {
+  const raw = loadEnv(mode, envDir, "VITE_").VITE_API_URL;
+  try {
+    return new URL(resolveApiUrl(raw)).origin;
+  } catch {
+    throw new Error(`VITE_API_URL=${raw} is neither a URL nor a host name.`);
+  }
+}
+
 /** The production security headers, for `vite preview`. connect-src also allows the configured API
- * origin so a local preview against http://localhost:4000 works; production uses https only. */
-function previewSecurityHeaders(): Record<string, string> {
+ * origin, so a local preview against http://localhost:4000 works; production uses https only. */
+function previewSecurityHeaders(apiOrigin: string): Record<string, string> {
   const headers = JSON.parse(
     fs.readFileSync(path.join(__dirname, "security-headers.json"), "utf8"),
   ) as Record<string, string>;
   delete headers["//"];
-  let apiOrigin = "http://localhost:4000";
-  try {
-    apiOrigin = new URL(process.env.VITE_API_URL ?? "http://localhost:4000/api").origin;
-  } catch {
-    // A bare host (as Render provides) is https anyway, which connect-src already allows.
-  }
   headers["Content-Security-Policy"] = headers["Content-Security-Policy"]!.replace(
     "connect-src 'self' https:",
     `connect-src 'self' https: ${apiOrigin}`,
   );
   return headers;
+}
+
+/**
+ * Narrows the CSP's connect-src to the API's own origin. The header policy (security-headers.json,
+ * served as-is by Render) can only allow any https origin, because the API's host is only known
+ * when the app is built. A browser enforces every policy a page has, so this one-directive <meta>
+ * policy narrows the header's connect-src and leaves everything else to it.
+ */
+function apiConnectSrc(apiOrigin: string): Plugin {
+  return {
+    name: "dailyloop:api-connect-src",
+    apply: "build",
+    transformIndexHtml: () => [
+      {
+        tag: "meta",
+        attrs: {
+          "http-equiv": "Content-Security-Policy",
+          content: `connect-src 'self' ${apiOrigin}`,
+        },
+        // Before any script, so it covers every request the page makes.
+        injectTo: "head-prepend",
+      },
+    ],
+  };
 }
 
 /**
@@ -95,8 +124,14 @@ function linkPreviews(): Plugin {
   };
 }
 
-const config = {
-  plugins: [react(), tailwindcss(), materialSymbolsSubset(), linkPreviews()],
+const makeConfig = (apiOrigin: string) => ({
+  plugins: [
+    react(),
+    tailwindcss(),
+    materialSymbolsSubset(),
+    linkPreviews(),
+    apiConnectSrc(apiOrigin),
+  ],
   build: {
     // Never inline font files as data: URIs (Vite does for anything under 4 kB): the CSP's
     // font-src allows the app's own origin, not data:.
@@ -115,7 +150,7 @@ const config = {
   preview: {
     port: 5173,
     strictPort: true,
-    headers: previewSecurityHeaders(),
+    headers: previewSecurityHeaders(apiOrigin),
   },
   // Vite only reads .env files from its own root (this folder) by default;
   // pointing it at the repo root lets every app share one .env file.
@@ -133,4 +168,4 @@ const config = {
     setupFiles: ["./src/test/setup.ts"],
     css: true,
   },
-};
+});

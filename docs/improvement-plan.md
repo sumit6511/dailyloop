@@ -381,7 +381,9 @@ the following.
   branded image (set `VITE_SITE_URL` for absolute URLs).
 - **Performance and security:** text fonts are self-hosted. The app's own code is now an 82 kB
   chunk, with React and the data libraries in long-cached vendor chunks. HSTS and
-  Cross-Origin-Opener-Policy are set, and `/assets/*` is served as immutable.
+  Cross-Origin-Opener-Policy are set, and `/assets/*` is served as immutable. The page can only
+  connect to its own API: the header file can't name the API's host (it's only known at build
+  time), so the build adds a `<meta>` policy with it, and an end-to-end test checks it.
 - **Testing:** a Playwright end-to-end journey against the real API and database runs in CI's
   browser job, alongside the screenshot and accessibility suites.
 - **Dependencies:** minor and patch updates; Vite 8 (builds in ~0.5 s instead of ~2 s, vendor

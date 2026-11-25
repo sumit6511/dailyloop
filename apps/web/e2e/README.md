@@ -2,8 +2,9 @@
 
 A real player journey through the production web build, the real API and a real database:
 sign up, play Guess It (reading today's answer through the admin API), check the dashboard and
-the global leaderboard, then log out and back in. Nothing is mocked; screens and accessibility
-are covered separately by `visual/`.
+the global leaderboard, then log out and back in. A second check makes sure the page can't call
+any origin but its API's. Nothing is mocked; screens and accessibility are covered separately by
+`visual/`.
 
 ```bash
 npm run db:test:migrate                                   # schema on the test database
