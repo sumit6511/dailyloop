@@ -369,3 +369,41 @@ the following.
     plugins, argon2, jsdom, hookform resolvers, Vite 8, ESLint 10, Prisma 7, TypeScript 7) and
     keep the ones that pass the full suite.
 12. **The README has no pictures.** Add screenshots, taken from the visual-test baselines.
+
+**Status:** all 12 done, apart from two dependency majors held back for stated reasons.
+
+- **Accessibility:** zero axe-core violations on every screen, in both themes, on desktop and
+  phone. Muted text now uses two theme-tuned tokens (`text-fg-muted`, `text-fg-subtle`). An axe
+  suite runs on every screen in CI so this stays true. Pages have their own titles, a skip link,
+  and focus on the new page's heading after navigation.
+- **Product:** "How to play" for every game, opened by itself on a first visit; a 12-week
+  activity calendar on profiles (`GET /api/users/:username/activity`); link previews with a
+  branded image (set `VITE_SITE_URL` for absolute URLs).
+- **Performance and security:** text fonts are self-hosted. The app's own code is now an 82 kB
+  chunk, with React and the data libraries in long-cached vendor chunks. HSTS and
+  Cross-Origin-Opener-Policy are set, and `/assets/*` is served as immutable.
+- **Testing:** a Playwright end-to-end journey against the real API and database runs in CI's
+  browser job, alongside the screenshot and accessibility suites.
+- **Dependencies:** minor and patch updates; Vite 8 (builds in ~0.5 s instead of ~2 s, vendor
+  chunks ~5% larger); ESLint 10 with react-hooks 7; Fastify cors and rate-limit 11, argon2 0.45,
+  jsdom 31, hookform resolvers 7 and more. **Not done:** Prisma 7 needs the connection moved to
+  `prisma.config.ts` plus a driver adapter for every client, which is a planned change of its
+  own. TypeScript 7 isn't supported by typescript-eslint yet (it requires TypeScript below 6.1).
+
+Found along the way:
+
+- **A lost game showed as "Solved"** on the dashboard (with 0 points), and the hero counted it
+  as solved. The lineup now reports `won`, and the card says Missed.
+- **The leaderboard and streak stayed stale for up to 30 s after finishing a game**, the moment
+  a player looks at them. The new end-to-end test caught this on its first run. A finished game
+  now refreshes the standings, the player's own data, profiles and the share text.
+- A small font file was inlined as a `data:` URI, which the CSP blocks. The Playwright suite now
+  fails any screen that logs a CSP violation, which is how this surfaced.
+- The confirm dialog had no accessible name. The hint buttons' accessible name didn't contain
+  their visible text, and jsdom and Chromium disagreed on its spacing.
+- The API suite assumed an empty database. It now empties the test database itself before
+  running, and refuses to on anything not named as a test database.
+- **The API tests could end up on the dev database.** Importing `@prisma/client` loads the repo's
+  `.env` into the environment, and the tests' own `.env.test` didn't override it. The new safety
+  check above caught this before any data was touched. The test setup now overrides, and the
+  table wipe reads its URL from `.env.test` directly.
