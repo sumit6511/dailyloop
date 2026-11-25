@@ -61,5 +61,8 @@ DATABASE_URL=postgresql://…/dailyloop_fixtures npm run dev   # API on :4000, w
 node apps/web/visual/record-fixtures.mjs
 ```
 
+The profile's activity calendar in `fixtures/profile.json` is filled in by hand (a fresh database
+has only a day of history to show); re-recording replaces it with the real, sparse history.
+
 Then refresh the baselines with `npm run test:visual:update -w @dailyloop/web` and look through
 the new images before committing them.

@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
 import { prisma } from "../lib/prisma.js";
 import { loginThrottle } from "../lib/login-throttle.js";
+import { addDaysToKey, dateKeyToJSDate, getTodayKey, ACTIVITY_DAYS } from "@dailyloop/shared";
 
 describe("users", () => {
   let app: FastifyInstance;
@@ -136,6 +137,52 @@ describe("users", () => {
       const other = await registerUser("mcgonagall");
       await prisma.user.update({ where: { id: other.userId }, data: { role: "ADMIN" } });
       expect((await deleteMe(admin.cookies, "correct-horse-battery")).statusCode).toBe(200);
+    });
+  });
+
+  describe("GET /:username/activity", () => {
+    it("returns the last 12 weeks, one entry per day, zeros where nothing was played", async () => {
+      const { userId, cookies } = await registerUser("harry");
+      const today = getTodayKey();
+      const score = (daysAgo: number, totalScore: number, isPerfectDay = false) =>
+        prisma.dailyScore.create({
+          data: {
+            userId,
+            date: dateKeyToJSDate(addDaysToKey(today, -daysAgo)),
+            totalScore,
+            gamesCompleted: Math.ceil(totalScore / 100),
+            isPerfectDay,
+          },
+        });
+      await score(0, 650, true);
+      await score(3, 120);
+      await score(ACTIVITY_DAYS, 999); // one day too old to show
+
+      const res = await app.inject({ method: "GET", url: "/api/users/harry/activity", cookies });
+      expect(res.statusCode).toBe(200);
+      const { from, to, days } = res.json().data;
+      expect(days).toHaveLength(ACTIVITY_DAYS);
+      expect(to).toBe(today);
+      expect(from).toBe(addDaysToKey(today, -(ACTIVITY_DAYS - 1)));
+      expect(days.at(-1)).toEqual({
+        date: today,
+        points: 650,
+        gamesCompleted: 7,
+        perfectDay: true,
+      });
+      expect(days.at(-4)).toMatchObject({ points: 120, perfectDay: false });
+      expect(days.reduce((sum: number, d: { points: number }) => sum + d.points, 0)).toBe(770);
+    });
+
+    it("needs a login, and 404s for an unknown player", async () => {
+      const { cookies } = await registerUser("harry");
+      expect(
+        (await app.inject({ method: "GET", url: "/api/users/harry/activity" })).statusCode,
+      ).toBe(401);
+      expect(
+        (await app.inject({ method: "GET", url: "/api/users/nobody/activity", cookies }))
+          .statusCode,
+      ).toBe(404);
     });
   });
 });

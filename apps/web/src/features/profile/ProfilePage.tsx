@@ -16,6 +16,7 @@ import { Stat } from "../../components/Stat";
 import { Icon } from "../../components/Icon";
 import { RelationshipButton } from "./RelationshipButton";
 import { MyStatsCard } from "./MyStatsCard";
+import { ActivityCalendar } from "./ActivityCalendar";
 import { useDocumentTitle } from "../../lib/use-document-title";
 import type { Relationship } from "./relationship";
 
@@ -144,6 +145,8 @@ export function ProfilePage() {
           value={profile.stats.gamesWon}
         />
       </div>
+
+      <ActivityCalendar username={profile.username} />
 
       {profile.relationship === "self" ? <MyStatsCard /> : null}
 

@@ -9,6 +9,11 @@ import {
   activeStreak,
   getTodayKey,
   jsDateToDateKey,
+  addDaysToKey,
+  dateKeyToJSDate,
+  ACTIVITY_DAYS,
+  type ActivityDTO,
+  type ActivityDayDTO,
 } from "@dailyloop/shared";
 import { prisma } from "../lib/prisma.js";
 import { env } from "../config/env.js";
@@ -131,6 +136,36 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
       const relationship = await getRelationship(request.currentUser!.id, user.id);
 
       return reply.send({ data: { ...toPublicUserDTO(user), stats, relationship } });
+    },
+  );
+
+  /** The last ACTIVITY_DAYS days of daily totals, one entry per day (zeros where not played). */
+  app.get<{ Params: { username: string } }>(
+    "/:username/activity",
+    { preHandler: app.requireAuth },
+    async (request, reply) => {
+      const user = await prisma.user.findUnique({ where: { username: request.params.username } });
+      if (!user) throw Errors.notFound("User not found");
+
+      const to = getTodayKey(env.DEFAULT_TIMEZONE);
+      const from = addDaysToKey(to, -(ACTIVITY_DAYS - 1));
+      const scores = await prisma.dailyScore.findMany({
+        where: { userId: user.id, date: { gte: dateKeyToJSDate(from), lte: dateKeyToJSDate(to) } },
+        select: { date: true, totalScore: true, gamesCompleted: true, isPerfectDay: true },
+      });
+      const byDate = new Map(scores.map((s) => [jsDateToDateKey(s.date), s]));
+      const days: ActivityDayDTO[] = Array.from({ length: ACTIVITY_DAYS }, (_, i) => {
+        const date = addDaysToKey(from, i);
+        const score = byDate.get(date);
+        return {
+          date,
+          points: score?.totalScore ?? 0,
+          gamesCompleted: score?.gamesCompleted ?? 0,
+          perfectDay: score?.isPerfectDay ?? false,
+        };
+      });
+      const data: ActivityDTO = { from, to, days };
+      return reply.send({ data });
     },
   );
 

@@ -65,3 +65,21 @@ export interface MyStatsDTO {
   /** Word Guess wins by number of guesses: index 0 = solved in 1 guess … index 5 = in 6. */
   wordGuessDistribution: number[];
 }
+
+/** Days of history on a profile's activity calendar: 12 weeks. */
+export const ACTIVITY_DAYS = 84;
+
+export interface ActivityDayDTO {
+  date: string;
+  points: number;
+  gamesCompleted: number;
+  perfectDay: boolean;
+}
+
+export interface ActivityDTO {
+  /** Oldest and newest day shown (server-timezone date keys), inclusive. */
+  from: string;
+  to: string;
+  /** One entry per day from `from` to `to`, oldest first; days not played are zeros. */
+  days: ActivityDayDTO[];
+}
