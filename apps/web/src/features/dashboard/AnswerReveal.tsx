@@ -21,7 +21,7 @@ export function AnswerReveal({ answer }: { answer: AnswerRevealDTO }) {
     case "mystery":
       return (
         <p className="text-white">
-          <span className="text-sm text-white/55">{answer.category}: </span>
+          <span className="text-sm text-fg-muted">{answer.category}: </span>
           <span className="font-display text-lg font-bold">{answer.answer}</span>
         </p>
       );
@@ -43,7 +43,7 @@ export function AnswerReveal({ answer }: { answer: AnswerRevealDTO }) {
     case "equation":
       return (
         <div className="flex flex-col gap-1.5 text-white">
-          <p className="text-sm text-white/55">
+          <p className="text-sm text-fg-muted">
             {answer.numbers.join(", ")} → {answer.target}
           </p>
           <p className="font-display text-lg font-bold">

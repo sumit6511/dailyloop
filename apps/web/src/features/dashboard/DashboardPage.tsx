@@ -13,6 +13,7 @@ import { Icon } from "../../components/Icon";
 import { GameCard } from "./GameCard";
 import { LeaderboardCard } from "./LeaderboardCard";
 import { YesterdayCard } from "./YesterdayCard";
+import { useDocumentTitle } from "../../lib/use-document-title";
 
 function GameCardSkeleton() {
   return (
@@ -71,13 +72,14 @@ function HeroTile({
 }) {
   return (
     <div className={`surface-inset flex flex-col gap-3 px-4 py-4 ${className}`}>
-      <span className="eyebrow text-white/40">{label}</span>
+      <span className="eyebrow text-fg-subtle">{label}</span>
       {children}
     </div>
   );
 }
 
 export function DashboardPage() {
+  useDocumentTitle("Today");
   const { user } = useAuth();
   const { data: games, isLoading } = useTodayLineup();
   const { data: schedule } = useSchedule();
@@ -104,13 +106,13 @@ export function DashboardPage() {
         <div className="relative flex flex-col gap-6 sm:gap-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <p className="eyebrow text-accent-300/80">
+              <p className="eyebrow text-accent-300">
                 {schedule ? DAY_LABEL.format(new Date(`${schedule.today}T12:00:00Z`)) : "Today"}
               </p>
               <h1 className="mt-2 font-display text-3xl font-bold text-white sm:text-4xl">
                 {getGreeting()}, <span className="text-gradient">{user?.displayName}</span>
               </h1>
-              <p className="mt-2 text-white/60">
+              <p className="mt-2 text-fg-muted">
                 {isLoading || !games
                   ? "Today's puzzles are waiting."
                   : getHeroSubtitle(completedCount, availableCount)}
@@ -125,8 +127,10 @@ export function DashboardPage() {
                 <span className="tabular font-mono text-3xl font-semibold leading-none text-white">
                   {completedCount}
                 </span>
-                <span className="font-mono text-base text-white/40">/ {availableCount || "–"}</span>
-                <span className="ml-1 text-sm text-white/55">solved</span>
+                <span className="font-mono text-base text-fg-subtle">
+                  / {availableCount || "–"}
+                </span>
+                <span className="ml-1 text-sm text-fg-muted">solved</span>
               </div>
               <div
                 className="flex gap-1"
@@ -165,9 +169,9 @@ export function DashboardPage() {
                 <span className="tabular font-mono text-3xl font-semibold leading-none text-white">
                   {todayScore}
                 </span>
-                <span className="text-sm text-white/55">points</span>
+                <span className="text-sm text-fg-muted">points</span>
               </div>
-              <p className="hidden text-xs text-white/40 sm:block">
+              <p className="hidden text-xs text-fg-subtle sm:block">
                 Up to {SCORE.PER_GAME_MAX} a puzzle, +{SCORE.PERFECT_DAY_BONUS} for a perfect day.
               </p>
             </HeroTile>
@@ -182,7 +186,7 @@ export function DashboardPage() {
             icon="sports_esports"
             action={
               games ? (
-                <span className="eyebrow text-white/40">
+                <span className="eyebrow text-fg-subtle">
                   {completedCount}/{availableCount} solved
                 </span>
               ) : null

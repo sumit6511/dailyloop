@@ -7,7 +7,7 @@ import { SectionHeader } from "../../components/SectionHeader";
 import { AnswerReveal } from "./AnswerReveal";
 
 function ResultBadge({ result }: { result: YesterdayGameDTO["result"] }) {
-  if (!result) return <span className="text-xs text-white/45">Not played</span>;
+  if (!result) return <span className="text-xs text-fg-subtle">Not played</span>;
   if (!result.completed) return <span className="text-xs text-amber-300">Unfinished</span>;
   return (
     <span className={`text-xs font-semibold ${result.won ? "text-emerald-300" : "text-rose-300"}`}>
@@ -33,13 +33,13 @@ export function YesterdayCard() {
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate text-sm font-semibold text-white">
                     {game.name}{" "}
-                    <span className="font-normal text-white/45">#{game.puzzleNumber}</span>
+                    <span className="font-normal text-fg-subtle">#{game.puzzleNumber}</span>
                   </span>
                   <ResultBadge result={game.result} />
                 </span>
                 <Icon
                   name="expand_more"
-                  className="text-xl text-white/50 transition-transform group-open:rotate-180"
+                  className="text-xl text-fg-subtle transition-transform group-open:rotate-180"
                 />
               </summary>
               <div className="px-3 pb-3 pt-1">

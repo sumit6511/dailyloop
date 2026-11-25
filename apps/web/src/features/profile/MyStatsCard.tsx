@@ -29,7 +29,7 @@ export function MyStatsCard() {
         <>
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-white/40">
+              <tr className="text-left text-xs uppercase tracking-wide text-fg-subtle">
                 <th className="pb-2 font-medium">Game</th>
                 <th className="pb-2 text-right font-medium">Played</th>
                 <th className="pb-2 text-right font-medium">Win %</th>
@@ -63,13 +63,13 @@ export function MyStatsCard() {
 
           {anyWordGuessWins ? (
             <div className="mt-6">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/50">
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-fg-subtle">
                 Word Guess — guesses to win
               </h3>
               <ol className="flex flex-col gap-1.5" aria-label="Word Guess guess distribution">
                 {data.wordGuessDistribution.map((count, i) => (
                   <li key={i} className="flex items-center gap-2 text-xs">
-                    <span className="w-3 text-right text-white/50">{i + 1}</span>
+                    <span className="w-3 text-right text-fg-subtle">{i + 1}</span>
                     <span
                       className="flex h-5 min-w-6 items-center justify-end rounded bg-brand-500/60 px-1.5 font-semibold text-on-accent"
                       style={{ width: `${(count / maxBar) * 100}%` }}

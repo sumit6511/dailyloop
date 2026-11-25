@@ -18,7 +18,7 @@ export function DifficultyMeter({ difficulty }: { difficulty: string }) {
           />
         ))}
       </span>
-      <span className="eyebrow text-white/50">{level.label}</span>
+      <span className="eyebrow text-fg-subtle">{level.label}</span>
     </span>
   );
 }

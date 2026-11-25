@@ -34,7 +34,11 @@ export function RegisterPage() {
   };
 
   return (
-    <AuthLayout title="Create your account" subtitle="New puzzles every day. Beat your friends.">
+    <AuthLayout
+      title="Create your account"
+      documentTitle="Sign up"
+      subtitle="New puzzles every day. Beat your friends."
+    >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <TextField
           label="Display name"
@@ -75,7 +79,7 @@ export function RegisterPage() {
           <Icon name="person_add" className="text-lg" /> Create account
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-white/50">
+      <p className="mt-6 text-center text-sm text-fg-subtle">
         Already playing?{" "}
         <Link to="/login" className="font-semibold text-accent-300 hover:text-accent-200">
           Log in

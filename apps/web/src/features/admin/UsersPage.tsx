@@ -23,9 +23,14 @@ export function UsersPage() {
       <SectionHeader
         title="Players"
         icon="group"
-        action={<span className="eyebrow text-white/40">{users.length} total</span>}
+        action={<span className="eyebrow text-fg-subtle">{users.length} total</span>}
       />
-      <div className="-mx-5 overflow-x-auto px-5 sm:-mx-6 sm:px-6">
+      <div
+        className="-mx-5 overflow-x-auto px-5 outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60 sm:-mx-6 sm:px-6"
+        tabIndex={0}
+        role="region"
+        aria-label="Players table"
+      >
         <table className={`${TABLE} min-w-[640px]`}>
           <thead>
             <tr className="text-left">
@@ -47,13 +52,13 @@ export function UsersPage() {
                       <span className="block truncate font-medium text-white/90">
                         {user.displayName}
                       </span>
-                      <span className="block font-mono text-xs text-white/40">
+                      <span className="block font-mono text-xs text-fg-subtle">
                         @{user.username}
                       </span>
                     </span>
                   </span>
                 </td>
-                <td className={`${TD} text-white/55`}>{user.email}</td>
+                <td className={`${TD} text-fg-muted`}>{user.email}</td>
                 <td className={`${TD} text-center`}>
                   <Badge tone={user.role === "ADMIN" ? "brand" : "neutral"}>
                     {user.role.toLowerCase()}

@@ -22,8 +22,8 @@ const STATE_CLASSES: Record<GameTileState, string> = {
   correct:
     "border-emerald-300/70 bg-emerald-500 text-on-accent shadow-[0_8px_24px_-10px_rgb(16_185_129/0.9)]",
   present: "border-amber-200/70 bg-amber-400 text-amber-950",
-  absent: "border-white/[0.05] bg-white/[0.04] text-white/35",
-  given: "border-white/[0.06] bg-white/[0.02] text-white/45",
+  absent: "border-white/[0.05] bg-white/[0.04] text-fg-subtle",
+  given: "border-white/[0.06] bg-white/[0.02] text-fg-subtle",
   disabled: "border-white/[0.05] bg-white/[0.02] text-white/25",
   wrong:
     "border-rose-300/70 bg-rose-500 text-on-accent shadow-[0_8px_24px_-10px_rgb(244_63_94/0.9)]",

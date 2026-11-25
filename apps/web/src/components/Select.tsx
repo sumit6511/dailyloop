@@ -90,13 +90,14 @@ export function Select({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={ariaLabel}
+        // The name has to contain the visible text (the selected option) for voice control.
+        aria-label={ariaLabel ? `${ariaLabel}: ${selected?.label ?? "Select…"}` : undefined}
         className={`${FIELD_CLASSES} ${FIELD_BORDER} flex min-w-[9rem] items-center justify-between gap-2 px-3.5`}
       >
         <span className="truncate">{selected?.label ?? "Select…"}</span>
         <Icon
           name="expand_more"
-          className={`text-lg text-white/50 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`text-lg text-fg-subtle transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
       {open && rect

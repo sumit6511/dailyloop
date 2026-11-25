@@ -84,7 +84,7 @@ jobs:
         working-directory: apps/web
         run: npx playwright install --with-deps chromium
 
-      - name: Visual regression tests
+      - name: Visual regression and accessibility tests
         run: npm run test:visual -w @dailyloop/web
 
       - name: Upload screenshot diffs

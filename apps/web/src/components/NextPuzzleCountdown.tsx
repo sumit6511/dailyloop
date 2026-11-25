@@ -47,7 +47,7 @@ export function NextPuzzleCountdown({ className = "" }: { className?: string }) 
   if (remaining === null) return null;
   return (
     <span
-      className={`inline-flex items-center gap-2 text-sm text-white/55 ${className}`}
+      className={`inline-flex items-center gap-2 text-sm text-fg-muted ${className}`}
       role="timer"
       aria-live="off"
     >

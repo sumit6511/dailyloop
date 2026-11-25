@@ -2,8 +2,10 @@ import { Link } from "react-router-dom";
 import { buttonClasses } from "../../components/button-styles";
 import { Icon } from "../../components/Icon";
 import { StatusPanel } from "../../components/StatusPanel";
+import { useDocumentTitle } from "../../lib/use-document-title";
 
 export function NotFoundPage() {
+  useDocumentTitle("Page not found");
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
       <StatusPanel

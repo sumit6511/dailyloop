@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 export function HudChip({ children, label }: { children: ReactNode; label?: string }) {
   return (
     <span className="surface-inset inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-xs font-medium text-white/70">
-      {label ? <span className="eyebrow text-white/40">{label}</span> : null}
+      {label ? <span className="eyebrow text-fg-subtle">{label}</span> : null}
       {children}
     </span>
   );

@@ -9,7 +9,7 @@ import { GameIcon } from "../../components/GameIcon";
 
 function StatusLine({ game }: { game: TodayGameEntryDTO }) {
   if (!game.available) {
-    return <span className="text-xs text-white/40">Not available today</span>;
+    return <span className="text-xs text-fg-subtle">Not available today</span>;
   }
   if (game.status === "completed") {
     return (
@@ -29,7 +29,7 @@ function StatusLine({ game }: { game: TodayGameEntryDTO }) {
     );
   }
   return (
-    <span className="flex items-center gap-2 text-xs text-white/45">
+    <span className="flex items-center gap-2 text-xs text-fg-subtle">
       <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
       Not started
     </span>
@@ -61,7 +61,7 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
             <h3 className="truncate font-display text-base font-bold text-white">{game.name}</h3>
             <DifficultyMeter difficulty={game.difficulty} />
           </div>
-          <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-white/50">
+          <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-fg-subtle">
             {game.description}
           </p>
         </div>

@@ -49,7 +49,7 @@ describe("LogicPuzzlePage hints", () => {
     const user = userEvent.setup();
     renderWithProviders(<LogicPuzzlePage />, queryClient);
 
-    const hintButton = await screen.findByRole("button", { name: "Hint (costs 10 points)" });
+    const hintButton = await screen.findByRole("button", { name: "Hint −10 (costs 10 points)" });
     expect(hintButton).toHaveTextContent("−10");
     await user.click(hintButton);
     expect(await screen.findByText(/Row 1, column 2 isn.t right/)).toBeInTheDocument();

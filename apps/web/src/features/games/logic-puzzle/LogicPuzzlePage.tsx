@@ -206,7 +206,7 @@ function SettingsPopover({
         aria-expanded={open}
         aria-label="Logic Puzzle settings"
         onClick={() => setOpen((o) => !o)}
-        className="surface-inset flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400"
+        className="surface-inset flex h-9 w-9 items-center justify-center rounded-full text-fg-muted transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400"
       >
         <Icon name="settings" className="text-xl" />
       </button>
@@ -508,7 +508,7 @@ export function LogicPuzzlePage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="logic-puzzle" size="lg" />} title="Logic Puzzle">
-        <p className="text-center text-white/50">
+        <p className="text-center text-fg-subtle">
           No Logic Puzzle is available today. Check back soon!
         </p>
       </GameShell>
@@ -666,7 +666,7 @@ export function LogicPuzzlePage() {
                   ) : isHintTarget ? (
                     <span className="text-amber-300/70">{hintSuggestion?.value}</span>
                   ) : cellNotes?.size ? (
-                    <span className="grid h-full w-full grid-cols-3 grid-rows-2 place-items-center gap-0 p-1 font-mono text-[9px] font-medium leading-none text-white/50 sm:text-[10px]">
+                    <span className="grid h-full w-full grid-cols-3 grid-rows-2 place-items-center gap-0 p-1 font-mono text-[9px] font-medium leading-none text-fg-subtle sm:text-[10px]">
                       {[1, 2, 3, 4, 5, 6].map((n) => (
                         <span key={n}>{cellNotes.has(n) ? n : ""}</span>
                       ))}
@@ -744,7 +744,7 @@ export function LogicPuzzlePage() {
                   {n}
                 </GameTile>
                 {settings.countRemaining ? (
-                  <span className="pointer-events-none absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-white/[0.1] bg-ink-800 px-1 font-mono text-[10px] font-semibold text-white/60">
+                  <span className="pointer-events-none absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-white/[0.1] bg-ink-800 px-1 font-mono text-[10px] font-semibold text-fg-muted">
                     {remaining}
                   </span>
                 ) : null}
@@ -774,12 +774,12 @@ export function LogicPuzzlePage() {
           disabled={resetting || !!hintSuggestion}
           onClick={() => void requestHint()}
           title={`Each new hint costs ${SCORE.HINT_PENALTY} points`}
-          aria-label={`Hint (costs ${SCORE.HINT_PENALTY} points)`}
         >
-          <Icon name="lightbulb" className="text-lg" /> Hint
-          <span className="font-mono text-[11px] font-medium text-amber-300/80">
+          <Icon name="lightbulb" className="text-lg" /> Hint{" "}
+          <span className="font-mono text-[11px] font-medium text-amber-300">
             −{SCORE.HINT_PENALTY}
           </span>
+          <span className="sr-only"> (costs {SCORE.HINT_PENALTY} points)</span>
         </Button>
         <Button
           variant="ghost"

@@ -16,6 +16,7 @@ import { Stat } from "../../components/Stat";
 import { Icon } from "../../components/Icon";
 import { RelationshipButton } from "./RelationshipButton";
 import { MyStatsCard } from "./MyStatsCard";
+import { useDocumentTitle } from "../../lib/use-document-title";
 import type { Relationship } from "./relationship";
 
 interface ProfileDTO {
@@ -43,6 +44,7 @@ export function ProfilePage() {
     enabled: !!username,
   });
   const { data: catalog } = useAchievementCatalog();
+  useDocumentTitle(profile?.displayName ?? username);
   const { data: unlocked } = useUserAchievements(username);
   const unlockedKeys = new Set((unlocked ?? []).map((a) => a.key));
 
@@ -74,12 +76,12 @@ export function ProfilePage() {
             className="h-20 w-20 text-2xl ring-4 ring-white/[0.04]"
           />
           <div className="min-w-0 flex-1">
-            <p className="eyebrow text-accent-300/80">Player profile</p>
+            <p className="eyebrow text-accent-300">Player profile</p>
             <h1 className="mt-1.5 truncate font-display text-2xl font-bold text-white sm:text-3xl">
               {profile.displayName}
             </h1>
-            <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-white/50 sm:justify-start">
-              <span className="font-mono text-white/60">@{profile.username}</span>
+            <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-fg-subtle sm:justify-start">
+              <span className="font-mono text-fg-muted">@{profile.username}</span>
               <span aria-hidden="true">·</span>
               <span>Joined {joined}</span>
               {profile.stats.currentStreak > 0 ? (
@@ -152,7 +154,7 @@ export function ProfilePage() {
           iconClassName="text-flame-400"
           action={
             catalog ? (
-              <span className="eyebrow text-white/40">
+              <span className="eyebrow text-fg-subtle">
                 {unlockedCount}/{catalog.length} unlocked
               </span>
             ) : null
@@ -183,11 +185,11 @@ export function ProfilePage() {
                   />
                 </span>
                 <span
-                  className={`text-xs font-semibold leading-tight ${isUnlocked ? "text-white" : "text-white/40"}`}
+                  className={`text-xs font-semibold leading-tight ${isUnlocked ? "text-white" : "text-fg-subtle"}`}
                 >
                   {achievement.name}
                 </span>
-                <span className="text-[11px] leading-snug text-white/35">
+                <span className="text-[11px] leading-snug text-fg-subtle">
                   {achievement.description}
                 </span>
               </div>

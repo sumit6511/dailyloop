@@ -99,7 +99,7 @@ export function ConnectionsPage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="connections" size="lg" />} title="Connections">
-        <p className="text-center text-white/50">
+        <p className="text-center text-fg-subtle">
           No Connections puzzle is available today. Check back soon!
         </p>
       </GameShell>
@@ -312,7 +312,7 @@ export function ConnectionsPage() {
           disabled={selected.length !== 4 || busy}
         >
           <Icon name="check" className="text-lg" /> Submit
-          <span className="tabular font-mono text-xs text-white/60" aria-hidden="true">
+          <span className="tabular font-mono text-xs text-fg-muted" aria-hidden="true">
             {selected.length}/4
           </span>
         </Button>

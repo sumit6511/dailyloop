@@ -44,7 +44,7 @@ export function ResultScreen({
         aria-hidden="true"
       />
       <div className="relative flex flex-col items-center">
-        <p className="eyebrow text-accent-300/80">{gameName} · today&rsquo;s puzzle done</p>
+        <p className="eyebrow text-accent-300">{gameName} · today&rsquo;s puzzle done</p>
         <h2 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">
           {won ? "Nice work!" : "So close!"}
         </h2>
@@ -151,7 +151,7 @@ function ScoreRing({ score, won }: { score: number; won: boolean }) {
         >
           {score}
         </span>
-        <span className="eyebrow mt-1.5 text-white/45" aria-hidden="true">
+        <span className="eyebrow mt-1.5 text-fg-subtle" aria-hidden="true">
           / {SCORE.PER_GAME_MAX} pts
         </span>
         <span className="sr-only">

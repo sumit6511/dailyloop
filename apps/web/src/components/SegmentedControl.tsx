@@ -36,7 +36,7 @@ export function SegmentedControl<T extends string>({
             } ${
               active
                 ? "bg-white/[0.1] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_1px_2px_var(--shadow-elev)]"
-                : "text-white/50 hover:bg-white/[0.04] hover:text-white/80"
+                : "text-fg-subtle hover:bg-white/[0.04] hover:text-white/80"
             }`}
           >
             {option.label}

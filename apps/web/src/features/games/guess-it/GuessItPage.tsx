@@ -78,7 +78,7 @@ export function GuessItPage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="guess-it" size="lg" />} title="Guess It">
-        <p className="text-center text-white/50">
+        <p className="text-center text-fg-subtle">
           No Guess It puzzle is available today. Check back soon!
         </p>
       </GameShell>
@@ -135,7 +135,7 @@ export function GuessItPage() {
           newAchievementKeys={newAchievements}
         >
           {view.answer ? (
-            <p className="mb-6 text-sm text-white/60">
+            <p className="mb-6 text-sm text-fg-muted">
               The answer was <span className="font-bold text-white">{view.answer}</span>
             </p>
           ) : null}
@@ -153,7 +153,7 @@ export function GuessItPage() {
         <HudChip label="Clue">
           <span className="tabular font-mono text-sm text-white/85">
             {view.cluesRevealed}
-            <span className="text-white/40">/{MAX_CLUES}</span>
+            <span className="text-fg-subtle">/{MAX_CLUES}</span>
           </span>
           <DotMeter total={MAX_CLUES} filled={view.cluesRevealed} />
         </HudChip>
@@ -178,7 +178,7 @@ export function GuessItPage() {
                   aria-hidden="true"
                 />
               ) : null}
-              <div className="eyebrow text-accent-300/80">Clue {i + 1}</div>
+              <div className="eyebrow text-accent-300">Clue {i + 1}</div>
               <p className="mt-1.5 text-[15px] text-white/85">{clue}</p>
             </div>
           );
@@ -186,7 +186,7 @@ export function GuessItPage() {
         {Array.from({ length: MAX_CLUES - view.clues.length }, (_, i) => (
           <div
             key={`locked-${i}`}
-            className="flex items-center gap-3 rounded-2xl border border-dashed border-white/[0.08] px-4 py-3 text-sm text-white/30"
+            className="flex items-center gap-3 rounded-2xl border border-dashed border-white/[0.08] px-4 py-3 text-sm text-fg-subtle"
           >
             <Icon name="lock" className="text-base" />
             <span className="eyebrow">Clue {view.clues.length + i + 1}</span>

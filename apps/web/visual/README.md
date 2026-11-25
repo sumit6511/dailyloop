@@ -1,4 +1,4 @@
-# Visual regression tests
+# Visual regression and accessibility tests
 
 Screenshots of every screen — sign-in, dashboard, all six games, a result screen, friends,
 profile, settings, admin and the 404 page — in four variants each: desktop and phone, dark and
@@ -9,6 +9,11 @@ anything moved, changed shape or changed colour noticeably.
 npm run test:visual -w @dailyloop/web          # compare against the baselines
 npm run test:visual:update -w @dailyloop/web   # accept the current look as the new baseline
 ```
+
+The same run checks every screen with axe-core (`a11y.visual.ts`) against WCAG 2.1 A/AA and
+axe's best practices, in all four variants. Muted text is the likeliest thing to regress: use the
+`text-fg-muted` and `text-fg-subtle` tokens rather than low-opacity white, which can't pass
+contrast in both themes.
 
 The first command builds the app and serves it with `vite preview` (production build, production
 security headers). On a failure, `apps/web/test-results/` holds the expected, actual and diff

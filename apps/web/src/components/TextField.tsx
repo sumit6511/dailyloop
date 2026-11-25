@@ -47,7 +47,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
               type="button"
               onClick={() => setRevealed((r) => !r)}
               aria-label={revealed ? "Hide password" : "Show password"}
-              className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-white/40 outline-none transition-colors hover:bg-white/[0.06] hover:text-white/75 focus-visible:text-white/75 focus-visible:ring-2 focus-visible:ring-accent-400/40"
+              className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-fg-subtle outline-none transition-colors hover:bg-white/[0.06] hover:text-white/75 focus-visible:text-white/75 focus-visible:ring-2 focus-visible:ring-accent-400/40"
             >
               <Icon name={revealed ? "visibility_off" : "visibility"} className="text-lg" />
             </button>

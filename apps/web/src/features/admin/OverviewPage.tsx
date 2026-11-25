@@ -43,7 +43,12 @@ export function OverviewPage() {
 
       <Card>
         <SectionHeader title="Games" icon="extension" />
-        <div className="overflow-x-auto">
+        <div
+          className="overflow-x-auto rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent-400/60"
+          tabIndex={0}
+          role="region"
+          aria-label="Games table"
+        >
           <table className={`${TABLE} min-w-[500px]`}>
             <thead>
               <tr className="text-left">
@@ -82,7 +87,7 @@ export function OverviewPage() {
         <SectionHeader
           title="Today's activity"
           icon="bolt"
-          action={<span className="eyebrow text-white/40">{activity.date}</span>}
+          action={<span className="eyebrow text-fg-subtle">{activity.date}</span>}
         />
         <div className="surface-inset mb-5 grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
           <Stat label="Active players" value={activity.activeUsers} />
@@ -90,7 +95,7 @@ export function OverviewPage() {
           <Stat label="Completed" value={activity.completedAttempts} />
           <Stat label="Perfect days" value={activity.perfectDays} />
         </div>
-        <h3 className="eyebrow mb-2 text-white/40">Top scores</h3>
+        <h3 className="eyebrow mb-2 text-fg-subtle">Top scores</h3>
         {activity.topScores.length > 0 ? (
           <ol className="flex flex-col">
             {activity.topScores.map((s, i) => (
@@ -99,7 +104,7 @@ export function OverviewPage() {
                 className="flex h-10 items-center justify-between rounded-lg px-2 text-sm hover:bg-white/[0.025]"
               >
                 <span className="inline-flex items-center gap-3 text-white/80">
-                  <span className="tabular w-5 text-right font-mono text-xs text-white/40">
+                  <span className="tabular w-5 text-right font-mono text-xs text-fg-subtle">
                     {i + 1}
                   </span>
                   {s.username}
@@ -112,7 +117,7 @@ export function OverviewPage() {
             ))}
           </ol>
         ) : (
-          <p className="text-sm text-white/50">No activity yet today.</p>
+          <p className="text-sm text-fg-subtle">No activity yet today.</p>
         )}
       </Card>
     </div>

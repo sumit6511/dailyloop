@@ -36,7 +36,11 @@ export function LoginPage() {
   };
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Pick up your streak where you left off.">
+    <AuthLayout
+      title="Welcome back"
+      documentTitle="Log in"
+      subtitle="Pick up your streak where you left off."
+    >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-4">
         <TextField
           label="Email or username"
@@ -67,7 +71,7 @@ export function LoginPage() {
           <Icon name="login" className="text-lg" /> Log in
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-white/50">
+      <p className="mt-6 text-center text-sm text-fg-subtle">
         New here?{" "}
         <Link to="/register" className="font-semibold text-accent-300 hover:text-accent-200">
           Create an account

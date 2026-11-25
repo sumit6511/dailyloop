@@ -42,7 +42,7 @@ export function StreakBadge({
         <span className="tabular font-mono text-3xl font-semibold leading-none text-white">
           {currentStreak}
         </span>
-        <span className="text-sm text-white/55">{currentStreak === 1 ? "day" : "days"}</span>
+        <span className="text-sm text-fg-muted">{currentStreak === 1 ? "day" : "days"}</span>
       </div>
       <div
         className="grid grid-cols-7 gap-1.5"
@@ -62,7 +62,7 @@ export function StreakBadge({
                 }`}
               />
               <span
-                className={`font-mono text-[10px] ${day === today ? "text-white/70" : "text-white/30"}`}
+                className={`font-mono text-[10px] ${day === today ? "text-white/85" : "text-fg-subtle"}`}
               >
                 {WEEKDAY.format(new Date(`${day}T12:00:00Z`))}
               </span>

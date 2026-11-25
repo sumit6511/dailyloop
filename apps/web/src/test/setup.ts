@@ -11,3 +11,6 @@ if (typeof HTMLDialogElement !== "undefined" && !HTMLDialogElement.prototype.sho
     this.dispatchEvent(new Event("close"));
   };
 }
+
+// jsdom doesn't implement scrolling; AppShell scrolls to the top on navigation.
+window.scrollTo = () => {};

@@ -228,7 +228,7 @@ export function PuzzlesPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <SectionHeader title="Generate a puzzle" icon="auto_awesome" />
-          <p className="mb-3 text-xs text-white/50">
+          <p className="mb-3 text-xs text-fg-subtle">
             Uses the game's real generator — only works for games with an engine module. Choose "All
             games" to generate every game's puzzle for that date at once, skipping any that already
             have one or don't have a generator.
@@ -243,6 +243,7 @@ export function PuzzlesPage() {
             <input
               type="date"
               value={generateForm.date}
+              aria-label="Date to generate for"
               onChange={(e) => setGenerateForm((p) => ({ ...p, date: e.target.value }))}
               className={INPUT_CLASSES}
             />
@@ -277,6 +278,7 @@ export function PuzzlesPage() {
               <input
                 type="date"
                 value={createForm.date}
+                aria-label="Puzzle date"
                 onChange={(e) => setCreateForm((p) => ({ ...p, date: e.target.value }))}
                 className={INPUT_CLASSES}
               />
@@ -319,7 +321,7 @@ export function PuzzlesPage() {
             className="mr-auto"
             action={
               puzzles ? (
-                <span className="eyebrow ml-2 text-white/40">{puzzles.length} total</span>
+                <span className="eyebrow ml-2 text-fg-subtle">{puzzles.length} total</span>
               ) : null
             }
           />
@@ -332,6 +334,7 @@ export function PuzzlesPage() {
           <input
             type="date"
             value={filters.date}
+            aria-label="Filter by date"
             onChange={(e) => updateFilters({ date: e.target.value })}
             className={INPUT_CLASSES}
           />
@@ -351,7 +354,7 @@ export function PuzzlesPage() {
         {isLoading || !puzzles ? (
           <Spinner className="mx-auto h-6 w-6 text-accent-400" />
         ) : puzzles.length === 0 ? (
-          <p className="text-center text-sm text-white/50">No puzzles match these filters.</p>
+          <p className="text-center text-sm text-fg-subtle">No puzzles match these filters.</p>
         ) : (
           <>
             <ul className="flex flex-col">
@@ -365,8 +368,8 @@ export function PuzzlesPage() {
                       <GameIcon slug={puzzle.gameSlug} size="sm" />
                       <span className="text-sm font-semibold text-white/85">{puzzle.gameName}</span>
                     </span>
-                    <span className="tabular font-mono text-xs text-white/55">{puzzle.date}</span>
-                    <span className="tabular font-mono text-xs text-white/35">
+                    <span className="tabular font-mono text-xs text-fg-muted">{puzzle.date}</span>
+                    <span className="tabular font-mono text-xs text-fg-subtle">
                       #{puzzle.puzzleNumber}
                     </span>
                     <Badge tone={STATUS_TONE[puzzle.status] ?? "neutral"}>
@@ -414,7 +417,7 @@ export function PuzzlesPage() {
                 aria-label="Puzzle pages"
                 className="mt-4 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4"
               >
-                <span className="tabular font-mono text-xs text-white/45">
+                <span className="tabular font-mono text-xs text-fg-subtle">
                   {firstShown}–{lastShown} of {puzzles.length}
                 </span>
                 <div className="flex items-center gap-2">
@@ -426,7 +429,7 @@ export function PuzzlesPage() {
                   >
                     <Icon name="arrow_back" className="text-base" /> Previous
                   </Button>
-                  <span className="tabular font-mono text-xs text-white/55">
+                  <span className="tabular font-mono text-xs text-fg-muted">
                     {currentPage + 1} / {pageCount}
                   </span>
                   <Button

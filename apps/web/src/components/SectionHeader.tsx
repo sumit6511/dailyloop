@@ -32,7 +32,7 @@ export function SectionHeader({
           ) : null}
           <span className="truncate">{title}</span>
         </h2>
-        {description ? <p className="mt-1 text-sm text-white/50">{description}</p> : null}
+        {description ? <p className="mt-1 text-sm text-fg-subtle">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>

@@ -28,6 +28,11 @@
   /* Text and marks on a saturated fill (buttons, selected tiles) — white in both themes. */
   --color-on-accent: #ffffff;
 
+  /* Secondary and tertiary text, tuned per theme to keep WCAG AA contrast (4.5:1 for small
+     text) on every surface. Use these, not low-opacity white, for anything people read. */
+  --color-fg-muted: rgb(255 255 255 / 0.68);
+  --color-fg-subtle: rgb(255 255 255 / 0.56);
+
   /* Streaks. */
   --color-flame-400: #ff9a52;
   --color-flame-500: #ff7a1a;
@@ -91,6 +96,8 @@ html {
 
   --color-white: #0d1226;
   --color-black: #ffffff;
+  --color-fg-muted: rgb(13 18 38 / 0.74);
+  --color-fg-subtle: rgb(13 18 38 / 0.66);
 
   --color-ink-950: #f3f5fa;
   --color-ink-900: #ffffff;
@@ -119,7 +126,7 @@ html {
   --color-rose-400: oklch(58.6% 0.253 17.585);
   --color-amber-100: oklch(47.3% 0.137 46.201);
   --color-amber-200: oklch(47.3% 0.137 46.201);
-  --color-amber-300: oklch(55.5% 0.163 48.998);
+  --color-amber-300: oklch(47.3% 0.137 46.201);
   --color-yellow-200: oklch(47.6% 0.114 61.907);
   --color-yellow-300: oklch(55.4% 0.135 66.442);
   --color-yellow-400: oklch(68.1% 0.162 75.834);

@@ -326,3 +326,46 @@ Follow-ups, both done:
   pinning Playwright, loading every font face before capture, and running Chromium with
   single-threaded software raster and font hinting off; see `apps/web/visual/README.md` for what
   they catch and what they can't.
+
+## Backlog — round 7
+
+A fresh pass over the whole app found the code healthy: no audit findings, no lint warnings and
+no TODOs. An axe-core scan of 34 pages in both themes, plus a review of the product, turned up
+the following.
+
+### Accessibility
+
+1. **Muted text fails WCAG AA contrast** on 42 of the scanned page variants. Labels and helper
+   text drawn at 40–55% opacity reach only 2.5–4.0:1, and 1.96:1 in light mode, where AA needs
+   4.5:1.
+2. **The sign-in pages have no `main` landmark**, and their content sits outside any landmark.
+3. **No skip link, and focus stays put on navigation.** Screen-reader users aren't told that the
+   page changed.
+
+### Product
+
+4. **No "How to play".** Each game's rules are a one-line subtitle. Add a rules dialog per game,
+   opened automatically the first time someone plays it.
+5. **The profile has no history.** Show the last 12 weeks of daily scores as a calendar heatmap
+   (the data is already in `DailyScore`).
+6. **Shared links render bare.** There are no Open Graph or Twitter tags, so a link pasted into a
+   chat shows no title, description or image.
+
+### Performance, privacy, security
+
+7. **Text fonts come from Google Fonts.** That's a third-party connection, a render-blocking
+   stylesheet, and every visitor's IP sent to Google. Self-host Inter, Space Grotesk and
+   JetBrains Mono, keeping only the icon subset on Google.
+8. **One 400 kB bundle.** Every deploy invalidates all of it. Split React and the other vendor
+   libraries into their own long-cached chunk.
+9. **Security headers.** Add HSTS and Cross-Origin-Opener-Policy, and narrow `connect-src` from
+   any https origin to the API's.
+
+### Testing and maintenance
+
+10. **Nothing tests the real stack end to end.** Add a Playwright smoke test in CI against the
+    real API and database: register, play a game to a result, see it on the leaderboard.
+11. **Dependencies.** Apply the minor and patch releases. Try each major release (Fastify
+    plugins, argon2, jsdom, hookform resolvers, Vite 8, ESLint 10, Prisma 7, TypeScript 7) and
+    keep the ones that pass the full suite.
+12. **The README has no pictures.** Add screenshots, taken from the visual-test baselines.

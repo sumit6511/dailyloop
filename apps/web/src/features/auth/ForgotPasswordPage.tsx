@@ -46,7 +46,7 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
       )}
-      <p className="mt-6 text-center text-sm text-white/50">
+      <p className="mt-6 text-center text-sm text-fg-subtle">
         <Link to="/login" className="font-semibold text-accent-300 hover:text-accent-200">
           Back to login
         </Link>

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import type { IconName } from "@dailyloop/shared";
 import { useAuth, useForgetSession } from "../../lib/use-auth";
@@ -27,6 +27,26 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  const firstRender = useRef(true);
+
+  // On every in-app navigation: start the new page at the top, and move focus to its heading so
+  // screen readers announce where you've arrived (a SPA doesn't get that from the browser).
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    window.scrollTo(0, 0);
+    const frame = requestAnimationFrame(() => {
+      const main = mainRef.current;
+      const target = main?.querySelector<HTMLElement>("h1") ?? main;
+      if (!target) return;
+      if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname]);
   const { data: requests } = useFriendRequests();
   const incomingCount = requests?.incoming.length ?? 0;
 
@@ -58,7 +78,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         } ${
           isActive
             ? "bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]"
-            : "text-white/55 hover:bg-white/[0.04] hover:text-white"
+            : "text-fg-muted hover:bg-white/[0.04] hover:text-white"
         }`
       }
     >
@@ -85,6 +105,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <a
+        href="#main"
+        className="sr-only z-50 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-on-accent focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Skip to content
+      </a>
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-x-0 top-0 z-10 h-24 backdrop-blur-xl sm:h-28"
@@ -120,7 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-white/55 outline-none transition-colors hover:bg-rose-500/10 hover:text-rose-200 focus-visible:ring-2 focus-visible:ring-rose-400/60"
+                  className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-fg-muted outline-none transition-colors hover:bg-rose-500/10 hover:text-rose-200 focus-visible:ring-2 focus-visible:ring-rose-400/60"
                 >
                   <Icon name="logout" className="text-lg" /> Log out
                 </button>
@@ -171,7 +197,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           </header>
         </div>
       </div>
-      <main className={`${CONTAINER} flex-1 pb-16 pt-6 sm:pt-10`}>
+      <main
+        id="main"
+        ref={mainRef}
+        tabIndex={-1}
+        className={`${CONTAINER} flex-1 pb-16 pt-6 outline-none sm:pt-10 [&_h1]:outline-none`}
+      >
         {/* A crash in one page shows in place of that page only — the header and navigation keep
             working, and moving to another route clears it. */}
         <ErrorBoundary variant="page" resetKey={location.pathname}>

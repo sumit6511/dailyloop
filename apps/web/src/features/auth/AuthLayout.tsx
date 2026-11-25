@@ -3,6 +3,7 @@ import { Card } from "../../components/Card";
 import { GameIcon } from "../../components/GameIcon";
 import { LogoFull, LogoMark } from "../../components/Logo";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { useDocumentTitle } from "../../lib/use-document-title";
 
 const GAMES = [
   { slug: "connections", name: "Connections" },
@@ -16,23 +17,27 @@ const GAMES = [
 export function AuthLayout({
   title,
   subtitle,
+  documentTitle,
   children,
 }: {
   title: string;
   subtitle: string;
+  /** The browser tab title, when the heading doesn't work as one ("Welcome back"). */
+  documentTitle?: string;
   children: ReactNode;
 }) {
+  useDocumentTitle(documentTitle ?? title);
   return (
-    <div className="relative mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
+    <main className="relative mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
       <ThemeToggle className="absolute right-3 top-3 sm:right-6 sm:top-5" />
       {/* The pitch, on wide screens only — phones go straight to the form. */}
       <section className="hidden lg:block" aria-hidden="true">
         <LogoFull markClassName="h-9 w-9" className="[&>span:last-child]:text-2xl" />
-        <p className="eyebrow mt-12 text-accent-300/80">Daily puzzles</p>
+        <p className="eyebrow mt-12 text-accent-300">Daily puzzles</p>
         <h2 className="mt-3 max-w-md font-display text-5xl font-bold leading-[1.05] text-white">
           Six puzzles. <span className="text-gradient">Every day.</span>
         </h2>
-        <p className="mt-5 max-w-sm text-white/55">
+        <p className="mt-5 max-w-sm text-fg-muted">
           A few minutes of words, numbers and logic. Keep your streak alive and see where you land
           against your friends.
         </p>
@@ -53,12 +58,12 @@ export function AuthLayout({
         <div className="mb-8 text-center lg:text-left">
           <LogoMark className="mx-auto mb-5 h-12 w-12 lg:hidden" />
           <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">{title}</h1>
-          <p className="mt-1.5 text-sm text-white/55">{subtitle}</p>
+          <p className="mt-1.5 text-sm text-fg-muted">{subtitle}</p>
         </div>
         <Card intensity="strong" className="sm:p-7">
           {children}
         </Card>
       </div>
-    </div>
+    </main>
   );
 }

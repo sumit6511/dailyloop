@@ -28,7 +28,7 @@ export function Stat({
         variant === "tile" ? "glass-subtle px-4 py-3.5" : ""
       } ${className}`}
     >
-      <span className="eyebrow flex items-center gap-1.5 truncate text-white/45">
+      <span className="eyebrow flex items-center gap-1.5 truncate text-fg-subtle">
         {icon ? <Icon name={icon} className={`text-sm ${iconClassName}`} filled /> : null}
         {label}
       </span>

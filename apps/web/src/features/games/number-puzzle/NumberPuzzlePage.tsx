@@ -87,7 +87,7 @@ export function NumberPuzzlePage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="number-puzzle" size="lg" />} title="Number Puzzle">
-        <p className="text-center text-white/50">
+        <p className="text-center text-fg-subtle">
           No Number Puzzle is available today. Check back soon!
         </p>
       </GameShell>
@@ -215,7 +215,7 @@ export function NumberPuzzlePage() {
           newAchievementKeys={newAchievements}
         >
           {!view.won ? (
-            <p className="mb-6 text-sm text-white/60">
+            <p className="mb-6 text-sm text-fg-muted">
               Target was {view.target}. Final numbers: {view.pool.join(", ")}
               {view.solution ? (
                 <>
@@ -245,7 +245,7 @@ export function NumberPuzzlePage() {
           aria-hidden="true"
         />
         <div className="relative text-center">
-          <div className="eyebrow text-white/45">Target</div>
+          <div className="eyebrow text-fg-subtle">Target</div>
           <div className="relative mt-1 inline-flex items-center justify-center">
             {celebrating ? (
               <div
@@ -302,7 +302,7 @@ export function NumberPuzzlePage() {
 
         {view.steps.length > 0 ? (
           <div className="flex w-full flex-col items-center gap-3 border-t border-white/[0.06] pt-5">
-            <ol className="flex flex-col gap-1 text-center font-mono text-sm text-white/50">
+            <ol className="flex flex-col gap-1 text-center font-mono text-sm text-fg-subtle">
               {view.steps.map((step, i) => (
                 <li key={i} className="animate-pop-in tabular">
                   {step.a} {OP_SYMBOLS[step.op]} {step.b} ={" "}
@@ -340,7 +340,7 @@ export function NumberPuzzlePage() {
       ) : null}
 
       <div className="flex flex-col items-center gap-4">
-        <p className="text-center text-xs text-white/40">
+        <p className="text-center text-xs text-fg-subtle">
           Tap a number, tap an operator, then tap a second number to combine them.
         </p>
         <div className="flex justify-center gap-3">

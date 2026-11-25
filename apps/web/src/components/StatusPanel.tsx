@@ -41,9 +41,9 @@ export function StatusPanel({
         >
           <Icon name={icon} className="text-3xl" filled />
         </span>
-        {code ? <p className="eyebrow mb-2 text-white/40">{code}</p> : null}
+        {code ? <p className="eyebrow mb-2 text-fg-subtle">{code}</p> : null}
         <h1 className="font-display text-xl font-bold text-white sm:text-2xl">{title}</h1>
-        {children ? <div className="mt-2 text-sm text-white/55">{children}</div> : null}
+        {children ? <div className="mt-2 text-sm text-fg-muted">{children}</div> : null}
         {actions ? (
           <div className="mt-7 flex w-full flex-col gap-2 sm:w-auto">{actions}</div>
         ) : null}

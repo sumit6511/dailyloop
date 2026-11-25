@@ -43,7 +43,7 @@ const GRID_FEEDBACK_CLASSES: Record<LetterStatus, string> = {
   correct:
     "border-emerald-300/60 bg-emerald-500 text-on-accent shadow-[0_8px_24px_-10px_rgb(16_185_129/0.9)]",
   present: "border-amber-200/60 bg-amber-400 text-amber-950",
-  absent: "border-white/[0.04] bg-white/[0.06] text-white/45",
+  absent: "border-white/[0.04] bg-white/[0.06] text-fg-subtle",
 };
 
 const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
@@ -170,7 +170,7 @@ export function WordGuessPage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="word-guess" size="lg" />} title="Word Guess">
-        <p className="text-center text-white/50">
+        <p className="text-center text-fg-subtle">
           No Word Guess puzzle is available today. Check back soon!
         </p>
       </GameShell>
@@ -216,7 +216,7 @@ export function WordGuessPage() {
           newAchievementKeys={newAchievements}
         >
           {view.answer ? (
-            <p className="mb-6 text-sm text-white/60">
+            <p className="mb-6 text-sm text-fg-muted">
               The word was <span className="font-bold tracking-wide text-white">{view.answer}</span>
             </p>
           ) : null}

@@ -288,7 +288,7 @@ export function PathwayPage() {
   if (!entry.available) {
     return (
       <GameShell icon={<GameIcon slug="pathway" size="lg" />} title="Pathway">
-        <p className="text-center text-white/50">
+        <p className="text-center text-fg-subtle">
           No Pathway puzzle is available today. Check back soon!
         </p>
       </GameShell>
@@ -338,7 +338,7 @@ export function PathwayPage() {
         <HudChip label="Cells">
           <span className="tabular font-mono text-sm text-white/85">
             {localPath.length}
-            <span className="text-white/40">/{size * size}</span>
+            <span className="text-fg-subtle">/{size * size}</span>
           </span>
         </HudChip>
       }
@@ -456,10 +456,10 @@ export function PathwayPage() {
           disabled={!!hintSuggestion}
           onClick={() => void requestHint()}
           title={`Each new hint costs ${SCORE.HINT_PENALTY} points`}
-          aria-label={`Hint (costs ${SCORE.HINT_PENALTY} points)`}
         >
-          <Icon name="lightbulb" className="text-lg" /> Hint
-          <span className="text-xs font-medium text-amber-300/80">−{SCORE.HINT_PENALTY}</span>
+          <Icon name="lightbulb" className="text-lg" /> Hint{" "}
+          <span className="text-xs font-medium text-amber-300">−{SCORE.HINT_PENALTY}</span>
+          <span className="sr-only"> (costs {SCORE.HINT_PENALTY} points)</span>
         </Button>
       </div>
 
@@ -468,7 +468,7 @@ export function PathwayPage() {
         {nextCheckpoint <= checkpoints.length ? `, next number ${nextCheckpoint}` : ""}.
       </p>
 
-      <p className="mx-auto max-w-md text-center text-xs text-white/40">
+      <p className="mx-auto max-w-md text-center text-xs text-fg-subtle">
         Press and drag from 1, through every cell, ending on {checkpoints.length}. Tap a cell on
         your trail to back up to it. On a keyboard, use the arrow keys and Backspace.
       </p>

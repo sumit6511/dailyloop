@@ -4,6 +4,7 @@ import { NavLink } from "react-router-dom";
 import { Icon } from "../../components/Icon";
 import { Page } from "../../components/Page";
 import { PageHeader } from "../../components/PageHeader";
+import { useDocumentTitle } from "../../lib/use-document-title";
 
 const TABS: { to: string; label: string; icon: IconName; end?: boolean }[] = [
   { to: "/admin", label: "Overview", icon: "dashboard", end: true },
@@ -13,6 +14,7 @@ const TABS: { to: string; label: string; icon: IconName; end?: boolean }[] = [
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {
+  useDocumentTitle("Admin");
   return (
     <Page>
       <div className="flex flex-col gap-5">
@@ -34,7 +36,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 `flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-3.5 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent-400/60 ${
                   isActive
                     ? "bg-white/[0.1] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]"
-                    : "text-white/50 hover:bg-white/[0.04] hover:text-white/85"
+                    : "text-fg-subtle hover:bg-white/[0.04] hover:text-white/85"
                 }`
               }
             >

@@ -34,7 +34,7 @@ export function GamesPage() {
               <GameIcon slug={game.slug} size="sm" />
               <div className="min-w-0">
                 <div className="truncate font-semibold text-white">{game.name}</div>
-                <div className="flex items-center gap-3 font-mono text-xs text-white/40">
+                <div className="flex items-center gap-3 font-mono text-xs text-fg-subtle">
                   /{game.slug}
                   <DifficultyMeter difficulty={game.difficulty} />
                 </div>

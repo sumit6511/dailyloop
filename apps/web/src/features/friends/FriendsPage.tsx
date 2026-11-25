@@ -24,10 +24,12 @@ import {
   useRemoveFriend,
 } from "../../lib/friends-api";
 import { useDebouncedValue } from "../../lib/use-debounced-value";
+import { useDocumentTitle } from "../../lib/use-document-title";
 
 const SEARCH_DEBOUNCE_MS = 250;
 
 export function FriendsPage() {
+  useDocumentTitle("Friends");
   const [query, setQuery] = useState("");
   const [pendingRemoval, setPendingRemoval] = useState<{ id: string; displayName: string } | null>(
     null,
@@ -75,7 +77,7 @@ export function FriendsPage() {
                   <Link to={`/u/${user.username}`} className="flex min-w-0 items-center gap-2.5">
                     <Avatar name={user.displayName} size="sm" />
                     <span className="truncate text-sm font-medium text-white/85 hover:text-white">
-                      {user.displayName} <span className="text-white/40">@{user.username}</span>
+                      {user.displayName} <span className="text-fg-subtle">@{user.username}</span>
                     </span>
                   </Link>
                   <RelationshipButton
@@ -87,7 +89,7 @@ export function FriendsPage() {
                 </div>
               ))
             ) : (
-              <p className="text-center text-sm text-white/50">No users found.</p>
+              <p className="text-center text-sm text-fg-subtle">No users found.</p>
             )}
           </div>
         ) : null}
@@ -98,7 +100,7 @@ export function FriendsPage() {
           <SectionHeader title="Requests" icon="person_add" iconClassName="text-flame-400" />
           {requests.incoming.length > 0 ? (
             <div className="mb-4 flex flex-col gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-white/50">
+              <p className="text-xs font-semibold uppercase tracking-wide text-fg-subtle">
                 Incoming
               </p>
               {requests.incoming.map((r) => (
@@ -140,7 +142,7 @@ export function FriendsPage() {
           ) : null}
           {requests.outgoing.length > 0 ? (
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-white/50">Sent</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-fg-subtle">Sent</p>
               {requests.outgoing.map((r) => (
                 <div
                   key={r.id}
@@ -172,7 +174,7 @@ export function FriendsPage() {
           icon="group"
           action={
             friends && friends.length > 0 ? (
-              <span className="eyebrow text-white/40">{friends.length} total</span>
+              <span className="eyebrow text-fg-subtle">{friends.length} total</span>
             ) : null
           }
         />
@@ -188,7 +190,7 @@ export function FriendsPage() {
                 <Link to={`/u/${friend.username}`} className="flex min-w-0 items-center gap-2.5">
                   <Avatar name={friend.displayName} size="sm" />
                   <span className="truncate text-sm font-medium text-white/85 hover:text-white">
-                    {friend.displayName} <span className="text-white/40">@{friend.username}</span>
+                    {friend.displayName} <span className="text-fg-subtle">@{friend.username}</span>
                   </span>
                 </Link>
                 <Button

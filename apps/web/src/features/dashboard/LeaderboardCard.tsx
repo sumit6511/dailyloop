@@ -103,7 +103,7 @@ export function LeaderboardCard() {
                   : "hover:bg-white/[0.03]"
               }`}
             >
-              <span className="tabular flex w-6 shrink-0 items-center justify-center font-mono text-xs font-semibold text-white/45">
+              <span className="tabular flex w-6 shrink-0 items-center justify-center font-mono text-xs font-semibold text-fg-subtle">
                 {entry.rank <= 3 ? (
                   <Icon
                     name="emoji_events"
@@ -129,7 +129,7 @@ export function LeaderboardCard() {
                 ⋯
               </li>
               <li className="flex h-11 items-center gap-3 rounded-xl bg-brand-500/[0.14] px-2.5 ring-1 ring-inset ring-brand-400/30">
-                <span className="tabular flex min-w-6 shrink-0 items-center justify-center font-mono text-xs font-semibold text-white/60">
+                <span className="tabular flex min-w-6 shrink-0 items-center justify-center font-mono text-xs font-semibold text-fg-muted">
                   {myRow.rank}
                 </span>
                 <Avatar name={user.displayName} size="sm" />

@@ -24,6 +24,7 @@ import { PageHeader } from "../../components/PageHeader";
 import { SectionHeader } from "../../components/SectionHeader";
 import { SegmentedControl } from "../../components/SegmentedControl";
 import { useTheme } from "../../lib/use-theme";
+import { useDocumentTitle } from "../../lib/use-document-title";
 
 const changePasswordFormSchema = z
   .extend(changePasswordSchema, { confirmPassword: z.string().check(z.minLength(1)) })
@@ -251,6 +252,7 @@ function DeleteAccountSection() {
 }
 
 export function SettingsPage() {
+  useDocumentTitle("Settings");
   return (
     <Page width="narrow">
       <PageHeader
