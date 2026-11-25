@@ -141,7 +141,8 @@ export function NumberPuzzlePage() {
     setCombiningIndices([firstIndex, index]);
     setFrozenPool(view.pool);
     resetSelection();
-    const startedAt = Date.now();
+    // The merge animation runs for at least MERGE_MS, however quickly the server answers.
+    const animationDone = new Promise((resolve) => setTimeout(resolve, MERGE_MS));
     try {
       const response = await submitMove.mutateAsync({ type: "combine", a, b, op });
       const newView = response.content as NumberPuzzleView;
@@ -154,11 +155,9 @@ export function NumberPuzzlePage() {
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : "Something went wrong. Try again.");
     }
-    const remaining = Math.max(0, MERGE_MS - (Date.now() - startedAt));
-    setTimeout(() => {
-      setCombiningIndices(null);
-      setFrozenPool(null);
-    }, remaining);
+    await animationDone;
+    setCombiningIndices(null);
+    setFrozenPool(null);
   };
 
   const undoLastStep = async () => {

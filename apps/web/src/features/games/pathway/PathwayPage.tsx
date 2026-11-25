@@ -137,7 +137,10 @@ export function PathwayPage() {
 
   const view = (entry?.content ?? null) as PathwayView | null;
 
+  // Once a drag ends and its queued moves are saved, the server's path becomes the drawn path
+  // again (it may differ: a rejected move, or another tab). The drag itself owns localPath.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- re-sync from the server, see above
     if (view && !dragging) setLocalPath(view.path);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view?.path, dragging]);

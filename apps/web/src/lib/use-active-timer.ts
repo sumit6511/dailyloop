@@ -22,15 +22,12 @@ export function useActiveTimer(
   slug: string,
   { initialActiveMs, running }: { initialActiveMs: number | null | undefined; running: boolean },
 ): number {
+  // The last server count and when it arrived. Until the first heartbeat answers, the total the
+  // page loaded with stands in for it.
   const [synced, setSynced] = useState<{ ms: number; at: number } | null>(null);
   const [visible, setVisible] = useState(isPageVisible);
-  const [, setTick] = useState(0);
-
-  // Show the last known total immediately; the first heartbeat replaces it a moment later.
-  useEffect(() => {
-    if (initialActiveMs != null)
-      setSynced((prev) => prev ?? { ms: initialActiveMs, at: Date.now() });
-  }, [initialActiveMs]);
+  // "Now", advanced by the one-second tick, so rendering never reads the clock itself.
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     const onChange = () => setVisible(isPageVisible());
@@ -45,14 +42,17 @@ export function useActiveTimer(
       api
         .post<HeartbeatResponse>(`/games/${slug}/attempts/heartbeat`)
         .then((res) => {
-          if (!cancelled) setSynced({ ms: res.activeMs, at: Date.now() });
+          if (cancelled) return;
+          const at = Date.now();
+          setSynced({ ms: res.activeMs, at });
+          setNow(at);
         })
         .catch(() => {
           // Best-effort: a missed beat only means a slightly longer gap at the next one.
         });
     void beat();
     const beatTimer = setInterval(() => void beat(), ACTIVE_TIME.HEARTBEAT_MS);
-    const tickTimer = setInterval(() => setTick((n) => n + 1), 1000);
+    const tickTimer = setInterval(() => setNow(Date.now()), 1000);
     // Closing the tab, reloading or navigating off-site unloads the page without running React
     // cleanup — bank the time on `pagehide` too, with a request that outlives the page.
     const bankOnUnload = () => api.postOnUnload(`/games/${slug}/attempts/heartbeat`);
@@ -67,9 +67,10 @@ export function useActiveTimer(
     };
   }, [slug, running, visible]);
 
-  if (!synced) return 0;
+  const base = synced ?? (initialActiveMs != null ? { ms: initialActiveMs, at: now } : null);
+  if (!base) return 0;
   // Between heartbeats, extrapolate — but never beyond what the server would still credit.
   const sinceSync =
-    running && visible ? Math.min(Date.now() - synced.at, ACTIVE_TIME.MAX_GAP_MS) : 0;
-  return Math.floor((synced.ms + sinceSync) / 1000);
+    running && visible ? Math.min(Math.max(0, now - base.at), ACTIVE_TIME.MAX_GAP_MS) : 0;
+  return Math.floor((base.ms + sinceSync) / 1000);
 }

@@ -37,12 +37,19 @@ export function HowToPlay({
 }) {
   const rules = GAME_RULES[slug];
   const [open, setOpen] = useState(false);
+  // A first-time player sees the rules as soon as the live board is up. GameShell (and so this
+  // component) is the same instance through the loading and live states, so react to
+  // openOnFirstVisit turning on, not just to the first render — by adjusting state while
+  // rendering, as React recommends over an effect.
+  const [checkedFirstVisit, setCheckedFirstVisit] = useState(false);
+  if (openOnFirstVisit && !checkedFirstVisit) {
+    setCheckedFirstVisit(true);
+    if (rules && !hasSeenRules(slug)) setOpen(true);
+  }
 
   useEffect(() => {
-    if (!rules || !openOnFirstVisit || hasSeenRules(slug)) return;
-    markRulesSeen(slug);
-    setOpen(true);
-  }, [slug, rules, openOnFirstVisit]);
+    if (open) markRulesSeen(slug);
+  }, [open, slug]);
 
   if (!rules) return null;
   return (

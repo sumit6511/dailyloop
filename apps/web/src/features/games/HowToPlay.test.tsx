@@ -45,3 +45,15 @@ describe("HowToPlay", () => {
     }
   });
 });
+
+describe("HowToPlay inside a game that's still loading", () => {
+  it("opens once the live board turns openOnFirstVisit on, not just on first render", async () => {
+    localStorage.clear();
+    const { rerender } = renderWithProviders(<HowToPlay slug="word-guess" title="Word Guess" />);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    rerender(<HowToPlay slug="word-guess" title="Word Guess" openOnFirstVisit />);
+    expect(
+      await screen.findByRole("dialog", { name: "How to play Word Guess" }),
+    ).toBeInTheDocument();
+  });
+});
