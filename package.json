@@ -2,7 +2,7 @@
   "name": "dailyloop",
   "private": true,
   "version": "0.1.0",
-  "description": "DailyLoop \u2014 a daily puzzle platform with streaks, scoring, and friends.",
+  "description": "DailyLoop — a daily puzzle platform with streaks, scoring, and friends.",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -36,16 +36,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
-    "@types/node": "^22.10.5",
+    "@types/node": "^22.20.5",
     "concurrently": "^9.1.2",
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
     "playwright": "1.63.0",
-    "prettier": "^3.4.2",
+    "prettier": "^3.10.0",
     "prisma": "^6.2.1",
-    "tsx": "^4.19.2",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.19.1",
     "vitest": "^5.1.1"
