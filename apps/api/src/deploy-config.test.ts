@@ -31,6 +31,21 @@ describe("web security headers (render.yaml vs apps/web/security-headers.json)",
   });
 });
 
+describe("link previews", () => {
+  const indexHtml = readFileSync(new URL("apps/web/index.html", root), "utf8");
+
+  it("declare a large image at the site's absolute URL", () => {
+    expect(indexHtml).toContain('<meta property="og:image" content="__SITE_URL__/og-image.png" />');
+    expect(indexHtml).toContain('<meta name="twitter:card" content="summary_large_image" />');
+  });
+
+  it("ship a 1200×630 preview image", () => {
+    const png = readFileSync(new URL("apps/web/public/og-image.png", root));
+    // PNG IHDR: width and height are big-endian at bytes 16 and 20.
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+  });
+});
+
 describe("render.yaml", () => {
   it("caches the content-hashed build assets immutably", () => {
     expect(renderYaml).toContain(

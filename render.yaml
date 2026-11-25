@@ -43,6 +43,9 @@ services:
     buildCommand: npm install && npm run build -w @dailyloop/web
     staticPublishPath: apps/web/dist
     envVars:
+      # The site's own public URL, for link previews (set it in the dashboard once you know it).
+      - key: VITE_SITE_URL
+        sync: false
       - key: VITE_API_URL
         fromService:
           type: web

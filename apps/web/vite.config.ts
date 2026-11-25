@@ -78,8 +78,25 @@ const VENDOR_CHUNKS: Record<string, RegExp> = {
   data: /[\\/]node_modules[\\/](@tanstack|zod|react-hook-form|@hookform)[\\/]/,
 };
 
+/**
+ * Fills the link-preview tags' __SITE_URL__ with VITE_SITE_URL (the site's public origin, e.g.
+ * https://dailyloop.example.com; a bare host gets https://). Unset, the URLs stay relative: fine
+ * locally, but most previewers then won't show the image.
+ */
+function linkPreviews(): Plugin {
+  let siteUrl = "";
+  return {
+    name: "dailyloop:link-previews",
+    configResolved(resolved) {
+      const raw = (resolved.env.VITE_SITE_URL ?? "").trim().replace(/\/+$/, "");
+      siteUrl = raw && !/^https?:\/\//.test(raw) ? `https://${raw}` : raw;
+    },
+    transformIndexHtml: (html) => html.replaceAll("__SITE_URL__", siteUrl),
+  };
+}
+
 const config = {
-  plugins: [react(), tailwindcss(), materialSymbolsSubset()],
+  plugins: [react(), tailwindcss(), materialSymbolsSubset(), linkPreviews()],
   build: {
     // Never inline font files as data: URIs (Vite does for anything under 4 kB): the CSP's
     // font-src allows the app's own origin, not data:.

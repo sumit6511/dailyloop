@@ -62,9 +62,10 @@ Set these on the API host:
 
 Set this on the web host (build-time):
 
-| Variable       | Example                           |
-| -------------- | --------------------------------- |
-| `VITE_API_URL` | `https://your-api-domain.com/api` |
+| Variable        | Example                                                                            |
+| --------------- | ---------------------------------------------------------------------------------- |
+| `VITE_API_URL`  | `https://your-api-domain.com/api`                                                  |
+| `VITE_SITE_URL` | `https://your-web-domain.com` (optional: link previews need an absolute image URL) |
 
 ## Build & start commands
 
