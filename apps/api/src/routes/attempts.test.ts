@@ -107,6 +107,46 @@ describe("attempt lifecycle", () => {
     return game;
   }
 
+  it("tells a lost game from a won one in today's lineup", async () => {
+    const { cookies } = await registerUser("harry");
+    await publishToday("word-guess", "Word Guess", "🟨", WORD_GUESS_CONTENT);
+    const lineupEntry = async () =>
+      (await app.inject({ method: "GET", url: "/api/games/today", cookies }))
+        .json()
+        .data.find((g: { slug: string }) => g.slug === "word-guess");
+
+    expect(await lineupEntry()).toMatchObject({ status: "not_started", won: null });
+    await app.inject({ method: "POST", url: "/api/games/word-guess/attempts/start", cookies });
+    for (const guess of ["SLATE", "MOIST", "PLUMB", "BRICK", "DOUGH", "FJORD"]) {
+      await app.inject({
+        method: "POST",
+        url: "/api/games/word-guess/attempts/submit",
+        cookies,
+        payload: { move: { guess } },
+      });
+    }
+    expect(await lineupEntry()).toMatchObject({ status: "completed", won: false, score: 0 });
+
+    const winner = await registerUser("ron");
+    await app.inject({
+      method: "POST",
+      url: "/api/games/word-guess/attempts/start",
+      cookies: winner.cookies,
+    });
+    await app.inject({
+      method: "POST",
+      url: "/api/games/word-guess/attempts/submit",
+      cookies: winner.cookies,
+      payload: { move: { guess: "CRANE" } },
+    });
+    const ronsEntry = (
+      await app.inject({ method: "GET", url: "/api/games/today", cookies: winner.cookies })
+    )
+      .json()
+      .data.find((g: { slug: string }) => g.slug === "word-guess");
+    expect(ronsEntry).toMatchObject({ status: "completed", won: true });
+  });
+
   it("plays Connections start-to-finish, scores it, and rejects further submissions", async () => {
     const { cookies } = await registerUser("harry");
     await publishToday("connections", "Connections", "🟩", CONNECTIONS_CONTENT);

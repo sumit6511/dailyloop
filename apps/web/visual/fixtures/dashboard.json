@@ -133,7 +133,7 @@
           {
             "slug": "connections",
             "name": "Connections",
-            "icon": "🟩",
+            "icon": "\ud83d\udfe9",
             "puzzleNumber": 29,
             "answer": {
               "kind": "groups",
@@ -165,7 +165,7 @@
           {
             "slug": "word-guess",
             "name": "Word Guess",
-            "icon": "🟨",
+            "icon": "\ud83d\udfe8",
             "puzzleNumber": 29,
             "answer": {
               "kind": "word",
@@ -176,20 +176,20 @@
           {
             "slug": "number-puzzle",
             "name": "Number Puzzle",
-            "icon": "🔢",
+            "icon": "\ud83d\udd22",
             "puzzleNumber": 29,
             "answer": {
               "kind": "equation",
               "numbers": [2, 11, 1, 5],
               "target": 15,
-              "expression": "(1 + 2) × 5"
+              "expression": "(1 + 2) \u00d7 5"
             },
             "result": null
           },
           {
             "slug": "logic-puzzle",
             "name": "Logic Puzzle",
-            "icon": "🧠",
+            "icon": "\ud83e\udde0",
             "puzzleNumber": 29,
             "answer": {
               "kind": "grid",
@@ -215,7 +215,7 @@
           {
             "slug": "guess-it",
             "name": "Guess It",
-            "icon": "🎯",
+            "icon": "\ud83c\udfaf",
             "puzzleNumber": 29,
             "answer": {
               "kind": "mystery",
@@ -227,7 +227,7 @@
           {
             "slug": "pathway",
             "name": "Pathway",
-            "icon": "🧵",
+            "icon": "\ud83e\uddf5",
             "puzzleNumber": 29,
             "answer": {
               "kind": "path",
@@ -411,7 +411,7 @@
           "slug": "connections",
           "name": "Connections",
           "description": "Group 16 words into four hidden categories.",
-          "icon": "🟩",
+          "icon": "\ud83d\udfe9",
           "difficulty": "medium",
           "available": true,
           "puzzleNumber": 30,
@@ -445,13 +445,14 @@
             "mistakesRemaining": 4,
             "complete": false
           },
-          "startedAt": null
+          "startedAt": null,
+          "won": null
         },
         {
           "slug": "word-guess",
           "name": "Word Guess",
           "description": "Guess the daily word in six tries.",
-          "icon": "🟨",
+          "icon": "\ud83d\udfe8",
           "difficulty": "medium",
           "available": true,
           "puzzleNumber": 30,
@@ -491,13 +492,14 @@
             "guessesRemaining": 5,
             "complete": false
           },
-          "startedAt": "2026-11-24T08:07:52.241Z"
+          "startedAt": "2026-11-24T08:07:52.241Z",
+          "won": null
         },
         {
           "slug": "number-puzzle",
           "name": "Number Puzzle",
           "description": "Reach the target using numbers and operators.",
-          "icon": "🔢",
+          "icon": "\ud83d\udd22",
           "difficulty": "medium",
           "available": true,
           "puzzleNumber": 30,
@@ -514,13 +516,14 @@
             "steps": [],
             "complete": false
           },
-          "startedAt": null
+          "startedAt": null,
+          "won": null
         },
         {
           "slug": "logic-puzzle",
           "name": "Logic Puzzle",
-          "description": "Solve a daily 6×6 mini logic grid.",
-          "icon": "🧠",
+          "description": "Solve a daily 6\u00d76 mini logic grid.",
+          "icon": "\ud83e\udde0",
           "difficulty": "hard",
           "available": true,
           "puzzleNumber": 30,
@@ -549,13 +552,14 @@
             "difficulty": "easy",
             "complete": false
           },
-          "startedAt": null
+          "startedAt": null,
+          "won": null
         },
         {
           "slug": "guess-it",
           "name": "Guess It",
           "description": "Identify the mystery answer from four clues.",
-          "icon": "🎯",
+          "icon": "\ud83c\udfaf",
           "difficulty": "easy",
           "available": true,
           "puzzleNumber": 30,
@@ -578,13 +582,14 @@
             "won": true,
             "answer": "Octopus"
           },
-          "startedAt": "2026-11-24T08:07:52.215Z"
+          "startedAt": "2026-11-24T08:07:52.215Z",
+          "won": true
         },
         {
           "slug": "pathway",
           "name": "Pathway",
           "description": "Draw one continuous path through every cell, in checkpoint order.",
-          "icon": "🧵",
+          "icon": "\ud83e\uddf5",
           "difficulty": "hard",
           "available": true,
           "puzzleNumber": 30,
@@ -651,7 +656,8 @@
             "path": [],
             "complete": false
           },
-          "startedAt": null
+          "startedAt": null,
+          "won": null
         }
       ]
     }

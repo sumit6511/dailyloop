@@ -31,7 +31,7 @@
         "slug": "guess-it",
         "name": "Guess It",
         "description": "Identify the mystery answer from four clues.",
-        "icon": "🎯",
+        "icon": "\ud83c\udfaf",
         "difficulty": "easy",
         "available": true,
         "puzzleNumber": 30,
@@ -54,7 +54,8 @@
           "won": true,
           "answer": "Octopus"
         },
-        "startedAt": "2026-11-24T08:07:52.215Z"
+        "startedAt": "2026-11-24T08:07:52.215Z",
+        "won": true
       }
     }
   },

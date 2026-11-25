@@ -31,7 +31,7 @@
         "slug": "connections",
         "name": "Connections",
         "description": "Group 16 words into four hidden categories.",
-        "icon": "🟩",
+        "icon": "\ud83d\udfe9",
         "difficulty": "medium",
         "available": true,
         "puzzleNumber": 30,
@@ -65,7 +65,8 @@
           "mistakesRemaining": 4,
           "complete": false
         },
-        "startedAt": "2026-11-24T08:07:58.065Z"
+        "startedAt": "2026-11-24T08:07:58.065Z",
+        "won": null
       }
     }
   },

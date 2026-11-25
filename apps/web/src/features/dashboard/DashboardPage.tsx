@@ -130,12 +130,12 @@ export function DashboardPage() {
                 <span className="font-mono text-base text-fg-subtle">
                   / {availableCount || "–"}
                 </span>
-                <span className="ml-1 text-sm text-fg-muted">solved</span>
+                <span className="ml-1 text-sm text-fg-muted">done</span>
               </div>
               <div
                 className="flex gap-1"
                 role="progressbar"
-                aria-label="Puzzles solved today"
+                aria-label="Puzzles done today"
                 aria-valuemin={0}
                 aria-valuemax={availableCount}
                 aria-valuenow={completedCount}
@@ -187,7 +187,7 @@ export function DashboardPage() {
             action={
               games ? (
                 <span className="eyebrow text-fg-subtle">
-                  {completedCount}/{availableCount} solved
+                  {completedCount}/{availableCount} done
                 </span>
               ) : null
             }

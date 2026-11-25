@@ -56,6 +56,8 @@ export interface TodayGameEntryDTO {
   available: boolean;
   puzzleNumber: number | null;
   status: TodayGameStatus;
+  /** Whether a finished attempt was a win; null until the attempt is finished. */
+  won: boolean | null;
   score: number | null;
   mistakeCount: number | null;
   /** Hints charged to the current attempt (they lower its score); null before an attempt exists. */

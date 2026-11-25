@@ -31,7 +31,7 @@
         "slug": "word-guess",
         "name": "Word Guess",
         "description": "Guess the daily word in six tries.",
-        "icon": "🟨",
+        "icon": "\ud83d\udfe8",
         "difficulty": "medium",
         "available": true,
         "puzzleNumber": 30,
@@ -71,7 +71,8 @@
           "guessesRemaining": 5,
           "complete": false
         },
-        "startedAt": "2026-11-24T08:07:52.241Z"
+        "startedAt": "2026-11-24T08:07:52.241Z",
+        "won": null
       }
     }
   }

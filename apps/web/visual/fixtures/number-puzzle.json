@@ -31,7 +31,7 @@
         "slug": "number-puzzle",
         "name": "Number Puzzle",
         "description": "Reach the target using numbers and operators.",
-        "icon": "🔢",
+        "icon": "\ud83d\udd22",
         "difficulty": "medium",
         "available": true,
         "puzzleNumber": 30,
@@ -48,7 +48,8 @@
           "difficulty": "easy",
           "complete": false
         },
-        "startedAt": "2026-11-24T08:08:01.861Z"
+        "startedAt": "2026-11-24T08:08:01.861Z",
+        "won": null
       }
     }
   },

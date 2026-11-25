@@ -31,7 +31,7 @@
         "slug": "pathway",
         "name": "Pathway",
         "description": "Draw one continuous path through every cell, in checkpoint order.",
-        "icon": "🧵",
+        "icon": "\ud83e\uddf5",
         "difficulty": "hard",
         "available": true,
         "puzzleNumber": 30,
@@ -98,7 +98,8 @@
           "path": [],
           "complete": false
         },
-        "startedAt": "2026-11-24T08:08:08.325Z"
+        "startedAt": "2026-11-24T08:08:08.325Z",
+        "won": null
       }
     }
   },

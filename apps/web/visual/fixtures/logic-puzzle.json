@@ -30,8 +30,8 @@
       "data": {
         "slug": "logic-puzzle",
         "name": "Logic Puzzle",
-        "description": "Solve a daily 6×6 mini logic grid.",
-        "icon": "🧠",
+        "description": "Solve a daily 6\u00d76 mini logic grid.",
+        "icon": "\ud83e\udde0",
         "difficulty": "hard",
         "available": true,
         "puzzleNumber": 30,
@@ -60,7 +60,8 @@
           "difficulty": "easy",
           "complete": false
         },
-        "startedAt": "2026-11-24T08:08:03.787Z"
+        "startedAt": "2026-11-24T08:08:03.787Z",
+        "won": null
       }
     }
   },

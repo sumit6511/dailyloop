@@ -13,9 +13,11 @@ function StatusLine({ game }: { game: TodayGameEntryDTO }) {
   }
   if (game.status === "completed") {
     return (
-      <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-300">
-        <Icon name="check_circle" className="text-base" filled />
-        Solved
+      <span
+        className={`flex items-center gap-1.5 text-xs font-medium ${game.won ? "text-emerald-300" : "text-rose-300"}`}
+      >
+        <Icon name={game.won ? "check_circle" : "cancel"} className="text-base" filled />
+        {game.won ? "Solved" : "Missed"}
         <span className="tabular font-mono text-white/80">{game.score ?? 0} pts</span>
       </span>
     );
@@ -48,7 +50,7 @@ export function GameCard({ game }: { game: TodayGameEntryDTO }) {
           : "opacity-55"
       }`}
     >
-      {isCompleted ? (
+      {isCompleted && game.won ? (
         <span
           aria-hidden="true"
           className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent"
