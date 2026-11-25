@@ -460,8 +460,8 @@ export function PathwayPage() {
           title={`Each new hint costs ${SCORE.HINT_PENALTY} points`}
         >
           <Icon name="lightbulb" className="text-lg" /> Hint{" "}
-          <span className="text-xs font-medium text-amber-300">−{SCORE.HINT_PENALTY}</span>
-          <span className="sr-only"> (costs {SCORE.HINT_PENALTY} points)</span>
+          <span className="text-xs font-medium text-amber-300">−{SCORE.HINT_PENALTY}</span>{" "}
+          <span className="sr-only">(costs {SCORE.HINT_PENALTY} points)</span>
         </Button>
       </div>
 

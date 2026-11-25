@@ -796,8 +796,8 @@ export function LogicPuzzlePage() {
           <Icon name="lightbulb" className="text-lg" /> Hint{" "}
           <span className="font-mono text-[11px] font-medium text-amber-300">
             −{SCORE.HINT_PENALTY}
-          </span>
-          <span className="sr-only"> (costs {SCORE.HINT_PENALTY} points)</span>
+          </span>{" "}
+          <span className="sr-only">(costs {SCORE.HINT_PENALTY} points)</span>
         </Button>
         <Button
           variant="ghost"
