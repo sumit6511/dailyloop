@@ -6,7 +6,7 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import type { Plugin } from "vite";
 // A relative path (not "@dailyloop/shared") so Vite's config bundler inlines it.
-import { ICON_NAMES } from "../../packages/shared/src/icons";
+import { ICON_NAMES } from "../../packages/shared/src/icons.ts";
 import tailwindcss from "@tailwindcss/vite";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
